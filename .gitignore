@@ -1,0 +1,7 @@
+
+.env
+*.token
+*.secret
+key.properties
+*.keystore
+*.jks

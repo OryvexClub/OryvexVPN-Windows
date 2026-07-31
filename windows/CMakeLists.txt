@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.15)
+project(warp_vpn_app LANGUAGES CXX)
+set(BINARY_NAME "warp_vpn_app")
+set(APPLICATION_ID "com.example.warp_vpn_app")
+find_package(flutter REQUIRED)
+add_subdirectory(runner)
