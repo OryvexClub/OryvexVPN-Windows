@@ -46,7 +46,7 @@ class VPNService extends ChangeNotifier {
       _statusMessage = Strings.statusConnecting;
       notifyListeners();
 
-      // Mock connection logic for UI Dashboard
+      // شبیه‌سازی اتصال برای رابط کاربری
       await Future.delayed(const Duration(seconds: 2));
 
       _isConnected = true;
