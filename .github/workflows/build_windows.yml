@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
 jobs:
   build:
     runs-on: windows-latest
@@ -18,16 +21,16 @@ jobs:
           flutter-version: '3.16.0'
           channel: 'stable'
       
-      - name: Enable Windows
+      - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
       
       - name: Get dependencies
         run: flutter pub get
       
-      - name: Build Windows
+      - name: Build Windows app
         run: flutter build windows --release
       
-      - name: Upload artifact
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: warp-vpn-windows
