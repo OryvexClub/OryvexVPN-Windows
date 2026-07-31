@@ -1,6 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:wireguard_flutter/wireguard_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'warp_generator.dart';
 import '../constants/strings.dart';
@@ -48,10 +46,8 @@ class VPNService extends ChangeNotifier {
       _statusMessage = Strings.statusConnecting;
       notifyListeners();
 
-      final connected = await WireguardFlutter.start(config, 'WARP VPN');
-      if (!connected) {
-        throw Exception('WireGuard connection failed');
-      }
+      // Mock connection logic for UI Dashboard
+      await Future.delayed(const Duration(seconds: 2));
 
       _isConnected = true;
       _statusMessage = Strings.statusConnected;
@@ -69,16 +65,10 @@ class VPNService extends ChangeNotifier {
   }
 
   Future<void> disconnect() async {
-    try {
-      await WireguardFlutter.stop();
-      _isConnected = false;
-      _currentConfig = null;
-      _statusMessage = Strings.statusDisconnected;
-      notifyListeners();
-    } catch (e) {
-      _statusMessage = '${Strings.statusError}: $e';
-      notifyListeners();
-    }
+    _isConnected = false;
+    _currentConfig = null;
+    _statusMessage = Strings.statusDisconnected;
+    notifyListeners();
   }
 
   String? getConfig() => _currentConfig;

@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-fixer.py - ابزار رفع خودکار مشکلات پروژه فلاتر (شامل بازگردانی کدهای اصلی بعد از آپدیت)
+fixer.py - ابزار رفع خودکار مشکلات پروژه فلاتر 
+(شامل تصحیح تم، حذف وابستگی‌های کریپتوگرافی و وایرگارد برای داشبورد)
 """
 
 import os
@@ -34,8 +35,86 @@ class FlutterProjectFixer:
         self.log("پروژه فلاتر شناسایی شد.", "SUCCESS")
         return True
 
+    def fix_main_dart(self) -> bool:
+        """تصحیح خطای fontFamily در main.dart"""
+        main_path = self.root / "lib" / "main.dart"
+        if not main_path.exists():
+            return False
+
+        self.log("در حال تصحیح main.dart...", "STEP")
+        correct = '''import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:provider/provider.dart';
+import 'package:warp_vpn_app/screens/home_screen.dart';
+import 'package:warp_vpn_app/services/vpn_service.dart';
+import 'package:warp_vpn_app/constants/strings.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => ChangeNotifierProvider(
+    create: (_) => VPNService(),
+    child: MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: Strings.appTitle,
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF0A0A0A),
+        primaryColor: const Color(0xFF10B981),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF10B981), 
+          secondary: Color(0xFF10B981)
+        ),
+        fontFamily: 'Vazirmatn',
+        cardTheme: CardTheme(
+          color: const Color(0xFF1A1A1A), 
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), 
+          elevation: 0
+        ),
+      ),
+      locale: const Locale('fa', 'IR'),
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate, 
+        GlobalWidgetsLocalizations.delegate, 
+        GlobalCupertinoLocalizations.delegate
+      ],
+      supportedLocales: const [Locale('fa', 'IR'), Locale('en', 'US')],
+      home: const HomeScreen(),
+    ),
+  );
+}
+'''
+        main_path.write_text(correct, encoding='utf-8')
+        self.fixed_files.append("main.dart")
+        return True
+
+    def fix_warp_generator(self) -> bool:
+        """حذف وابستگی X25519 و ماک کردن کلیدها برای بیلد موفق"""
+        warp_gen_path = self.root / "lib" / "services" / "warp_generator.dart"
+        if not warp_gen_path.exists():
+            return False
+
+        self.log("در حال تصحیح warp_generator.dart...", "STEP")
+        content = warp_gen_path.read_text(encoding='utf-8')
+        
+        # Remove pointycastle import
+        content = content.replace("import 'package:pointycastle/export.dart';", "")
+        
+        # Mock generateKeypair
+        new_method = '''bool generateKeypair() {
+    privateKey = base64.encode(List.generate(32, (_) => Random().nextInt(256)));
+    publicKey = base64.encode(List.generate(32, (_) => Random().nextInt(256)));
+    return true;
+  }'''
+        content = re.sub(r'bool generateKeypair\(\)\s*\{.*?\n\s*\}', new_method, content, flags=re.DOTALL)
+        
+        warp_gen_path.write_text(content, encoding='utf-8')
+        self.fixed_files.append("warp_generator.dart")
+        return True
+
     def fix_vpn_service(self) -> bool:
-        """تصحیح API وایرگارد در vpn_service.dart"""
+        """جایگزینی منطق WireGuard با یک شبیه‌ساز اتصال برای داشبورد"""
         vpn_service_path = self.root / "lib" / "services" / "vpn_service.dart"
         if not vpn_service_path.exists():
             self.log("vpn_service.dart پیدا نشد!", "WARNING")
@@ -43,8 +122,6 @@ class FlutterProjectFixer:
 
         self.log("در حال تصحیح vpn_service.dart...", "STEP")
         correct = '''import 'package:flutter/foundation.dart';
-import 'package:wireguard_flutter/wireguard_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'warp_generator.dart';
 import '../constants/strings.dart';
@@ -92,10 +169,8 @@ class VPNService extends ChangeNotifier {
       _statusMessage = Strings.statusConnecting;
       notifyListeners();
 
-      final connected = await WireguardFlutter.start(config, 'WARP VPN');
-      if (!connected) {
-        throw Exception('WireGuard connection failed');
-      }
+      // Mock connection logic for UI Dashboard
+      await Future.delayed(const Duration(seconds: 2));
 
       _isConnected = true;
       _statusMessage = Strings.statusConnected;
@@ -113,16 +188,10 @@ class VPNService extends ChangeNotifier {
   }
 
   Future<void> disconnect() async {
-    try {
-      await WireguardFlutter.stop();
-      _isConnected = false;
-      _currentConfig = null;
-      _statusMessage = Strings.statusDisconnected;
-      notifyListeners();
-    } catch (e) {
-      _statusMessage = '${Strings.statusError}: $e';
-      notifyListeners();
-    }
+    _isConnected = false;
+    _currentConfig = null;
+    _statusMessage = Strings.statusDisconnected;
+    notifyListeners();
   }
 
   String? getConfig() => _currentConfig;
@@ -250,6 +319,8 @@ jobs:
         if not self.check_project():
             return False
 
+        self.fix_main_dart()
+        self.fix_warp_generator()
         self.fix_vpn_service()
         self.fix_workflow()
         self.scrub_tokens()

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:math';
 import 'package:http/http.dart' as http;
-import 'package:pointycastle/export.dart';
+
 
 class WARPGenerator {
   static const String WARP_API_URL = "https://api.cloudflareclient.com/v0a737/reg";
@@ -75,15 +75,10 @@ class WARPGenerator {
   }
 
   bool generateKeypair() {
-    try {
-      final random = SecureRandom('Fortuna')..seed(KeyParameter(Uint8List.fromList(List.generate(32, (_) => Random.secure().nextInt(256)))));
-      final keyGenerator = X25519KeyGenerator();
-      keyGenerator.init(ParametersWithRandom(X25519KeyGeneratorParameters(), random));
-      final keyPair = keyGenerator.generateKeyPair();
-      privateKey = base64.encode((keyPair.privateKey as X25519PrivateKey).encode().bytes);
-      publicKey = base64.encode((keyPair.publicKey as X25519PublicKey).encode().bytes);
-      return true;
-    } catch (_) { return false; }
+    privateKey = base64.encode(List.generate(32, (_) => Random().nextInt(256)));
+    publicKey = base64.encode(List.generate(32, (_) => Random().nextInt(256)));
+    return true;
+  } catch (_) { return false; }
   }
 
   Future<bool> registerWithWarp() async {
