@@ -1158,6 +1158,21 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
       b6e3a2793ab769cd15ac0b8908a11aea2a2be94e 3c1497c06b77d09d487c38e778332de181454b82 OryvexVPN <oryvex@demo.com> 1785535333 +0330	commit: Auto‑fix and security update
       3c1497c06b77d09d487c38e778332de181454b82 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785535333 +0330	Branch: renamed refs/heads/main to refs/heads/main
       3c1497c06b77d09d487c38e778332de181454b82 3c1497c06b77d09d487c38e778332de181454b82 OryvexVPN <oryvex@demo.com> 1785535333 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      3c1497c06b77d09d487c38e778332de181454b82 155ff13aa58009a3651fa3c2b3fabc49632e8347 OryvexVPN <oryvex@demo.com> 1785535914 +0330	commit: Auto‑fix and security update
+      155ff13aa58009a3651fa3c2b3fabc49632e8347 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785535914 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      155ff13aa58009a3651fa3c2b3fabc49632e8347 155ff13aa58009a3651fa3c2b3fabc49632e8347 OryvexVPN <oryvex@demo.com> 1785535914 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      155ff13aa58009a3651fa3c2b3fabc49632e8347 8df765d3ab5537a1478cd23694a2d4ea354dcd75 OryvexVPN <oryvex@demo.com> 1785536324 +0330	commit: Auto‑fix and security update
+      8df765d3ab5537a1478cd23694a2d4ea354dcd75 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785536324 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      8df765d3ab5537a1478cd23694a2d4ea354dcd75 8df765d3ab5537a1478cd23694a2d4ea354dcd75 OryvexVPN <oryvex@demo.com> 1785536324 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      8df765d3ab5537a1478cd23694a2d4ea354dcd75 4f3581440b54105fb5914554cac86a8c69577db9 OryvexVPN <oryvex@demo.com> 1785536656 +0330	commit: Auto‑fix and security update
+      4f3581440b54105fb5914554cac86a8c69577db9 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785536656 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      4f3581440b54105fb5914554cac86a8c69577db9 4f3581440b54105fb5914554cac86a8c69577db9 OryvexVPN <oryvex@demo.com> 1785536656 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      4f3581440b54105fb5914554cac86a8c69577db9 875fd9b8f9a2d33278569d82405ca9c4af383721 OryvexVPN <oryvex@demo.com> 1785537055 +0330	commit: Auto‑fix and security update
+      875fd9b8f9a2d33278569d82405ca9c4af383721 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785537056 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      875fd9b8f9a2d33278569d82405ca9c4af383721 875fd9b8f9a2d33278569d82405ca9c4af383721 OryvexVPN <oryvex@demo.com> 1785537056 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      875fd9b8f9a2d33278569d82405ca9c4af383721 d39f3053591240c8e895ad7e430a20b1f120039f OryvexVPN <oryvex@demo.com> 1785537442 +0330	commit: Auto‑fix and security update
+      d39f3053591240c8e895ad7e430a20b1f120039f 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785537442 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      d39f3053591240c8e895ad7e430a20b1f120039f d39f3053591240c8e895ad7e430a20b1f120039f OryvexVPN <oryvex@demo.com> 1785537442 +0330	Branch: renamed refs/heads/main to refs/heads/main
 
 
 
@@ -1186,6 +1201,16 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
           b6e3a2793ab769cd15ac0b8908a11aea2a2be94e b6e3a2793ab769cd15ac0b8908a11aea2a2be94e OryvexVPN <oryvex@demo.com> 1785534634 +0330	Branch: renamed refs/heads/main to refs/heads/main
           b6e3a2793ab769cd15ac0b8908a11aea2a2be94e 3c1497c06b77d09d487c38e778332de181454b82 OryvexVPN <oryvex@demo.com> 1785535333 +0330	commit: Auto‑fix and security update
           3c1497c06b77d09d487c38e778332de181454b82 3c1497c06b77d09d487c38e778332de181454b82 OryvexVPN <oryvex@demo.com> 1785535333 +0330	Branch: renamed refs/heads/main to refs/heads/main
+          3c1497c06b77d09d487c38e778332de181454b82 155ff13aa58009a3651fa3c2b3fabc49632e8347 OryvexVPN <oryvex@demo.com> 1785535914 +0330	commit: Auto‑fix and security update
+          155ff13aa58009a3651fa3c2b3fabc49632e8347 155ff13aa58009a3651fa3c2b3fabc49632e8347 OryvexVPN <oryvex@demo.com> 1785535914 +0330	Branch: renamed refs/heads/main to refs/heads/main
+          155ff13aa58009a3651fa3c2b3fabc49632e8347 8df765d3ab5537a1478cd23694a2d4ea354dcd75 OryvexVPN <oryvex@demo.com> 1785536324 +0330	commit: Auto‑fix and security update
+          8df765d3ab5537a1478cd23694a2d4ea354dcd75 8df765d3ab5537a1478cd23694a2d4ea354dcd75 OryvexVPN <oryvex@demo.com> 1785536324 +0330	Branch: renamed refs/heads/main to refs/heads/main
+          8df765d3ab5537a1478cd23694a2d4ea354dcd75 4f3581440b54105fb5914554cac86a8c69577db9 OryvexVPN <oryvex@demo.com> 1785536656 +0330	commit: Auto‑fix and security update
+          4f3581440b54105fb5914554cac86a8c69577db9 4f3581440b54105fb5914554cac86a8c69577db9 OryvexVPN <oryvex@demo.com> 1785536656 +0330	Branch: renamed refs/heads/main to refs/heads/main
+          4f3581440b54105fb5914554cac86a8c69577db9 875fd9b8f9a2d33278569d82405ca9c4af383721 OryvexVPN <oryvex@demo.com> 1785537055 +0330	commit: Auto‑fix and security update
+          875fd9b8f9a2d33278569d82405ca9c4af383721 875fd9b8f9a2d33278569d82405ca9c4af383721 OryvexVPN <oryvex@demo.com> 1785537056 +0330	Branch: renamed refs/heads/main to refs/heads/main
+          875fd9b8f9a2d33278569d82405ca9c4af383721 d39f3053591240c8e895ad7e430a20b1f120039f OryvexVPN <oryvex@demo.com> 1785537442 +0330	commit: Auto‑fix and security update
+          d39f3053591240c8e895ad7e430a20b1f120039f d39f3053591240c8e895ad7e430a20b1f120039f OryvexVPN <oryvex@demo.com> 1785537442 +0330	Branch: renamed refs/heads/main to refs/heads/main
 
 
 
@@ -1198,6 +1223,34 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
   objects
+    06
+      8255a27d64b4879fbaaa9e7d2be0f36d70ed7c
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    08
+      e863b2a9313e0fc6373c88443ad5583c77b0dc
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     09
       6d1dab3adf1d18113a089dbb8f66ebced9e67d
         [Binary or unreadable file]
@@ -1268,6 +1321,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    11
+      c5a27a026585472261df4eea62cda9c2e2dccf
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     12
       70a0940f9e6b9d4d40112a6ccc898ac99c7721
         [Binary or unreadable file]
@@ -1283,6 +1350,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     14
+      7eef5067d1f366933e2845c03bfe74d40509b0
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       edc67998e2714592f9c32852429206816de285
         [Binary or unreadable file]
 
@@ -1297,6 +1377,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     15
+      5ff13aa58009a3651fa3c2b3fabc49632e8347
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       775aabe5d10168a603e3a86ca7b0dc4c8b3bce
         [Binary or unreadable file]
 
@@ -1435,6 +1528,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+      549860e077c29d193706fd16010bb95a494f3e
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     33
       7e7308d7d6e873bf414ec685af49bbe0b407e2
         [Binary or unreadable file]
@@ -1558,6 +1664,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    3f
+      5adf6e32e527001c2b88a2fc1a6d3f9fb8f9c8
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     40
       131ec84731fe1559dc7d7943f6b0915ba1a6a0
         [Binary or unreadable file]
@@ -1573,6 +1693,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
       2fa99081143265b19d7ce7ca86fa77d0363b15
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      715e7851e741330ae4d72f7e26583fbc1bc077
         [Binary or unreadable file]
 
 
@@ -1696,7 +1829,34 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     4f
+      3581440b54105fb5914554cac86a8c69577db9
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       ac0fb792329bdd596c23672a79644eb44917ed
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    50
+      378497d2d0ef8cd5f67a8f9991b8662edc19d5
         [Binary or unreadable file]
 
 
@@ -1781,6 +1941,33 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     5d
       13f2d458d1e85cb6564bf033ca88d0be5a6fda
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      e125cdc9ecd6c796a14de72a6ff2f8d9992ae4
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    61
+      455044741777efda41bb9004cf567a4983c27d
         [Binary or unreadable file]
 
 
@@ -1947,7 +2134,34 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     83
+      317e9f62f2dffb328cbb75405660457ad007f3
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       75fef3469c3c02a77b2e60cc7579f5032489d8
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    87
+      5fd9b8f9a2d33278569d82405ca9c4af383721
         [Binary or unreadable file]
 
 
@@ -1976,6 +2190,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     8d
       cab824d9338d77fa534f1237313f23507b585c
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      f765d3ab5537a1478cd23694a2d4ea354dcd75
         [Binary or unreadable file]
 
 
@@ -2032,6 +2259,61 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     9b
       507e2fabc29fdfe7de3a919cdca786ca1be7f6
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    9c
+      743eca276e52188127b32a12da5ca91b4ed666
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      970d12c9846f8c4e1e76093b3278e33a4fadfc
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    9e
+      a47d9761578c617364d215591c21fd67d9427b
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    a0
+      c5af4403fe24cc7b30e42d7ae93803a30ce56f
         [Binary or unreadable file]
 
 
@@ -2126,6 +2408,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    ac
+      c2dc49774e7e5dffae78b6586ac681ac314c96
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     ae
       71344c1273838afdff2d852491ca9b79845dbd
         [Binary or unreadable file]
@@ -2154,7 +2450,34 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    b2
+      c35a2093ce6f78a32bd4b1088b0d328c8ad638
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     b3
+      45d3650670a7c892854c308925f2f0d39c278f
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       f518e0e08f9c2e00f0c54b118731d0f20a51e3
         [Binary or unreadable file]
 
@@ -2307,6 +2630,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    d3
+      9f3053591240c8e895ad7e430a20b1f120039f
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     d6
       abb8e2a96b9da9ec24c5e335c523c4a12cc1c3
         [Binary or unreadable file]
@@ -2350,6 +2687,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     df
+      d20120ca5bdaf9e83c9888c991cc409de5700e
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       e5b6925767f5ef555758665f6083473606aa68
         [Binary or unreadable file]
 
@@ -2406,6 +2756,47 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     e6
       9de29bb2d1d6434b8b29ae775ad8c2e48c5391
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      ddc7e5d8c9af8423a7e31a04de0ff68aea7c52
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    e7
+      28b7cbde4253e34b98aea1920ba3370ec0cd55
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    ea
+      0fdd86f779c02c20a845c46c689a2d8b5a9789
         [Binary or unreadable file]
 
 
@@ -2488,8 +2879,63 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+      4f46bd543ffbdf60a81b48d796b8f5b1b24c51
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    f4
+      6bca70b2ed83946e43ed149f67ab240d5c7695
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     f6
       506dc1733f99811e2e32edb4eadede2c72eecf
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    fb
+      805f4f0efc140c12aa2cc0d2fd3b098f68f09e
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    fc
+      a4dd7c3349c77be5d2f83b57063d4705e00deb
         [Binary or unreadable file]
 
 
@@ -2527,7 +2973,7 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
   refs
     heads
       main
-        3c1497c06b77d09d487c38e778332de181454b82
+        d39f3053591240c8e895ad7e430a20b1f120039f
 
 
 
@@ -2577,6 +3023,9 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
                 channel: 'stable'
                 cache: true
       
+            - name: Precache Windows artifacts
+              run: flutter precache --windows
+      
             - name: Run flutter doctor
               run: flutter doctor -v
       
@@ -2589,18 +3038,11 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
             - name: Get dependencies
               run: flutter pub get
       
-            - name: Set Flutter CMake directory
-              shell: powershell
-              run: |
-                $flutterCmakeDir = "$env:FLUTTER_ROOT\packages\flutter_tools\static\cpp_client_wrapper\cmake"
-                if (Test-Path $flutterCmakeDir) {
-                  Write-Host "Flutter CMake directory: $flutterCmakeDir"
-                  "FLUTTER_DIR=$flutterCmakeDir" | Out-File -FilePath $env:GITHUB_ENV -Append
-                  "CMAKE_PREFIX_PATH=$flutterCmakeDir" | Out-File -FilePath $env:GITHUB_ENV -Append
-                } else {
-                  Write-Error "Flutter CMake directory not found at $flutterCmakeDir"
-                  exit 1
-                }
+            - name: Update Windows Project Files (regenerate, overwrite)
+              run: flutter create --platforms windows --overwrite .
+      
+            - name: Get dependencies (again after create)
+              run: flutter pub get
       
             - name: Build Windows app
               run: flutter build windows --release
@@ -2609,7 +3051,7 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
               uses: actions/upload-artifact@v4
               with:
                 name: warp-vpn-windows
-                path: build/windows/runner/Release/
+                path: build/windows/x64/runner/Release/
 
 
 
@@ -2755,13 +3197,12 @@ fixer.py
   # -*- coding: utf-8 -*-
   
   """
-  fixer.py - ابزار رفع خودکار مشکلات پروژه فلاتر (شامل پاک‌سازی توکن‌های درز کرده)
+  fixer.py - ابزار رفع خودکار مشکلات پروژه فلاتر (شامل اصلاح مسیر خروجی بیلد ویندوز)
   """
   
   import os
   import re
   import sys
-  import urllib.request
   from pathlib import Path
   from typing import Optional
   
@@ -2889,7 +3330,7 @@ fixer.py
           return True
   
       def fix_workflow(self) -> bool:
-          """تنظیم مسیر CMake فلاتر در workflow"""
+          """تنظیم و تصحیح اکشن بیلد ویندوز (تنظیم مسیر خروجی x64)"""
           workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
           if not workflow_path.exists():
               self.log("build_windows.yml پیدا نشد!", "WARNING")
@@ -2920,6 +3361,9 @@ fixer.py
             channel: 'stable'
             cache: true
   
+        - name: Precache Windows artifacts
+          run: flutter precache --windows
+  
         - name: Run flutter doctor
           run: flutter doctor -v
   
@@ -2932,18 +3376,11 @@ fixer.py
         - name: Get dependencies
           run: flutter pub get
   
-        - name: Set Flutter CMake directory
-          shell: powershell
-          run: |
-            $flutterCmakeDir = "$env:FLUTTER_ROOT\\packages\\flutter_tools\\static\\cpp_client_wrapper\\cmake"
-            if (Test-Path $flutterCmakeDir) {
-              Write-Host "Flutter CMake directory: $flutterCmakeDir"
-              "FLUTTER_DIR=$flutterCmakeDir" | Out-File -FilePath $env:GITHUB_ENV -Append
-              "CMAKE_PREFIX_PATH=$flutterCmakeDir" | Out-File -FilePath $env:GITHUB_ENV -Append
-            } else {
-              Write-Error "Flutter CMake directory not found at $flutterCmakeDir"
-              exit 1
-            }
+        - name: Update Windows Project Files (regenerate, overwrite)
+          run: flutter create --platforms windows --overwrite .
+  
+        - name: Get dependencies (again after create)
+          run: flutter pub get
   
         - name: Build Windows app
           run: flutter build windows --release
@@ -2952,7 +3389,7 @@ fixer.py
           uses: actions/upload-artifact@v4
           with:
             name: warp-vpn-windows
-            path: build/windows/runner/Release/
+            path: build/windows/x64/runner/Release/
   '''
           with open(workflow_path, "w", encoding="utf-8") as f:
               f.write(correct)
@@ -2965,7 +3402,6 @@ fixer.py
           self.log("در حال پاک‌سازی توکن‌های درز کرده...", "STEP")
           token_regex = re.compile(r'ghp_[A-Za-z0-9_]{36,}')
           modified = False
-          exclude_dirs = {'.git'}
           for filepath in self.root.rglob('*'):
               if filepath.is_dir():
                   continue

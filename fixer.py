@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-fixer.py - ابزار رفع خودکار مشکلات پروژه فلاتر (شامل اصلاح مسیر خروجی بیلد ویندوز)
+fixer.py - ابزار رفع خودکار مشکلات پروژه فلاتر (شامل بازگردانی کدهای اصلی بعد از آپدیت)
 """
 
 import os
@@ -135,7 +135,7 @@ class VPNService extends ChangeNotifier {
         return True
 
     def fix_workflow(self) -> bool:
-        """تنظیم و تصحیح اکشن بیلد ویندوز (تنظیم مسیر خروجی x64)"""
+        """تنظیم و تصحیح اکشن بیلد ویندوز (بازگردانی کدهای اصلی بعد از overwrite)"""
         workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
         if not workflow_path.exists():
             self.log("build_windows.yml پیدا نشد!", "WARNING")
@@ -181,8 +181,10 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Update Windows Project Files (regenerate, overwrite)
-        run: flutter create --platforms windows --overwrite .
+      - name: Update Windows Project Files
+        run: |
+          flutter create --platforms windows --overwrite .
+          git checkout lib/ pubspec.yaml README.md
 
       - name: Get dependencies (again after create)
         run: flutter pub get
@@ -203,14 +205,13 @@ jobs:
         return True
 
     def scrub_tokens(self):
-        """جایگزینی توکن‌های واقعی گیت‌هاب (ghp_ + حداقل ۳۶ کاراکتر) با YOUR_GITHUB_TOKEN در تمام فایل‌ها"""
+        """جایگزینی توکن‌های واقعی گیت‌هاب با YOUR_GITHUB_TOKEN"""
         self.log("در حال پاک‌سازی توکن‌های درز کرده...", "STEP")
         token_regex = re.compile(r'ghp_[A-Za-z0-9_]{36,}')
         modified = False
         for filepath in self.root.rglob('*'):
             if filepath.is_dir():
                 continue
-            # پرش از پوشه‌های git
             if any(part.startswith('.git') for part in filepath.parts):
                 continue
             try:
@@ -221,7 +222,6 @@ jobs:
                     self.log(f"  → {count} توکن در {filepath.relative_to(self.root)} جایگزین شد.", "WARNING")
                     modified = True
             except Exception:
-                # فایل‌های باینری یا غیرقابل خواندن
                 pass
         if not modified:
             self.log("هیچ توکن واقعی پیدا نشد.", "SUCCESS")
@@ -243,7 +243,7 @@ jobs:
 
     def run(self) -> bool:
         print("\n" + "=" * 60)
-        print("🔧 Flutter Project Fixer (نسخه‌ی کامل)")
+        print("🔧 Flutter Project Fixer (نسخه‌ی نهایی)")
         print("=" * 60)
         print(f"\nمسیر پروژه: {self.root}\n")
 
