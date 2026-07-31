@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-fixer.py - ابزار رفع خودکار مشکلات پروژه فلاتر (شامل پاک‌سازی توکن‌های درز کرده)
+fixer.py - ابزار رفع خودکار مشکلات پروژه فلاتر (شامل پاک‌سازی توکن‌های درز کرده و آپدیت ویندوز)
 """
 
 import os
 import re
 import sys
-import urllib.request
 from pathlib import Path
 from typing import Optional
 
@@ -136,7 +135,7 @@ class VPNService extends ChangeNotifier {
         return True
 
     def fix_workflow(self) -> bool:
-        """تنظیم و تصحیح اکشن بیلد ویندوز (حذف مرحله قدیمی CMake)"""
+        """تنظیم و تصحیح اکشن بیلد ویندوز (اضافه کردن مرحله آپدیت فایلهای پروژه)"""
         workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
         if not workflow_path.exists():
             self.log("build_windows.yml پیدا نشد!", "WARNING")
@@ -179,6 +178,9 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Update Windows Project Files
+        run: flutter create --platforms windows .
+
       - name: Build Windows app
         run: flutter build windows --release
 
@@ -199,7 +201,6 @@ jobs:
         self.log("در حال پاک‌سازی توکن‌های درز کرده...", "STEP")
         token_regex = re.compile(r'ghp_[A-Za-z0-9_]{36,}')
         modified = False
-        exclude_dirs = {'.git'}
         for filepath in self.root.rglob('*'):
             if filepath.is_dir():
                 continue

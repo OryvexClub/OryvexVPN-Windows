@@ -34,6 +34,9 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Update Windows Project Files
+        run: flutter create --platforms windows .
+
       - name: Build Windows app
         run: flutter build windows --release
 
