@@ -135,7 +135,7 @@ class VPNService extends ChangeNotifier {
         return True
 
     def fix_workflow(self) -> bool:
-        """تنظیم و تصحیح اکشن بیلد ویندوز (اضافه کردن precache و pub get مجدد)"""
+        """تنظیم و تصحیح اکشن بیلد ویندوز (اضافه کردن precache و بازنویسی کامل فایل‌های ویندوز)"""
         workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
         if not workflow_path.exists():
             self.log("build_windows.yml پیدا نشد!", "WARNING")
@@ -181,8 +181,8 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Update Windows Project Files
-        run: flutter create --platforms windows .
+      - name: Update Windows Project Files (regenerate, overwrite)
+        run: flutter create --platforms windows --overwrite .
 
       - name: Get dependencies (again after create)
         run: flutter pub get
