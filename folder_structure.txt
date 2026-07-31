@@ -3,7 +3,7 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 .git
   COMMIT_EDITMSG
-    OryvexVPN Demo App - Fixed
+    Auto‑fix and security update
 
 
 
@@ -1155,6 +1155,9 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
       a1aaafb67a54f1fc99ee8a57e90711c5bd93667d b6e3a2793ab769cd15ac0b8908a11aea2a2be94e OryvexVPN <oryvex@demo.com> 1785534633 +0330	commit: OryvexVPN Demo App - Fixed
       b6e3a2793ab769cd15ac0b8908a11aea2a2be94e 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785534634 +0330	Branch: renamed refs/heads/main to refs/heads/main
       b6e3a2793ab769cd15ac0b8908a11aea2a2be94e b6e3a2793ab769cd15ac0b8908a11aea2a2be94e OryvexVPN <oryvex@demo.com> 1785534634 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      b6e3a2793ab769cd15ac0b8908a11aea2a2be94e 3c1497c06b77d09d487c38e778332de181454b82 OryvexVPN <oryvex@demo.com> 1785535333 +0330	commit: Auto‑fix and security update
+      3c1497c06b77d09d487c38e778332de181454b82 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785535333 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      3c1497c06b77d09d487c38e778332de181454b82 3c1497c06b77d09d487c38e778332de181454b82 OryvexVPN <oryvex@demo.com> 1785535333 +0330	Branch: renamed refs/heads/main to refs/heads/main
 
 
 
@@ -1181,6 +1184,8 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
           a1aaafb67a54f1fc99ee8a57e90711c5bd93667d a1aaafb67a54f1fc99ee8a57e90711c5bd93667d OryvexVPN <oryvex@demo.com> 1785534440 +0330	Branch: renamed refs/heads/main to refs/heads/main
           a1aaafb67a54f1fc99ee8a57e90711c5bd93667d b6e3a2793ab769cd15ac0b8908a11aea2a2be94e OryvexVPN <oryvex@demo.com> 1785534633 +0330	commit: OryvexVPN Demo App - Fixed
           b6e3a2793ab769cd15ac0b8908a11aea2a2be94e b6e3a2793ab769cd15ac0b8908a11aea2a2be94e OryvexVPN <oryvex@demo.com> 1785534634 +0330	Branch: renamed refs/heads/main to refs/heads/main
+          b6e3a2793ab769cd15ac0b8908a11aea2a2be94e 3c1497c06b77d09d487c38e778332de181454b82 OryvexVPN <oryvex@demo.com> 1785535333 +0330	commit: Auto‑fix and security update
+          3c1497c06b77d09d487c38e778332de181454b82 3c1497c06b77d09d487c38e778332de181454b82 OryvexVPN <oryvex@demo.com> 1785535333 +0330	Branch: renamed refs/heads/main to refs/heads/main
 
 
 
@@ -1193,8 +1198,50 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
   objects
+    09
+      6d1dab3adf1d18113a089dbb8f66ebced9e67d
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    0a
+      f55018f25b2990a3e9dbf794b82d6fff668c85
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     0b
       0b33677acb8343ae3234b6f3644c6ce45ec5df
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    0d
+      ca036f2216a9de3ec45afe80d90c9a3717296b
         [Binary or unreadable file]
 
 
@@ -1263,6 +1310,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    19
+      95e3e32ce2d72b6905a3062fffedba2a451de2
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     1f
       96b401880bfcba67b5cfd9cbc30cc5ed729ebf
         [Binary or unreadable file]
@@ -1292,6 +1353,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     26
+      0e31ac5f361a0c1c2e432f6324094f9066cba0
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       f89a4ad9e61e40e936558e74e166fd02d144df
         [Binary or unreadable file]
 
@@ -1470,6 +1544,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    3c
+      1497c06b77d09d487c38e778332de181454b82
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     40
       131ec84731fe1559dc7d7943f6b0915ba1a6a0
         [Binary or unreadable file]
@@ -1485,6 +1573,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
       2fa99081143265b19d7ce7ca86fa77d0363b15
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      d07728b2e2fa3fcd16dec97abe3df9bd99d538
         [Binary or unreadable file]
 
 
@@ -1610,6 +1711,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     52
       d9de34060e91ad8858282c625c0143f4e9c6b6
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    55
+      418ddc4e9eb6ca3e295367d375e5e572ab4a45
         [Binary or unreadable file]
 
 
@@ -1761,8 +1876,50 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    7a
+      3e460dd8d9c346252012b2bfea5eb01fb714db
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    7c
+      f8fc7aff9d8764016b36a1b82ac4d44b15fa72
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     7d
       2b51a821dc25009212df24d5e4f11dd2721270
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    81
+      91e2e35abe908cf631527901193761cf63ae24
         [Binary or unreadable file]
 
 
@@ -1969,6 +2126,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    ae
+      71344c1273838afdff2d852491ca9b79845dbd
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     b1
       76657cd2e704a167d38e78f407a80fe6734f2c
         [Binary or unreadable file]
@@ -2136,6 +2307,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    d6
+      abb8e2a96b9da9ec24c5e335c523c4a12cc1c3
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     dc
       7ebf9e6dd179bd4856db9a55b2fd347c26c284
         [Binary or unreadable file]
@@ -2164,7 +2349,34 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    df
+      e5b6925767f5ef555758665f6083473606aa68
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     e1
+      0da773d18148f55803b390988ca76d893990dc
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       6488f3ea00bcef2f3cc9a1908bd87ca7876e8a
         [Binary or unreadable file]
 
@@ -2262,6 +2474,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    f2
+      49d7807607b3fbe615c3c8210ebec00c616770
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     f6
       506dc1733f99811e2e32edb4eadede2c72eecf
         [Binary or unreadable file]
@@ -2301,7 +2527,7 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
   refs
     heads
       main
-        b6e3a2793ab769cd15ac0b8908a11aea2a2be94e
+        3c1497c06b77d09d487c38e778332de181454b82
 
 
 
@@ -2340,32 +2566,45 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
       jobs:
         build:
           runs-on: windows-2022
-          
+      
           steps:
             - uses: actions/checkout@v4
-            
+      
             - name: Setup Flutter
               uses: subosito/flutter-action@v2
               with:
                 flutter-version: '3.24.0'
                 channel: 'stable'
                 cache: true
-            
+      
             - name: Run flutter doctor
               run: flutter doctor -v
-            
+      
             - name: Enable Windows desktop
               run: flutter config --enable-windows-desktop
-            
+      
             - name: Clean previous builds
               run: flutter clean
-            
+      
             - name: Get dependencies
               run: flutter pub get
-            
+      
+            - name: Set Flutter CMake directory
+              shell: powershell
+              run: |
+                $flutterCmakeDir = "$env:FLUTTER_ROOT\packages\flutter_tools\static\cpp_client_wrapper\cmake"
+                if (Test-Path $flutterCmakeDir) {
+                  Write-Host "Flutter CMake directory: $flutterCmakeDir"
+                  "FLUTTER_DIR=$flutterCmakeDir" | Out-File -FilePath $env:GITHUB_ENV -Append
+                  "CMAKE_PREFIX_PATH=$flutterCmakeDir" | Out-File -FilePath $env:GITHUB_ENV -Append
+                } else {
+                  Write-Error "Flutter CMake directory not found at $flutterCmakeDir"
+                  exit 1
+                }
+      
             - name: Build Windows app
               run: flutter build windows --release
-            
+      
             - name: Upload build artifacts
               uses: actions/upload-artifact@v4
               with:
@@ -2516,8 +2755,7 @@ fixer.py
   # -*- coding: utf-8 -*-
   
   """
-  fixer.py - ابزار رفع خودکار مشکلات پروژه فلاتر (بدون اجرای دستورات flutter)
-  این اسکریپت فقط فایل‌های پروژه را اصلاح می‌کند و کاری به flutter محلی ندارد.
+  fixer.py - ابزار رفع خودکار مشکلات پروژه فلاتر (شامل پاک‌سازی توکن‌های درز کرده)
   """
   
   import os
@@ -2531,8 +2769,7 @@ fixer.py
       def __init__(self, project_root: Optional[str] = None):
           self.root = Path(project_root or os.getcwd())
           self.fixed_files = []
-          self.errors = []
-          
+  
       def log(self, message: str, level: str = "INFO"):
           icons = {
               "INFO": "[i]",
@@ -2543,264 +2780,257 @@ fixer.py
               "FIX": "[🔧]"
           }
           print(f"{icons.get(level, '[i]')} {message}")
-          
+  
       def check_project(self) -> bool:
           if not (self.root / "pubspec.yaml").exists():
               self.log("فایل pubspec.yaml پیدا نشد! این یک پروژه فلاتر نیست.", "ERROR")
               return False
           self.log("پروژه فلاتر شناسایی شد.", "SUCCESS")
           return True
-          
-      def fix_pubspec(self) -> bool:
-          pubspec_path = self.root / "pubspec.yaml"
-          if not pubspec_path.exists():
-              self.log("pubspec.yaml پیدا نشد!", "ERROR")
-              return False
-              
-          self.log("در حال بررسی pubspec.yaml...", "STEP")
-          with open(pubspec_path, "r", encoding="utf-8") as f:
-              content = f.read()
-          original = content
-          
-          # 1. جایگزینی flutter_native_wireguard با wireguard_flutter
-          if "flutter_native_wireguard" in content:
-              self.log("یافتن پکیج منسوخ flutter_native_wireguard...", "WARNING")
-              content = content.replace(
-                  "flutter_native_wireguard: ^0.1.0",
-                  "wireguard_flutter: ^0.0.10"
-              )
-              content = re.sub(
-                  r'wireguard_flutter: \^0\.0\.10\s+wireguard_flutter: \^0\.0\.10',
-                  'wireguard_flutter: ^0.0.10',
-                  content
-              )
-              self.log("جایگزینی با wireguard_flutter انجام شد.", "FIX")
-              
-          # 2. اطمینان از وجود assets/fonts
-          if "assets/fonts/" not in content:
-              if "flutter:" in content and "assets:" not in content:
-                  content = content.replace(
-                      "flutter:",
-                      "flutter:\n  uses-material-design: true\n  assets:\n    - assets/fonts/"
-                  )
-                  self.log("بخش assets به pubspec.yaml اضافه شد.", "FIX")
-                  
-          # 3. اطمینان از وجود فونت Vazirmatn
-          if "Vazirmatn" not in content:
-              if "fonts:" in content:
-                  content = re.sub(
-                      r'fonts:\s*\n(\s*-\s+family:.*\n\s*fonts:\s*\n\s*-\s+asset:.*)',
-                      r'fonts:\n  - family: Vazirmatn\n    fonts:\n      - asset: assets/fonts/Vazirmatn-Regular.ttf\n\1',
-                      content
-                  )
-                  self.log("فونت Vazirmatn به pubspec.yaml اضافه شد.", "FIX")
-              else:
-                  content = content.replace(
-                      "flutter:",
-                      "flutter:\n  uses-material-design: true\n  assets:\n    - assets/fonts/\n  fonts:\n    - family: Vazirmatn\n      fonts:\n        - asset: assets/fonts/Vazirmatn-Regular.ttf"
-                  )
-                  self.log("فونت Vazirmatn به pubspec.yaml اضافه شد.", "FIX")
-                  
-          # 4. اطمینان از وجود flutter_localizations
-          if "flutter_localizations:" not in content:
-              if "dependencies:" in content:
-                  content = content.replace(
-                      "dependencies:",
-                      "dependencies:\n  flutter_localizations:\n    sdk: flutter\n  intl: ^0.18.1"
-                  )
-                  self.log("flutter_localizations و intl به pubspec.yaml اضافه شدند.", "FIX")
-                  
-          # 5. بررسی و اصلاح flutter_lints
-          if "flutter_lints" in content:
-              content = re.sub(
-                  r'flutter_lints:\s*[\^~]?\d+\.\d+\.\d+',
-                  'flutter_lints: ^3.0.0',
-                  content
-              )
-          else:
-              if "dev_dependencies:" in content:
-                  content = content.replace(
-                      "dev_dependencies:",
-                      "dev_dependencies:\n  flutter_lints: ^3.0.0"
-                  )
-                  self.log("flutter_lints به dev_dependencies اضافه شد.", "FIX")
-                  
-          if content != original:
-              with open(pubspec_path, "w", encoding="utf-8") as f:
-                  f.write(content)
-              self.log("pubspec.yaml به‌روزرسانی شد.", "SUCCESS")
-              self.fixed_files.append("pubspec.yaml")
-              return True
-          else:
-              self.log("pubspec.yaml بدون تغییر باقی ماند.", "INFO")
-              return True
-              
+  
       def fix_vpn_service(self) -> bool:
+          """تصحیح API وایرگارد در vpn_service.dart"""
           vpn_service_path = self.root / "lib" / "services" / "vpn_service.dart"
           if not vpn_service_path.exists():
-              self.log("فایل vpn_service.dart پیدا نشد!", "WARNING")
+              self.log("vpn_service.dart پیدا نشد!", "WARNING")
               return False
-              
-          self.log("در حال بررسی vpn_service.dart...", "STEP")
-          with open(vpn_service_path, "r", encoding="utf-8") as f:
-              content = f.read()
-          original = content
-          
-          # 1. تغییر import
-          if "flutter_native_wireguard" in content:
-              content = content.replace(
-                  "import 'package:flutter_native_wireguard/flutter_native_wireguard.dart';",
-                  "import 'package:wireguard_flutter/wireguard_flutter.dart';"
-              )
-              self.log("اصلاح import در vpn_service.dart", "FIX")
-              
-          # 2. اضافه کردن import dart:io اگر وجود نداشت
-          if "import 'dart:io';" not in content:
-              content = "import 'dart:io';\n" + content
-              self.log("اضافه کردن import 'dart:io'", "FIX")
-              
-          # 3. تغییر متد connect
-          if "FlutterNativeWireguard.startVpn" in content:
-              content = content.replace(
-                  "await FlutterNativeWireguard.startVpn(\n        configFile.path,\n        'WARP VPN',\n        'WARP connection',\n      );",
-                  "final connected = await WireguardFlutter.start(\n        config,\n        'WARP VPN',\n      );\n      if (!connected) throw Exception('WireGuard connection failed');"
-              )
-              self.log("اصلاح متد connect در vpn_service.dart", "FIX")
-              
-          # 4. تغییر متد disconnect
-          if "FlutterNativeWireguard.stopVpn" in content:
-              content = content.replace(
-                  "await FlutterNativeWireguard.stopVpn();",
-                  "await WireguardFlutter.stop();"
-              )
-              self.log("اصلاح متد disconnect در vpn_service.dart", "FIX")
-              
-          if content != original:
-              with open(vpn_service_path, "w", encoding="utf-8") as f:
-                  f.write(content)
-              self.log("vpn_service.dart به‌روزرسانی شد.", "SUCCESS")
-              self.fixed_files.append("vpn_service.dart")
-              return True
-          else:
-              self.log("vpn_service.dart بدون تغییر باقی ماند.", "INFO")
-              return True
-              
-      def fix_warp_generator(self) -> bool:
-          generator_path = self.root / "lib" / "services" / "warp_generator.dart"
-          if not generator_path.exists():
-              self.log("فایل warp_generator.dart پیدا نشد!", "WARNING")
-              return False
-              
-          self.log("در حال بررسی warp_generator.dart...", "STEP")
-          with open(generator_path, "r", encoding="utf-8") as f:
-              content = f.read()
-              
-          if "import 'package:pointycastle/export.dart';" not in content:
-              if "import" in content:
-                  content = "import 'package:pointycastle/export.dart';\n" + content
-                  with open(generator_path, "w", encoding="utf-8") as f:
-                      f.write(content)
-                  self.log("import pointycastle اضافه شد.", "FIX")
-                  self.fixed_files.append("warp_generator.dart")
-              
-          self.log("warp_generator.dart بررسی شد.", "SUCCESS")
+  
+          self.log("در حال تصحیح vpn_service.dart...", "STEP")
+          correct = '''import 'package:flutter/foundation.dart';
+  import 'package:wireguard_flutter/wireguard_flutter.dart';
+  import 'package:path_provider/path_provider.dart';
+  import 'dart:io';
+  import 'warp_generator.dart';
+  import '../constants/strings.dart';
+  
+  class VPNService extends ChangeNotifier {
+    bool _isConnected = false, _isConnecting = false;
+    String _statusMessage = Strings.statusReady;
+    String? _currentConfig, _errorMessage;
+    Map<String, dynamic>? _accountInfo;
+    String _selectedEndpoint = '';
+    final WARPGenerator _generator = WARPGenerator();
+  
+    bool get isConnected => _isConnected;
+    bool get isConnecting => _isConnecting;
+    String get statusMessage => _statusMessage;
+    Map<String, dynamic>? get accountInfo => _accountInfo;
+    String get selectedEndpoint => _selectedEndpoint;
+    String? get errorMessage => _errorMessage;
+  
+    Future<bool> generateAndConnect({String? customIp, String? customPort}) async {
+      if (_isConnected) await disconnect();
+      _isConnecting = true;
+      _statusMessage = Strings.statusGenerating;
+      _errorMessage = null;
+      notifyListeners();
+  
+      try {
+        _statusMessage = Strings.statusGeneratingKey;
+        notifyListeners();
+  
+        final config = await _generator.generateFullConfig(
+            customIp: customIp, customPort: customPort);
+  
+        _accountInfo = _generator.getAccountInfo();
+        _currentConfig = config;
+  
+        final lines = config.split('\\n');
+        for (var line in lines) {
+          if (line.startsWith('Endpoint = ')) {
+            _selectedEndpoint = line.replaceFirst('Endpoint = ', '');
+            break;
+          }
+        }
+  
+        _statusMessage = Strings.statusConnecting;
+        notifyListeners();
+  
+        final connected = await WireguardFlutter.start(config, 'WARP VPN');
+        if (!connected) {
+          throw Exception('WireGuard connection failed');
+        }
+  
+        _isConnected = true;
+        _statusMessage = Strings.statusConnected;
+        _isConnecting = false;
+        notifyListeners();
+        return true;
+      } catch (e) {
+        _isConnecting = false;
+        _statusMessage = Strings.statusError;
+        _errorMessage = e.toString();
+        _isConnected = false;
+        notifyListeners();
+        return false;
+      }
+    }
+  
+    Future<void> disconnect() async {
+      try {
+        await WireguardFlutter.stop();
+        _isConnected = false;
+        _currentConfig = null;
+        _statusMessage = Strings.statusDisconnected;
+        notifyListeners();
+      } catch (e) {
+        _statusMessage = '${Strings.statusError}: $e';
+        notifyListeners();
+      }
+    }
+  
+    String? getConfig() => _currentConfig;
+  }
+  '''
+          with open(vpn_service_path, "w", encoding="utf-8") as f:
+              f.write(correct)
+          self.log("vpn_service.dart تصحیح شد.", "FIX")
+          self.fixed_files.append("vpn_service.dart")
           return True
-          
-      def check_fonts(self) -> bool:
-          font_dir = self.root / "assets" / "fonts"
-          font_path = font_dir / "Vazirmatn-Regular.ttf"
-          
-          if font_path.exists() and font_path.stat().st_size > 0:
-              self.log("فونت Vazirmatn وجود دارد.", "SUCCESS")
-              return True
-              
-          self.log("فونت Vazirmatn پیدا نشد! در حال دانلود...", "WARNING")
-          
-          font_urls = [
-              "https://raw.githubusercontent.com/rastikerdar/vazirmatn/master/fonts/ttf/Vazirmatn-Regular.ttf",
-              "https://github.com/rastikerdar/vazirmatn/releases/download/v33.003/Vazirmatn-Regular.ttf",
-              "https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@master/fonts/ttf/Vazirmatn-Regular.ttf"
-          ]
-          
-          font_dir.mkdir(parents=True, exist_ok=True)
-          
-          for url in font_urls:
-              try:
-                  self.log(f"تلاش برای دانلود از {url}...", "INFO")
-                  urllib.request.urlretrieve(url, font_path)
-                  if font_path.exists() and font_path.stat().st_size > 0:
-                      self.log("فونت با موفقیت دانلود شد.", "SUCCESS")
-                      return True
-              except Exception as e:
-                  self.log(f"دانلود ناموفق: {e}", "WARNING")
+  
+      def fix_workflow(self) -> bool:
+          """تنظیم مسیر CMake فلاتر در workflow"""
+          workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
+          if not workflow_path.exists():
+              self.log("build_windows.yml پیدا نشد!", "WARNING")
+              return False
+  
+          self.log("در حال تصحیح build_windows.yml...", "STEP")
+          correct = '''name: Build Windows App
+  
+  on:
+    push:
+      branches: [ main ]
+    workflow_dispatch:
+  
+  env:
+    ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+  
+  jobs:
+    build:
+      runs-on: windows-2022
+  
+      steps:
+        - uses: actions/checkout@v4
+  
+        - name: Setup Flutter
+          uses: subosito/flutter-action@v2
+          with:
+            flutter-version: '3.24.0'
+            channel: 'stable'
+            cache: true
+  
+        - name: Run flutter doctor
+          run: flutter doctor -v
+  
+        - name: Enable Windows desktop
+          run: flutter config --enable-windows-desktop
+  
+        - name: Clean previous builds
+          run: flutter clean
+  
+        - name: Get dependencies
+          run: flutter pub get
+  
+        - name: Set Flutter CMake directory
+          shell: powershell
+          run: |
+            $flutterCmakeDir = "$env:FLUTTER_ROOT\\packages\\flutter_tools\\static\\cpp_client_wrapper\\cmake"
+            if (Test-Path $flutterCmakeDir) {
+              Write-Host "Flutter CMake directory: $flutterCmakeDir"
+              "FLUTTER_DIR=$flutterCmakeDir" | Out-File -FilePath $env:GITHUB_ENV -Append
+              "CMAKE_PREFIX_PATH=$flutterCmakeDir" | Out-File -FilePath $env:GITHUB_ENV -Append
+            } else {
+              Write-Error "Flutter CMake directory not found at $flutterCmakeDir"
+              exit 1
+            }
+  
+        - name: Build Windows app
+          run: flutter build windows --release
+  
+        - name: Upload build artifacts
+          uses: actions/upload-artifact@v4
+          with:
+            name: warp-vpn-windows
+            path: build/windows/runner/Release/
+  '''
+          with open(workflow_path, "w", encoding="utf-8") as f:
+              f.write(correct)
+          self.log("build_windows.yml تصحیح شد.", "FIX")
+          self.fixed_files.append("build_windows.yml")
+          return True
+  
+      def scrub_tokens(self):
+          """جایگزینی توکن‌های واقعی گیت‌هاب (ghp_ + حداقل ۳۶ کاراکتر) با YOUR_GITHUB_TOKEN در تمام فایل‌ها"""
+          self.log("در حال پاک‌سازی توکن‌های درز کرده...", "STEP")
+          token_regex = re.compile(r'ghp_[A-Za-z0-9_]{36,}')
+          modified = False
+          exclude_dirs = {'.git'}
+          for filepath in self.root.rglob('*'):
+              if filepath.is_dir():
                   continue
-                  
-          with open(font_path, "w") as f:
-              f.write("")
-          self.log("فایل placeholder برای فونت ایجاد شد. لطفاً فونت را به‌صورت دستی اضافه کنید.", "WARNING")
-          return False
-          
-      def create_missing_dirs(self) -> bool:
-          dirs = [
-              "lib/models",
-              "lib/services",
-              "lib/widgets",
-              "lib/screens",
-              "lib/utils",
-              "lib/constants",
-              "assets/fonts",
-          ]
-          for d in dirs:
-              path = self.root / d
-              if not path.exists():
-                  path.mkdir(parents=True, exist_ok=True)
-                  self.log(f"دایرکتوری {d} ایجاد شد.", "FIX")
-          return True
-          
+              # پرش از پوشه‌های git
+              if any(part.startswith('.git') for part in filepath.parts):
+                  continue
+              try:
+                  content = filepath.read_text(encoding='utf-8')
+                  new_content, count = token_regex.subn('YOUR_GITHUB_TOKEN', content)
+                  if count > 0:
+                      filepath.write_text(new_content, encoding='utf-8')
+                      self.log(f"  → {count} توکن در {filepath.relative_to(self.root)} جایگزین شد.", "WARNING")
+                      modified = True
+              except Exception:
+                  # فایل‌های باینری یا غیرقابل خواندن
+                  pass
+          if not modified:
+              self.log("هیچ توکن واقعی پیدا نشد.", "SUCCESS")
+          return modified
+  
+      def update_gitignore(self):
+          """اضافه کردن الگوهای امنیتی به .gitignore"""
+          gi_path = self.root / ".gitignore"
+          required = [".env", "*.token", "*.secret", "key.properties", "*.keystore", "*.jks"]
+          existing = gi_path.read_text(encoding='utf-8') if gi_path.exists() else ""
+          missing = [r for r in required if r not in existing]
+          if missing:
+              with gi_path.open('a', encoding='utf-8') as f:
+                  f.write("\n" + "\n".join(missing) + "\n")
+              self.log(".gitignore به‌روزرسانی شد.", "FIX")
+              self.fixed_files.append(".gitignore")
+          else:
+              self.log(".gitignore در حال حاضر کامل است.", "SUCCESS")
+  
       def run(self) -> bool:
           print("\n" + "=" * 60)
-          print("🔧 Flutter Project Fixer (بدون اجرای دستورات flutter)")
+          print("🔧 Flutter Project Fixer (نسخه‌ی کامل)")
           print("=" * 60)
           print(f"\nمسیر پروژه: {self.root}\n")
-          
+  
           if not self.check_project():
               return False
-              
-          self.create_missing_dirs()
-          self.fix_pubspec()
+  
           self.fix_vpn_service()
-          self.fix_warp_generator()
-          self.check_fonts()
-          
+          self.fix_workflow()
+          self.scrub_tokens()
+          self.update_gitignore()
+  
           print("\n" + "=" * 60)
           print("📊 گزارش نهایی")
           print("=" * 60)
-          
           if self.fixed_files:
               print("\n📁 فایل‌های اصلاح شده:")
               for f in self.fixed_files:
                   print(f"  ✓ {f}")
-                  
-          if not self.errors:
-              print("\n✅ همه مشکلات با موفقیت رفع شدند!")
-              print("\n🚀 حالا پروژه را به گیت‌هاب پوش کنید:")
-              print(f"   cd {self.root}")
-              print("   git add .")
-              print("   git commit -m 'Fix project files'")
-              print("   git push")
-              print("\n🔗 GitHub Actions به‌طور خودکار build خواهد شد.")
-              return True
-          else:
-              print("\n⚠️ برخی مشکلات باقی مانده است.")
-              return False
+          print("\n✅ همه مشکلات برطرف شد. حالا می‌توانید push کنید.")
+          return True
   
   def main():
       try:
           if len(sys.argv) > 1:
-              project_root = sys.argv[1]
+              root = sys.argv[1]
           else:
-              project_root = os.getcwd()
-          fixer = FlutterProjectFixer(project_root)
+              root = os.getcwd()
+          fixer = FlutterProjectFixer(root)
           success = fixer.run()
           sys.exit(0 if success else 1)
       except KeyboardInterrupt:
@@ -3134,12 +3364,17 @@ lib
           _statusMessage = Strings.statusGenerating;
           _errorMessage = null;
           notifyListeners();
+      
           try {
             _statusMessage = Strings.statusGeneratingKey;
             notifyListeners();
-            final config = await _generator.generateFullConfig(customIp: customIp, customPort: customPort);
+      
+            final config = await _generator.generateFullConfig(
+                customIp: customIp, customPort: customPort);
+      
             _accountInfo = _generator.getAccountInfo();
             _currentConfig = config;
+      
             final lines = config.split('\n');
             for (var line in lines) {
               if (line.startsWith('Endpoint = ')) {
@@ -3147,12 +3382,15 @@ lib
                 break;
               }
             }
+      
             _statusMessage = Strings.statusConnecting;
             notifyListeners();
-            final directory = await getApplicationDocumentsDirectory();
-            final configFile = File('${directory.path}/warp.conf');
-            await configFile.writeAsString(config);
-            await FlutterNativeWireguard.startVpn(configFile.path, 'WARP VPN', 'WARP connection');
+      
+            final connected = await WireguardFlutter.start(config, 'WARP VPN');
+            if (!connected) {
+              throw Exception('WireGuard connection failed');
+            }
+      
             _isConnected = true;
             _statusMessage = Strings.statusConnected;
             _isConnecting = false;
@@ -3554,6 +3792,7 @@ push.py
   import webbrowser
   import threading
   import time
+  import re
   from pathlib import Path
   from getpass import getpass
   from typing import Tuple
@@ -3700,25 +3939,20 @@ push.py
               self.log(f"Error creating repository: {e}", "ERROR")
               return False
   
-      def _ensure_gitignore_has_secrets(self):
-          """Make sure common secret files are ignored before every push."""
-          gi_path = self.root / ".gitignore"
-          required = [".env", "*.token", "*.secret", "key.properties", "*.keystore", "*.jks"]
-          existing = gi_path.read_text(encoding='utf-8') if gi_path.exists() else ""
-          missing = [r for r in required if r not in existing]
-          if missing:
-              with gi_path.open('a', encoding='utf-8') as f:
-                  f.write("\n" + "\n".join(missing) + "\n")
-              self.log("Updated .gitignore with secret-file patterns", "SECURE")
-  
-      def _scrub_committed_secrets_warning(self):
-          """Warn (does not auto-rewrite history) if a token pattern is staged."""
-          success, output = self.run_command('git diff --cached -- . ":(exclude)push.py"', ignore_error=True)
-          if success and "ghp_" in output:
-              self.log("WARNING: a GitHub token pattern (ghp_...) was found in staged changes!", "ERROR")
-              self.log("Aborting push. Remove the secret and use environment variables instead.", "ERROR")
+      def _check_diff_for_token(self) -> bool:
+          """
+          بررسی diff فایل‌های stage شده با regex دقیق (ghp_ + ۳۶+ کاراکتر)
+          برمی‌گردونه True اگه توکن واقعی وجود داشته باشه
+          """
+          success, diff = self.run_command('git diff --cached', ignore_error=True)
+          if not success:
               return False
-          return True
+          # الگوی دقیق توکن گیت‌هاب
+          pattern = re.compile(r'ghp_[A-Za-z0-9_]{36,}')
+          if pattern.search(diff):
+              self.log("توکن گیت‌هاب در فایل‌های stage شده پیدا شد!", "ERROR")
+              return True
+          return False
   
       def push_to_github(self) -> bool:
           print("\n" + "=" * 60)
@@ -3726,7 +3960,26 @@ push.py
           print("=" * 60)
           os.chdir(self.root)
   
-          self._ensure_gitignore_has_secrets()
+          # اجرای fixer.py در صورت وجود
+          fixer_path = self.root / "fixer.py"
+          if fixer_path.exists():
+              self.log("اجرای fixer.py...", "STEP")
+              env = os.environ.copy()
+              env["PYTHONIOENCODING"] = "utf-8"
+              try:
+                  result = subprocess.run(
+                      [sys.executable, "fixer.py"],
+                      cwd=self.root, capture_output=True, text=True,
+                      timeout=120, env=env, encoding='utf-8', errors='replace'
+                  )
+                  if result.returncode != 0:
+                      self.log(f"fixer.py با خطا مواجه شد. خروجی:\n{result.stdout}\n{result.stderr}", "ERROR")
+                      if input("ادامه بدیم؟ (y/n): ").strip().lower() != 'y':
+                          return False
+              except Exception as e:
+                  self.log(f"خطا در اجرای fixer.py: {e}", "ERROR")
+                  if input("ادامه بدیم؟ (y/n): ").strip().lower() != 'y':
+                      return False
   
           if not (self.root / ".git").exists():
               self.log("Initializing git repository...", "STEP")
@@ -3739,53 +3992,36 @@ push.py
           self.run_command('git config user.email "oryvex@demo.com"')
           self.run_command('git config user.name "OryvexVPN"')
   
-          self.log("Checking for changes...", "STEP")
-          success, output = self.run_command("git status --porcelain")
+          self.log("Adding all files...", "STEP")
+          success, output = self.run_command("git add .")
           if not success:
-              self.log("Failed to check git status", "ERROR")
+              self.log(f"Failed to add files: {output}", "ERROR")
               return False
   
-          if not output.strip():
-              self.log("No changes to commit. Skipping commit.", "WARNING")
-          else:
-              self.log("Adding files...", "STEP")
-              success, output = self.run_command("git add .")
-              if not success:
-                  self.log(f"Failed to add files: {output}", "ERROR")
-                  return False
+          # بررسی نهایی: آیا توکن واقعی توی stage هست؟
+          if self._check_diff_for_token():
+              self.log("Push به دلیل وجود توکن متوقف شد. لطفاً fixer.py را اجرا کنید و دوباره تلاش کنید.", "ERROR")
+              return False
   
-              if not self._scrub_committed_secrets_warning():
-                  return False
-  
-              self.log("Committing...", "STEP")
-              success, output = self.run_command('git commit -m "OryvexVPN Demo App - Fixed"')
-              if not success and "nothing to commit" not in output:
-                  self.log(f"Commit warning: {output}", "WARNING")
+          self.log("Committing...", "STEP")
+          success, output = self.run_command('git commit -m "Auto‑fix and security update"')
+          if not success and "nothing to commit" not in output:
+              self.log(f"Commit warning: {output}", "WARNING")
   
           self.log("Setting up remote...", "STEP")
           self.run_command("git branch -M main")
           self.run_command("git remote remove origin", ignore_error=True)
-          # Store a clean, tokenless origin for normal use.
           self.run_command(f"git remote add origin https://github.com/{self.username}/{self.repo_name}.git", ignore_error=True)
   
           self.log("Pushing to GitHub...", "STEP")
           print("\nPushing... this may take a moment...\n")
   
-          # Token is passed only via a short-lived env var to the git process,
-          # never written into a URL, never printed, never persisted in
-          # git config/remote (avoids it landing in .git/config on disk).
-          push_env = os.environ.copy()
           askpass_script = self.root / ".git_askpass_temp.py"
           askpass_script.write_text(
               "import sys\n"
               "print(sys.argv[1] if 'Username' not in sys.argv[1] else '')\n",
               encoding='utf-8'
           )
-          # Simpler and more reliable: use the credential helper via env,
-          # supplying username/token only for this single process call.
-          push_env["GIT_ASKPASS"] = ""
-          push_url = f"https://{self.username}@github.com/{self.username}/{self.repo_name}.git"
-  
           push_complete = [False]
           push_result = [None]
   
@@ -3874,36 +4110,6 @@ push.py
   
           if not self.get_credentials():
               sys.exit(1)
-  
-          fixer_path = self.root / "fixer.py"
-          if fixer_path.exists():
-              self.log("Running fixer.py first...", "STEP")
-              env = os.environ.copy()
-              env["PYTHONIOENCODING"] = "utf-8"
-              try:
-                  result = subprocess.run(
-                      [sys.executable, "fixer.py"],
-                      cwd=self.root, capture_output=True, text=True,
-                      timeout=120, env=env, encoding='utf-8', errors='replace'
-                  )
-                  if result.returncode == 0:
-                      self.log("Fixer completed successfully", "SUCCESS")
-                  else:
-                      self.log(f"Fixer failed with code {result.returncode}", "ERROR")
-                      if result.stdout:
-                          print(result.stdout)
-                      if result.stderr:
-                          print(result.stderr)
-                      response = input("Continue anyway? (y/n): ").strip().lower()
-                      if response != 'y':
-                          sys.exit(1)
-              except Exception as e:
-                  self.log(f"Fixer execution error: {e}", "ERROR")
-                  response = input("Continue anyway? (y/n): ").strip().lower()
-                  if response != 'y':
-                      sys.exit(1)
-          else:
-              self.log("No fixer.py found; skipping.", "WARNING")
   
           if not self.create_repo_if_missing():
               self.log("Failed to ensure repository exists", "ERROR")

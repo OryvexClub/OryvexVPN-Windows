@@ -136,7 +136,7 @@ class VPNService extends ChangeNotifier {
         return True
 
     def fix_workflow(self) -> bool:
-        """تنظیم مسیر CMake فلاتر در workflow"""
+        """تنظیم و تصحیح اکشن بیلد ویندوز (حذف مرحله قدیمی CMake)"""
         workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
         if not workflow_path.exists():
             self.log("build_windows.yml پیدا نشد!", "WARNING")
@@ -178,19 +178,6 @@ jobs:
 
       - name: Get dependencies
         run: flutter pub get
-
-      - name: Set Flutter CMake directory
-        shell: powershell
-        run: |
-          $flutterCmakeDir = "$env:FLUTTER_ROOT\\packages\\flutter_tools\\static\\cpp_client_wrapper\\cmake"
-          if (Test-Path $flutterCmakeDir) {
-            Write-Host "Flutter CMake directory: $flutterCmakeDir"
-            "FLUTTER_DIR=$flutterCmakeDir" | Out-File -FilePath $env:GITHUB_ENV -Append
-            "CMAKE_PREFIX_PATH=$flutterCmakeDir" | Out-File -FilePath $env:GITHUB_ENV -Append
-          } else {
-            Write-Error "Flutter CMake directory not found at $flutterCmakeDir"
-            exit 1
-          }
 
       - name: Build Windows app
         run: flutter build windows --release
