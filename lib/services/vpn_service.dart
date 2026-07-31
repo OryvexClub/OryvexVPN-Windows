@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_native_wireguard/flutter_native_wireguard.dart';
+import 'package:wireguard_flutter/wireguard_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'warp_generator.dart';
@@ -62,7 +62,7 @@ class VPNService extends ChangeNotifier {
 
   Future<void> disconnect() async {
     try {
-      await FlutterNativeWireguard.stopVpn();
+      await WireguardFlutter.stop();
       _isConnected = false;
       _currentConfig = null;
       _statusMessage = Strings.statusDisconnected;
