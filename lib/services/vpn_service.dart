@@ -26,12 +26,17 @@ class VPNService extends ChangeNotifier {
     _statusMessage = Strings.statusGenerating;
     _errorMessage = null;
     notifyListeners();
+
     try {
       _statusMessage = Strings.statusGeneratingKey;
       notifyListeners();
-      final config = await _generator.generateFullConfig(customIp: customIp, customPort: customPort);
+
+      final config = await _generator.generateFullConfig(
+          customIp: customIp, customPort: customPort);
+
       _accountInfo = _generator.getAccountInfo();
       _currentConfig = config;
+
       final lines = config.split('\n');
       for (var line in lines) {
         if (line.startsWith('Endpoint = ')) {
@@ -39,12 +44,15 @@ class VPNService extends ChangeNotifier {
           break;
         }
       }
+
       _statusMessage = Strings.statusConnecting;
       notifyListeners();
-      final directory = await getApplicationDocumentsDirectory();
-      final configFile = File('${directory.path}/warp.conf');
-      await configFile.writeAsString(config);
-      await FlutterNativeWireguard.startVpn(configFile.path, 'WARP VPN', 'WARP connection');
+
+      final connected = await WireguardFlutter.start(config, 'WARP VPN');
+      if (!connected) {
+        throw Exception('WireGuard connection failed');
+      }
+
       _isConnected = true;
       _statusMessage = Strings.statusConnected;
       _isConnecting = false;

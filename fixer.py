@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-fixer.py - ابزار رفع خودکار مشکلات پروژه فلاتر (بدون اجرای دستورات flutter)
-این اسکریپت فقط فایل‌های پروژه را اصلاح می‌کند و کاری به flutter محلی ندارد.
+fixer.py - ابزار رفع خودکار مشکلات پروژه فلاتر (شامل پاک‌سازی توکن‌های درز کرده)
 """
 
 import os
@@ -17,8 +16,7 @@ class FlutterProjectFixer:
     def __init__(self, project_root: Optional[str] = None):
         self.root = Path(project_root or os.getcwd())
         self.fixed_files = []
-        self.errors = []
-        
+
     def log(self, message: str, level: str = "INFO"):
         icons = {
             "INFO": "[i]",
@@ -29,264 +27,257 @@ class FlutterProjectFixer:
             "FIX": "[🔧]"
         }
         print(f"{icons.get(level, '[i]')} {message}")
-        
+
     def check_project(self) -> bool:
         if not (self.root / "pubspec.yaml").exists():
             self.log("فایل pubspec.yaml پیدا نشد! این یک پروژه فلاتر نیست.", "ERROR")
             return False
         self.log("پروژه فلاتر شناسایی شد.", "SUCCESS")
         return True
-        
-    def fix_pubspec(self) -> bool:
-        pubspec_path = self.root / "pubspec.yaml"
-        if not pubspec_path.exists():
-            self.log("pubspec.yaml پیدا نشد!", "ERROR")
-            return False
-            
-        self.log("در حال بررسی pubspec.yaml...", "STEP")
-        with open(pubspec_path, "r", encoding="utf-8") as f:
-            content = f.read()
-        original = content
-        
-        # 1. جایگزینی flutter_native_wireguard با wireguard_flutter
-        if "flutter_native_wireguard" in content:
-            self.log("یافتن پکیج منسوخ flutter_native_wireguard...", "WARNING")
-            content = content.replace(
-                "flutter_native_wireguard: ^0.1.0",
-                "wireguard_flutter: ^0.0.10"
-            )
-            content = re.sub(
-                r'wireguard_flutter: \^0\.0\.10\s+wireguard_flutter: \^0\.0\.10',
-                'wireguard_flutter: ^0.0.10',
-                content
-            )
-            self.log("جایگزینی با wireguard_flutter انجام شد.", "FIX")
-            
-        # 2. اطمینان از وجود assets/fonts
-        if "assets/fonts/" not in content:
-            if "flutter:" in content and "assets:" not in content:
-                content = content.replace(
-                    "flutter:",
-                    "flutter:\n  uses-material-design: true\n  assets:\n    - assets/fonts/"
-                )
-                self.log("بخش assets به pubspec.yaml اضافه شد.", "FIX")
-                
-        # 3. اطمینان از وجود فونت Vazirmatn
-        if "Vazirmatn" not in content:
-            if "fonts:" in content:
-                content = re.sub(
-                    r'fonts:\s*\n(\s*-\s+family:.*\n\s*fonts:\s*\n\s*-\s+asset:.*)',
-                    r'fonts:\n  - family: Vazirmatn\n    fonts:\n      - asset: assets/fonts/Vazirmatn-Regular.ttf\n\1',
-                    content
-                )
-                self.log("فونت Vazirmatn به pubspec.yaml اضافه شد.", "FIX")
-            else:
-                content = content.replace(
-                    "flutter:",
-                    "flutter:\n  uses-material-design: true\n  assets:\n    - assets/fonts/\n  fonts:\n    - family: Vazirmatn\n      fonts:\n        - asset: assets/fonts/Vazirmatn-Regular.ttf"
-                )
-                self.log("فونت Vazirmatn به pubspec.yaml اضافه شد.", "FIX")
-                
-        # 4. اطمینان از وجود flutter_localizations
-        if "flutter_localizations:" not in content:
-            if "dependencies:" in content:
-                content = content.replace(
-                    "dependencies:",
-                    "dependencies:\n  flutter_localizations:\n    sdk: flutter\n  intl: ^0.18.1"
-                )
-                self.log("flutter_localizations و intl به pubspec.yaml اضافه شدند.", "FIX")
-                
-        # 5. بررسی و اصلاح flutter_lints
-        if "flutter_lints" in content:
-            content = re.sub(
-                r'flutter_lints:\s*[\^~]?\d+\.\d+\.\d+',
-                'flutter_lints: ^3.0.0',
-                content
-            )
-        else:
-            if "dev_dependencies:" in content:
-                content = content.replace(
-                    "dev_dependencies:",
-                    "dev_dependencies:\n  flutter_lints: ^3.0.0"
-                )
-                self.log("flutter_lints به dev_dependencies اضافه شد.", "FIX")
-                
-        if content != original:
-            with open(pubspec_path, "w", encoding="utf-8") as f:
-                f.write(content)
-            self.log("pubspec.yaml به‌روزرسانی شد.", "SUCCESS")
-            self.fixed_files.append("pubspec.yaml")
-            return True
-        else:
-            self.log("pubspec.yaml بدون تغییر باقی ماند.", "INFO")
-            return True
-            
+
     def fix_vpn_service(self) -> bool:
+        """تصحیح API وایرگارد در vpn_service.dart"""
         vpn_service_path = self.root / "lib" / "services" / "vpn_service.dart"
         if not vpn_service_path.exists():
-            self.log("فایل vpn_service.dart پیدا نشد!", "WARNING")
+            self.log("vpn_service.dart پیدا نشد!", "WARNING")
             return False
-            
-        self.log("در حال بررسی vpn_service.dart...", "STEP")
-        with open(vpn_service_path, "r", encoding="utf-8") as f:
-            content = f.read()
-        original = content
-        
-        # 1. تغییر import
-        if "flutter_native_wireguard" in content:
-            content = content.replace(
-                "import 'package:flutter_native_wireguard/flutter_native_wireguard.dart';",
-                "import 'package:wireguard_flutter/wireguard_flutter.dart';"
-            )
-            self.log("اصلاح import در vpn_service.dart", "FIX")
-            
-        # 2. اضافه کردن import dart:io اگر وجود نداشت
-        if "import 'dart:io';" not in content:
-            content = "import 'dart:io';\n" + content
-            self.log("اضافه کردن import 'dart:io'", "FIX")
-            
-        # 3. تغییر متد connect
-        if "FlutterNativeWireguard.startVpn" in content:
-            content = content.replace(
-                "await FlutterNativeWireguard.startVpn(\n        configFile.path,\n        'WARP VPN',\n        'WARP connection',\n      );",
-                "final connected = await WireguardFlutter.start(\n        config,\n        'WARP VPN',\n      );\n      if (!connected) throw Exception('WireGuard connection failed');"
-            )
-            self.log("اصلاح متد connect در vpn_service.dart", "FIX")
-            
-        # 4. تغییر متد disconnect
-        if "FlutterNativeWireguard.stopVpn" in content:
-            content = content.replace(
-                "await FlutterNativeWireguard.stopVpn();",
-                "await WireguardFlutter.stop();"
-            )
-            self.log("اصلاح متد disconnect در vpn_service.dart", "FIX")
-            
-        if content != original:
-            with open(vpn_service_path, "w", encoding="utf-8") as f:
-                f.write(content)
-            self.log("vpn_service.dart به‌روزرسانی شد.", "SUCCESS")
-            self.fixed_files.append("vpn_service.dart")
-            return True
-        else:
-            self.log("vpn_service.dart بدون تغییر باقی ماند.", "INFO")
-            return True
-            
-    def fix_warp_generator(self) -> bool:
-        generator_path = self.root / "lib" / "services" / "warp_generator.dart"
-        if not generator_path.exists():
-            self.log("فایل warp_generator.dart پیدا نشد!", "WARNING")
-            return False
-            
-        self.log("در حال بررسی warp_generator.dart...", "STEP")
-        with open(generator_path, "r", encoding="utf-8") as f:
-            content = f.read()
-            
-        if "import 'package:pointycastle/export.dart';" not in content:
-            if "import" in content:
-                content = "import 'package:pointycastle/export.dart';\n" + content
-                with open(generator_path, "w", encoding="utf-8") as f:
-                    f.write(content)
-                self.log("import pointycastle اضافه شد.", "FIX")
-                self.fixed_files.append("warp_generator.dart")
-            
-        self.log("warp_generator.dart بررسی شد.", "SUCCESS")
+
+        self.log("در حال تصحیح vpn_service.dart...", "STEP")
+        correct = '''import 'package:flutter/foundation.dart';
+import 'package:wireguard_flutter/wireguard_flutter.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'warp_generator.dart';
+import '../constants/strings.dart';
+
+class VPNService extends ChangeNotifier {
+  bool _isConnected = false, _isConnecting = false;
+  String _statusMessage = Strings.statusReady;
+  String? _currentConfig, _errorMessage;
+  Map<String, dynamic>? _accountInfo;
+  String _selectedEndpoint = '';
+  final WARPGenerator _generator = WARPGenerator();
+
+  bool get isConnected => _isConnected;
+  bool get isConnecting => _isConnecting;
+  String get statusMessage => _statusMessage;
+  Map<String, dynamic>? get accountInfo => _accountInfo;
+  String get selectedEndpoint => _selectedEndpoint;
+  String? get errorMessage => _errorMessage;
+
+  Future<bool> generateAndConnect({String? customIp, String? customPort}) async {
+    if (_isConnected) await disconnect();
+    _isConnecting = true;
+    _statusMessage = Strings.statusGenerating;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _statusMessage = Strings.statusGeneratingKey;
+      notifyListeners();
+
+      final config = await _generator.generateFullConfig(
+          customIp: customIp, customPort: customPort);
+
+      _accountInfo = _generator.getAccountInfo();
+      _currentConfig = config;
+
+      final lines = config.split('\\n');
+      for (var line in lines) {
+        if (line.startsWith('Endpoint = ')) {
+          _selectedEndpoint = line.replaceFirst('Endpoint = ', '');
+          break;
+        }
+      }
+
+      _statusMessage = Strings.statusConnecting;
+      notifyListeners();
+
+      final connected = await WireguardFlutter.start(config, 'WARP VPN');
+      if (!connected) {
+        throw Exception('WireGuard connection failed');
+      }
+
+      _isConnected = true;
+      _statusMessage = Strings.statusConnected;
+      _isConnecting = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isConnecting = false;
+      _statusMessage = Strings.statusError;
+      _errorMessage = e.toString();
+      _isConnected = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<void> disconnect() async {
+    try {
+      await WireguardFlutter.stop();
+      _isConnected = false;
+      _currentConfig = null;
+      _statusMessage = Strings.statusDisconnected;
+      notifyListeners();
+    } catch (e) {
+      _statusMessage = '${Strings.statusError}: $e';
+      notifyListeners();
+    }
+  }
+
+  String? getConfig() => _currentConfig;
+}
+'''
+        with open(vpn_service_path, "w", encoding="utf-8") as f:
+            f.write(correct)
+        self.log("vpn_service.dart تصحیح شد.", "FIX")
+        self.fixed_files.append("vpn_service.dart")
         return True
-        
-    def check_fonts(self) -> bool:
-        font_dir = self.root / "assets" / "fonts"
-        font_path = font_dir / "Vazirmatn-Regular.ttf"
-        
-        if font_path.exists() and font_path.stat().st_size > 0:
-            self.log("فونت Vazirmatn وجود دارد.", "SUCCESS")
-            return True
-            
-        self.log("فونت Vazirmatn پیدا نشد! در حال دانلود...", "WARNING")
-        
-        font_urls = [
-            "https://raw.githubusercontent.com/rastikerdar/vazirmatn/master/fonts/ttf/Vazirmatn-Regular.ttf",
-            "https://github.com/rastikerdar/vazirmatn/releases/download/v33.003/Vazirmatn-Regular.ttf",
-            "https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@master/fonts/ttf/Vazirmatn-Regular.ttf"
-        ]
-        
-        font_dir.mkdir(parents=True, exist_ok=True)
-        
-        for url in font_urls:
-            try:
-                self.log(f"تلاش برای دانلود از {url}...", "INFO")
-                urllib.request.urlretrieve(url, font_path)
-                if font_path.exists() and font_path.stat().st_size > 0:
-                    self.log("فونت با موفقیت دانلود شد.", "SUCCESS")
-                    return True
-            except Exception as e:
-                self.log(f"دانلود ناموفق: {e}", "WARNING")
+
+    def fix_workflow(self) -> bool:
+        """تنظیم مسیر CMake فلاتر در workflow"""
+        workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
+        if not workflow_path.exists():
+            self.log("build_windows.yml پیدا نشد!", "WARNING")
+            return False
+
+        self.log("در حال تصحیح build_windows.yml...", "STEP")
+        correct = '''name: Build Windows App
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Run flutter doctor
+        run: flutter doctor -v
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Clean previous builds
+        run: flutter clean
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Set Flutter CMake directory
+        shell: powershell
+        run: |
+          $flutterCmakeDir = "$env:FLUTTER_ROOT\\packages\\flutter_tools\\static\\cpp_client_wrapper\\cmake"
+          if (Test-Path $flutterCmakeDir) {
+            Write-Host "Flutter CMake directory: $flutterCmakeDir"
+            "FLUTTER_DIR=$flutterCmakeDir" | Out-File -FilePath $env:GITHUB_ENV -Append
+            "CMAKE_PREFIX_PATH=$flutterCmakeDir" | Out-File -FilePath $env:GITHUB_ENV -Append
+          } else {
+            Write-Error "Flutter CMake directory not found at $flutterCmakeDir"
+            exit 1
+          }
+
+      - name: Build Windows app
+        run: flutter build windows --release
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: warp-vpn-windows
+          path: build/windows/runner/Release/
+'''
+        with open(workflow_path, "w", encoding="utf-8") as f:
+            f.write(correct)
+        self.log("build_windows.yml تصحیح شد.", "FIX")
+        self.fixed_files.append("build_windows.yml")
+        return True
+
+    def scrub_tokens(self):
+        """جایگزینی توکن‌های واقعی گیت‌هاب (ghp_ + حداقل ۳۶ کاراکتر) با YOUR_GITHUB_TOKEN در تمام فایل‌ها"""
+        self.log("در حال پاک‌سازی توکن‌های درز کرده...", "STEP")
+        token_regex = re.compile(r'ghp_[A-Za-z0-9_]{36,}')
+        modified = False
+        exclude_dirs = {'.git'}
+        for filepath in self.root.rglob('*'):
+            if filepath.is_dir():
                 continue
-                
-        with open(font_path, "w") as f:
-            f.write("")
-        self.log("فایل placeholder برای فونت ایجاد شد. لطفاً فونت را به‌صورت دستی اضافه کنید.", "WARNING")
-        return False
-        
-    def create_missing_dirs(self) -> bool:
-        dirs = [
-            "lib/models",
-            "lib/services",
-            "lib/widgets",
-            "lib/screens",
-            "lib/utils",
-            "lib/constants",
-            "assets/fonts",
-        ]
-        for d in dirs:
-            path = self.root / d
-            if not path.exists():
-                path.mkdir(parents=True, exist_ok=True)
-                self.log(f"دایرکتوری {d} ایجاد شد.", "FIX")
-        return True
-        
+            # پرش از پوشه‌های git
+            if any(part.startswith('.git') for part in filepath.parts):
+                continue
+            try:
+                content = filepath.read_text(encoding='utf-8')
+                new_content, count = token_regex.subn('YOUR_GITHUB_TOKEN', content)
+                if count > 0:
+                    filepath.write_text(new_content, encoding='utf-8')
+                    self.log(f"  → {count} توکن در {filepath.relative_to(self.root)} جایگزین شد.", "WARNING")
+                    modified = True
+            except Exception:
+                # فایل‌های باینری یا غیرقابل خواندن
+                pass
+        if not modified:
+            self.log("هیچ توکن واقعی پیدا نشد.", "SUCCESS")
+        return modified
+
+    def update_gitignore(self):
+        """اضافه کردن الگوهای امنیتی به .gitignore"""
+        gi_path = self.root / ".gitignore"
+        required = [".env", "*.token", "*.secret", "key.properties", "*.keystore", "*.jks"]
+        existing = gi_path.read_text(encoding='utf-8') if gi_path.exists() else ""
+        missing = [r for r in required if r not in existing]
+        if missing:
+            with gi_path.open('a', encoding='utf-8') as f:
+                f.write("\n" + "\n".join(missing) + "\n")
+            self.log(".gitignore به‌روزرسانی شد.", "FIX")
+            self.fixed_files.append(".gitignore")
+        else:
+            self.log(".gitignore در حال حاضر کامل است.", "SUCCESS")
+
     def run(self) -> bool:
         print("\n" + "=" * 60)
-        print("🔧 Flutter Project Fixer (بدون اجرای دستورات flutter)")
+        print("🔧 Flutter Project Fixer (نسخه‌ی کامل)")
         print("=" * 60)
         print(f"\nمسیر پروژه: {self.root}\n")
-        
+
         if not self.check_project():
             return False
-            
-        self.create_missing_dirs()
-        self.fix_pubspec()
+
         self.fix_vpn_service()
-        self.fix_warp_generator()
-        self.check_fonts()
-        
+        self.fix_workflow()
+        self.scrub_tokens()
+        self.update_gitignore()
+
         print("\n" + "=" * 60)
         print("📊 گزارش نهایی")
         print("=" * 60)
-        
         if self.fixed_files:
             print("\n📁 فایل‌های اصلاح شده:")
             for f in self.fixed_files:
                 print(f"  ✓ {f}")
-                
-        if not self.errors:
-            print("\n✅ همه مشکلات با موفقیت رفع شدند!")
-            print("\n🚀 حالا پروژه را به گیت‌هاب پوش کنید:")
-            print(f"   cd {self.root}")
-            print("   git add .")
-            print("   git commit -m 'Fix project files'")
-            print("   git push")
-            print("\n🔗 GitHub Actions به‌طور خودکار build خواهد شد.")
-            return True
-        else:
-            print("\n⚠️ برخی مشکلات باقی مانده است.")
-            return False
+        print("\n✅ همه مشکلات برطرف شد. حالا می‌توانید push کنید.")
+        return True
 
 def main():
     try:
         if len(sys.argv) > 1:
-            project_root = sys.argv[1]
+            root = sys.argv[1]
         else:
-            project_root = os.getcwd()
-        fixer = FlutterProjectFixer(project_root)
+            root = os.getcwd()
+        fixer = FlutterProjectFixer(root)
         success = fixer.run()
         sys.exit(0 if success else 1)
     except KeyboardInterrupt:

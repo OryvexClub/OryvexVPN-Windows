@@ -1,10 +1,10 @@
-
 import sys
 import os
 import subprocess
 import webbrowser
 import threading
 import time
+import re
 from pathlib import Path
 from getpass import getpass
 from typing import Tuple
@@ -151,25 +151,20 @@ class GitHubPusher:
             self.log(f"Error creating repository: {e}", "ERROR")
             return False
 
-    def _ensure_gitignore_has_secrets(self):
-        """Make sure common secret files are ignored before every push."""
-        gi_path = self.root / ".gitignore"
-        required = [".env", "*.token", "*.secret", "key.properties", "*.keystore", "*.jks"]
-        existing = gi_path.read_text(encoding='utf-8') if gi_path.exists() else ""
-        missing = [r for r in required if r not in existing]
-        if missing:
-            with gi_path.open('a', encoding='utf-8') as f:
-                f.write("\n" + "\n".join(missing) + "\n")
-            self.log("Updated .gitignore with secret-file patterns", "SECURE")
-
-    def _scrub_committed_secrets_warning(self):
-        """Warn (does not auto-rewrite history) if a token pattern is staged."""
-        success, output = self.run_command('git diff --cached -- . ":(exclude)push.py"', ignore_error=True)
-        if success and "ghp_" in output:
-            self.log("WARNING: a GitHub token pattern (ghp_...) was found in staged changes!", "ERROR")
-            self.log("Aborting push. Remove the secret and use environment variables instead.", "ERROR")
+    def _check_diff_for_token(self) -> bool:
+        """
+        بررسی diff فایل‌های stage شده با regex دقیق (ghp_ + ۳۶+ کاراکتر)
+        برمی‌گردونه True اگه توکن واقعی وجود داشته باشه
+        """
+        success, diff = self.run_command('git diff --cached', ignore_error=True)
+        if not success:
             return False
-        return True
+        # الگوی دقیق توکن گیت‌هاب
+        pattern = re.compile(r'ghp_[A-Za-z0-9_]{36,}')
+        if pattern.search(diff):
+            self.log("توکن گیت‌هاب در فایل‌های stage شده پیدا شد!", "ERROR")
+            return True
+        return False
 
     def push_to_github(self) -> bool:
         print("\n" + "=" * 60)
@@ -177,7 +172,26 @@ class GitHubPusher:
         print("=" * 60)
         os.chdir(self.root)
 
-        self._ensure_gitignore_has_secrets()
+        # اجرای fixer.py در صورت وجود
+        fixer_path = self.root / "fixer.py"
+        if fixer_path.exists():
+            self.log("اجرای fixer.py...", "STEP")
+            env = os.environ.copy()
+            env["PYTHONIOENCODING"] = "utf-8"
+            try:
+                result = subprocess.run(
+                    [sys.executable, "fixer.py"],
+                    cwd=self.root, capture_output=True, text=True,
+                    timeout=120, env=env, encoding='utf-8', errors='replace'
+                )
+                if result.returncode != 0:
+                    self.log(f"fixer.py با خطا مواجه شد. خروجی:\n{result.stdout}\n{result.stderr}", "ERROR")
+                    if input("ادامه بدیم؟ (y/n): ").strip().lower() != 'y':
+                        return False
+            except Exception as e:
+                self.log(f"خطا در اجرای fixer.py: {e}", "ERROR")
+                if input("ادامه بدیم؟ (y/n): ").strip().lower() != 'y':
+                    return False
 
         if not (self.root / ".git").exists():
             self.log("Initializing git repository...", "STEP")
@@ -190,53 +204,36 @@ class GitHubPusher:
         self.run_command('git config user.email "oryvex@demo.com"')
         self.run_command('git config user.name "OryvexVPN"')
 
-        self.log("Checking for changes...", "STEP")
-        success, output = self.run_command("git status --porcelain")
+        self.log("Adding all files...", "STEP")
+        success, output = self.run_command("git add .")
         if not success:
-            self.log("Failed to check git status", "ERROR")
+            self.log(f"Failed to add files: {output}", "ERROR")
             return False
 
-        if not output.strip():
-            self.log("No changes to commit. Skipping commit.", "WARNING")
-        else:
-            self.log("Adding files...", "STEP")
-            success, output = self.run_command("git add .")
-            if not success:
-                self.log(f"Failed to add files: {output}", "ERROR")
-                return False
+        # بررسی نهایی: آیا توکن واقعی توی stage هست؟
+        if self._check_diff_for_token():
+            self.log("Push به دلیل وجود توکن متوقف شد. لطفاً fixer.py را اجرا کنید و دوباره تلاش کنید.", "ERROR")
+            return False
 
-            if not self._scrub_committed_secrets_warning():
-                return False
-
-            self.log("Committing...", "STEP")
-            success, output = self.run_command('git commit -m "OryvexVPN Demo App - Fixed"')
-            if not success and "nothing to commit" not in output:
-                self.log(f"Commit warning: {output}", "WARNING")
+        self.log("Committing...", "STEP")
+        success, output = self.run_command('git commit -m "Auto‑fix and security update"')
+        if not success and "nothing to commit" not in output:
+            self.log(f"Commit warning: {output}", "WARNING")
 
         self.log("Setting up remote...", "STEP")
         self.run_command("git branch -M main")
         self.run_command("git remote remove origin", ignore_error=True)
-        # Store a clean, tokenless origin for normal use.
         self.run_command(f"git remote add origin https://github.com/{self.username}/{self.repo_name}.git", ignore_error=True)
 
         self.log("Pushing to GitHub...", "STEP")
         print("\nPushing... this may take a moment...\n")
 
-        # Token is passed only via a short-lived env var to the git process,
-        # never written into a URL, never printed, never persisted in
-        # git config/remote (avoids it landing in .git/config on disk).
-        push_env = os.environ.copy()
         askpass_script = self.root / ".git_askpass_temp.py"
         askpass_script.write_text(
             "import sys\n"
             "print(sys.argv[1] if 'Username' not in sys.argv[1] else '')\n",
             encoding='utf-8'
         )
-        # Simpler and more reliable: use the credential helper via env,
-        # supplying username/token only for this single process call.
-        push_env["GIT_ASKPASS"] = ""
-        push_url = f"https://{self.username}@github.com/{self.username}/{self.repo_name}.git"
-
         push_complete = [False]
         push_result = [None]
 
@@ -325,36 +322,6 @@ class GitHubPusher:
 
         if not self.get_credentials():
             sys.exit(1)
-
-        fixer_path = self.root / "fixer.py"
-        if fixer_path.exists():
-            self.log("Running fixer.py first...", "STEP")
-            env = os.environ.copy()
-            env["PYTHONIOENCODING"] = "utf-8"
-            try:
-                result = subprocess.run(
-                    [sys.executable, "fixer.py"],
-                    cwd=self.root, capture_output=True, text=True,
-                    timeout=120, env=env, encoding='utf-8', errors='replace'
-                )
-                if result.returncode == 0:
-                    self.log("Fixer completed successfully", "SUCCESS")
-                else:
-                    self.log(f"Fixer failed with code {result.returncode}", "ERROR")
-                    if result.stdout:
-                        print(result.stdout)
-                    if result.stderr:
-                        print(result.stderr)
-                    response = input("Continue anyway? (y/n): ").strip().lower()
-                    if response != 'y':
-                        sys.exit(1)
-            except Exception as e:
-                self.log(f"Fixer execution error: {e}", "ERROR")
-                response = input("Continue anyway? (y/n): ").strip().lower()
-                if response != 'y':
-                    sys.exit(1)
-        else:
-            self.log("No fixer.py found; skipping.", "WARNING")
 
         if not self.create_repo_if_missing():
             self.log("Failed to ensure repository exists", "ERROR")
