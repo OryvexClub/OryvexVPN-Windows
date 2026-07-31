@@ -10,7 +10,7 @@ env:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022 
     
     steps:
       - uses: actions/checkout@v4
@@ -18,11 +18,18 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.16.0'
+          flutter-version: '3.24.0'  
           channel: 'stable'
+          cache: true
+      
+      - name: Run flutter doctor
+        run: flutter doctor -v   
       
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
+      
+      - name: Clean previous builds
+        run: flutter clean
       
       - name: Get dependencies
         run: flutter pub get
