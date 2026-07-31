@@ -22,6 +22,9 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Precache Windows artifacts
+        run: flutter precache --windows
+
       - name: Run flutter doctor
         run: flutter doctor -v
 
@@ -36,6 +39,9 @@ jobs:
 
       - name: Update Windows Project Files
         run: flutter create --platforms windows .
+
+      - name: Get dependencies (again after create)
+        run: flutter pub get
 
       - name: Build Windows app
         run: flutter build windows --release
