@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-fixer.py - ابزار رفع خودکار مشکلات پروژه فلاتر (شامل پاک‌سازی توکن‌های درز کرده و آپدیت ویندوز)
+fixer.py - ابزار رفع خودکار مشکلات پروژه فلاتر (شامل اصلاح مسیر خروجی بیلد ویندوز)
 """
 
 import os
@@ -135,7 +135,7 @@ class VPNService extends ChangeNotifier {
         return True
 
     def fix_workflow(self) -> bool:
-        """تنظیم و تصحیح اکشن بیلد ویندوز (اضافه کردن precache و بازنویسی کامل فایل‌های ویندوز)"""
+        """تنظیم و تصحیح اکشن بیلد ویندوز (تنظیم مسیر خروجی x64)"""
         workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
         if not workflow_path.exists():
             self.log("build_windows.yml پیدا نشد!", "WARNING")
@@ -194,7 +194,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: warp-vpn-windows
-          path: build/windows/runner/Release/
+          path: build/windows/x64/runner/Release/
 '''
         with open(workflow_path, "w", encoding="utf-8") as f:
             f.write(correct)
