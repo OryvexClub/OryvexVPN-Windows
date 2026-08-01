@@ -151,15 +151,15 @@ class WarpService {
       mode: ProcessStartMode.detachedWithStdio,
     );
 
-    // Give it a moment to set up the adapter.
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Check if the process is still alive; if not, something went wrong.
-    if (_tunnelProcess == null || !(await _tunnelProcess!.exitCode.timeout(
-        const Duration(milliseconds: 100), onTimeout: () => null))?.isCompleted == false) {
-      // Process seems to be running.
-    } else {
-      throw Exception('BoringTun exited unexpectedly.');
+    // Wait a moment, then check if the process is still alive.
+    await Future.delayed(const Duration(seconds: 1));
+    // Try to get exit code with a short timeout; if it completes, the process died.
+    try {
+      await _tunnelProcess!.exitCode.timeout(const Duration(milliseconds: 100));
+      // If we get here, the process has exited.
+      throw Exception('BoringTun exited immediately after start.');
+    } on TimeoutException {
+      // Process still running, good.
     }
   }
 
@@ -196,7 +196,7 @@ class WarpService {
       proc.kill(ProcessSignal.sigterm);
       await proc.exitCode.timeout(const Duration(seconds: 2), onTimeout: () {
         proc.kill(ProcessSignal.sigkill);
-        return null;
+        return null; // ignored
       });
     } catch (_) {}
     // Clean up any remaining processes.
