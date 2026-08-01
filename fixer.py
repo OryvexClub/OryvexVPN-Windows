@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-fixer.py - OryvexVPN Ultimate Fixer (AmneziaWG + UI/UX + UAC)
+fixer.py - OryvexVPN Ultimate Fixer (AmneziaWG + UI/UX + YAML Bug Fix)
 
-- رفع خطای پایتون (Regex Escape \w)
-- تغییر هسته به AmneziaWG جهت پشتیبانی کامل از کانفیگ‌های WARP
-- رفع خطای پاپ‌آپ سرویس ویندوز
-- طراحی UI (فونت، راست‌چین و دکمه‌های کنترل پنجره)
+- بازنویسی کامل فایل CI/CD برای رفع خطای YAML Syntax
+- تغییر هسته به AmneziaWG جهت پشتیبانی از کانفیگ‌های WARP
+- رفع خطای پاپ‌آپ UAC ویندوز
+- طراحی UI (فونت وزیرمتن، تم تاریک و دکمه‌های کنترل پنجره)
 """
 
 import os
@@ -54,57 +54,75 @@ class FlutterProjectFixer:
             return False
         return True
 
-    # 1. تغییر فایل بیلد گیت‌هاب اکشنز (دانلود AmneziaWG) و رفع باگ Regex
+    # 1. بازنویسی کامل فایل گیت‌هاب اکشنز جهت رفع خطای YAML Spacing
     def fix_ci_workflow(self) -> bool:
         path = self.root / ".github" / "workflows" / "build_windows.yml"
-        if not path.exists(): return False
+        if not path.parent.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
 
-        content = path.read_text(encoding='utf-8')
-        
-        # رشته جایگزین به صورت Raw
-        replacement = r'''- name: Download and extract AmneziaWG
-      run: |
-        $wgVersion = "2.0.2"
-        $msiUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/$wgVersion/amneziawg-amd64-$wgVersion.msi"
-        Invoke-WebRequest -Uri $msiUrl -OutFile "amneziawg.msi"
-        
-        $extractDir = "$PWD\amneziawg_extracted"
-        New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
-        
-        $msiExecArgs = @("/a", "`"$PWD\amneziawg.msi`"", "/qn", "TARGETDIR=`"$extractDir`"")
-        Start-Process msiexec.exe -ArgumentList $msiExecArgs -Wait -NoNewWindow
-        
-        $wgExe = Get-ChildItem -Path $extractDir -Filter "amneziawg.exe" -Recurse | Select-Object -First 1
-        if (-not $wgExe) {
-          Write-Host "Failed to extract amneziawg.exe from MSI."
-          exit 1
-        }
-        Write-Host "Found amneziawg.exe at: $($wgExe.FullName)"
-        Copy-Item $wgExe.FullName "$PWD\amneziawg.exe"
+        content = r'''name: Build Windows App (AmneziaWG Core)
 
-    - name: Bundle AmneziaWG binary inside data/
-      run: |
-        $ReleaseDir = "build\windows\x64\runner\Release"
-        New-Item -ItemType Directory -Force -Path "$ReleaseDir\data" | Out-Null
-        Copy-Item "$PWD\amneziawg.exe" "$ReleaseDir\data\amneziawg.exe"
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
 
-    - name: Upload build artifacts'''
+jobs:
+  build:
+    runs-on: windows-2022
 
-        # استفاده از lambda برای جلوگیری از خطای "bad escape \w" در پایتون
-        new_content = re.sub(
-            r'- name: Download and extract official WireGuard.*?Upload build artifacts',
-            lambda match: replacement,
-            content,
-            flags=re.DOTALL
-        )
+    steps:
+      - uses: actions/checkout@v4
 
-        new_content = new_content.replace('Build Windows App (Official WireGuard)', 'Build Windows App (AmneziaWG Core)')
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.2'
+          channel: 'stable'
+          cache: true
 
-        if new_content != content:
-            path.write_text(new_content, encoding='utf-8')
-            self.fixed_files.append(".github/workflows/build_windows.yml (ارتقا به AmneziaWG)")
-            return True
-        return False
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build Windows app
+        run: flutter build windows --release
+
+      - name: Download and extract AmneziaWG
+        run: |
+          $wgVersion = "2.0.2"
+          $msiUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/$wgVersion/amneziawg-amd64-$wgVersion.msi"
+          Invoke-WebRequest -Uri $msiUrl -OutFile "amneziawg.msi"
+          
+          $extractDir = "$PWD\amneziawg_extracted"
+          New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
+          
+          $msiExecArgs = @("/a", "`"$PWD\amneziawg.msi`"", "/qn", "TARGETDIR=`"$extractDir`"")
+          Start-Process msiexec.exe -ArgumentList $msiExecArgs -Wait -NoNewWindow
+          
+          $wgExe = Get-ChildItem -Path $extractDir -Filter "amneziawg.exe" -Recurse | Select-Object -First 1
+          if (-not $wgExe) {
+            Write-Host "Failed to extract amneziawg.exe from MSI."
+            exit 1
+          }
+          Write-Host "Found amneziawg.exe at: $($wgExe.FullName)"
+          Copy-Item $wgExe.FullName "$PWD\amneziawg.exe"
+
+      - name: Bundle AmneziaWG binary inside data/
+        run: |
+          $ReleaseDir = "build\windows\x64\runner\Release"
+          New-Item -ItemType Directory -Force -Path "$ReleaseDir\data" | Out-Null
+          Copy-Item "$PWD\amneziawg.exe" "$ReleaseDir\data\amneziawg.exe"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: oryvexvpn-windows
+          path: build/windows/x64/runner/Release/
+'''
+        return self._write_if_needed(path, content, "بازنویسی کامل YAML برای رفع خطای گیت‌هاب اکشنز", force=True)
 
     # 2. Main Entrypoint & Font Global Theme
     def fix_main_dart(self) -> bool:

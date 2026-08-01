@@ -28,39 +28,33 @@ jobs:
       - name: Build Windows app
         run: flutter build windows --release
 
-      # No Rust/Cargo build step needed anymore. boringtun-cli only ever
-      # targeted Linux/macOS and cannot compile for MSVC (it pulls in
-      # `daemonize` and std::os::unix APIs that don't exist on Windows).
-      # Instead we bundle the OFFICIAL, pre-built WireGuard for Windows
-      # binary (wireguard.exe), which already includes the Wintun driver
-      # and is what the real WireGuard Windows client uses.
       - name: Download and extract AmneziaWG
-      run: |
-        $wgVersion = "2.0.2"
-        $msiUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/$wgVersion/amneziawg-amd64-$wgVersion.msi"
-        Invoke-WebRequest -Uri $msiUrl -OutFile "amneziawg.msi"
-        
-        $extractDir = "$PWD\amneziawg_extracted"
-        New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
-        
-        $msiExecArgs = @("/a", "`"$PWD\amneziawg.msi`"", "/qn", "TARGETDIR=`"$extractDir`"")
-        Start-Process msiexec.exe -ArgumentList $msiExecArgs -Wait -NoNewWindow
-        
-        $wgExe = Get-ChildItem -Path $extractDir -Filter "amneziawg.exe" -Recurse | Select-Object -First 1
-        if (-not $wgExe) {
-          Write-Host "Failed to extract amneziawg.exe from MSI."
-          exit 1
-        }
-        Write-Host "Found amneziawg.exe at: $($wgExe.FullName)"
-        Copy-Item $wgExe.FullName "$PWD\amneziawg.exe"
+        run: |
+          $wgVersion = "2.0.2"
+          $msiUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/$wgVersion/amneziawg-amd64-$wgVersion.msi"
+          Invoke-WebRequest -Uri $msiUrl -OutFile "amneziawg.msi"
+          
+          $extractDir = "$PWD\amneziawg_extracted"
+          New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
+          
+          $msiExecArgs = @("/a", "`"$PWD\amneziawg.msi`"", "/qn", "TARGETDIR=`"$extractDir`"")
+          Start-Process msiexec.exe -ArgumentList $msiExecArgs -Wait -NoNewWindow
+          
+          $wgExe = Get-ChildItem -Path $extractDir -Filter "amneziawg.exe" -Recurse | Select-Object -First 1
+          if (-not $wgExe) {
+            Write-Host "Failed to extract amneziawg.exe from MSI."
+            exit 1
+          }
+          Write-Host "Found amneziawg.exe at: $($wgExe.FullName)"
+          Copy-Item $wgExe.FullName "$PWD\amneziawg.exe"
 
-    - name: Bundle AmneziaWG binary inside data/
-      run: |
-        $ReleaseDir = "build\windows\x64\runner\Release"
-        New-Item -ItemType Directory -Force -Path "$ReleaseDir\data" | Out-Null
-        Copy-Item "$PWD\amneziawg.exe" "$ReleaseDir\data\amneziawg.exe"
+      - name: Bundle AmneziaWG binary inside data/
+        run: |
+          $ReleaseDir = "build\windows\x64\runner\Release"
+          New-Item -ItemType Directory -Force -Path "$ReleaseDir\data" | Out-Null
+          Copy-Item "$PWD\amneziawg.exe" "$ReleaseDir\data\amneziawg.exe"
 
-    - name: Upload build artifacts
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: oryvexvpn-windows
