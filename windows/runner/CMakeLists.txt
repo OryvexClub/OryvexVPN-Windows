@@ -22,7 +22,9 @@ add_executable(${BINARY_NAME} WIN32
 # auto-generated snippet and runner.exe.manifest disagree on the
 # requestedExecutionLevel. runner.exe.manifest is the sole source
 # of truth for the execution level.
-set_target_properties(${BINARY_NAME} PROPERTIES VS_MANIFEST_UAC "NO")
+set_target_properties(${BINARY_NAME} PROPERTIES
+  LINK_FLAGS "/MANIFEST:EMBED /MANIFESTINPUT:${CMAKE_CURRENT_SOURCE_DIR}/runner.exe.manifest"
+)
 
 
 # Apply the standard set of build settings. This can be removed for applications
