@@ -16,7 +16,7 @@ class WarpService {
   static String get _wireguardExe {
     final exePath = Platform.resolvedExecutable;
     final exeDir = File(exePath).parent.path;
-    return '\$exeDir\\data\\wireguard.exe';
+    return '$exeDir\\data\\wireguard.exe';
   }
 
   static Future<String> _findBestEndpoint(Function(String) onProgress) async {
@@ -37,7 +37,7 @@ class WarpService {
     results.sort((a, b) => (a['latency'] as int).compareTo(b['latency'] as int));
 
     final bestIp = results.first['latency'] != 9999 ? results.first['ip'] as String : _endpoints.first;
-    return '\$bestIp:2408';
+    return '$bestIp:2408';
   }
 
   static Future<String> generateConfig(Function(String) onProgress) async {
@@ -77,21 +77,21 @@ class WarpService {
 
     onProgress('در حال آماده‌سازی کانفیگ...');
     return '''[Interface]
-PrivateKey = \$privKeyBase64
-Address = \$address/32
+PrivateKey = $privKeyBase64
+Address = $address/32
 DNS = 1.1.1.1, 1.0.0.1
 MTU = 1280
 
 [Peer]
-PublicKey = \$peerPublicKey
+PublicKey = $peerPublicKey
 AllowedIPs = 0.0.0.0/0, ::/0
-Endpoint = \$bestEndpoint
+Endpoint = $bestEndpoint
 PersistentKeepalive = 25''';
   }
 
   static Future<File> _writeConfigFile(String config) async {
     final dir = Directory.systemTemp;
-    final file = File('\${dir.path}\\\$_tunnelName.conf');
+    final file = File('${dir.path}\\$_tunnelName.conf');
     return file.writeAsString(config);
   }
 
@@ -126,9 +126,9 @@ PersistentKeepalive = 25''';
       final stderrText = (result.stderr ?? '').toString().trim();
       final stdoutText = (result.stdout ?? '').toString().trim();
       final detail = [stderrText, stdoutText].where((s) => s.isNotEmpty).join(' | ');
+      final detailSuffix = detail.isNotEmpty ? '\nجزئیات: $detail' : '';
       throw Exception(
-        'اجرای مجوز-بالا (Elevated) ناموفق بود. کد خطا: \${result.exitCode}'
-        '${detail.isNotEmpty ? '\nجزئیات: $detail' : ''}',
+        'اجرای مجوز-بالا (Elevated) ناموفق بود. کد خطا: ${result.exitCode}$detailSuffix',
       );
     }
     return result.exitCode;
@@ -148,8 +148,7 @@ PersistentKeepalive = 25''';
       await _runElevated(_wireguardExe, ['/installtunnelservice', file.path]);
     } catch (e) {
       throw Exception(
-        'نصب تونل ناموفق بود. اطمینان حاصل کنید که در پنجره UAC روی "بله" کلیک کرده‌اید.\n'
-        '\$e',
+        'نصب تونل ناموفق بود. اطمینان حاصل کنید که در پنجره UAC روی "بله" کلیک کرده‌اید.\n$e',
       );
     }
   }
@@ -169,7 +168,7 @@ PersistentKeepalive = 25''';
     try {
       final result = await Process.run(
         'sc.exe',
-        ['query', 'WireGuardTunnel\\$\$_tunnelName'],
+        ['query', 'WireGuardTunnel\$' + _tunnelName],
       );
       return result.stdout.toString().contains('RUNNING');
     } catch (_) {
