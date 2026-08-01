@@ -4,8 +4,6 @@ import 'dart:math';
 class WARPGenerator {
   static final List<Map<String, String>> endpoints = [
     {"ip": "8.6.112.165", "port": "928"}, {"ip": "8.6.112.139", "port": "7281"},
-    {"ip": "8.6.112.178", "port": "942"}, {"ip": "8.6.112.205", "port": "3581"},
-    {"ip": "8.6.112.121", "port": "500"}, {"ip": "8.6.112.202", "port": "878"},
     {"ip": "162.159.192.1", "port": "2408"}, {"ip": "188.114.97.6", "port": "7281"},
     {"ip": "104.16.248.249", "port": "2408"}
   ];
@@ -24,9 +22,7 @@ class WARPGenerator {
     final publicKey = _generateMockKey();
     final endpoint = getRandomEndpoint();
     
-    // شبیه‌سازی ایجاد کانفیگ
     await Future.delayed(const Duration(milliseconds: 800));
-    
     final endpointHost = '${endpoint['ip']}:${endpoint['port']}';
     
     final buffer = StringBuffer();

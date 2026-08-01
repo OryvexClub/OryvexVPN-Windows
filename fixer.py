@@ -3,7 +3,7 @@
 
 """
 fixer.py - ابزار رفع خودکار مشکلات پروژه فلاتر 
-(داشبورد حرفه‌ای VPS با ظاهر وی‌پی‌ان، ساخت کانفیگ اتوماتیک و رفع ارورها)
+(داشبورد حرفه‌ای VPS با ظاهر وی‌پی‌ان، ساخت کانفیگ اتوماتیک و رفع ارورهای TextStyle)
 """
 
 import os
@@ -19,17 +19,12 @@ class FlutterProjectFixer:
 
     def log(self, message: str, level: str = "INFO"):
         icons = {
-            "INFO": "[i]",
-            "SUCCESS": "[✓]",
-            "WARNING": "[!]",
-            "ERROR": "[✗]",
-            "STEP": "[>]",
-            "FIX": "[🔧]"
+            "INFO": "[i]", "SUCCESS": "[✓]", "WARNING": "[!]",
+            "ERROR": "[✗]", "STEP": "[>]", "FIX": "[🔧]"
         }
         print(f"{icons.get(level, '[i]')} {message}")
 
     def check_project(self) -> bool:
-        """بررسی وجود پروژه فلاتر"""
         if not (self.root / "pubspec.yaml").exists():
             self.log("فایل pubspec.yaml پیدا نشد! این یک پروژه فلاتر نیست.", "ERROR")
             return False
@@ -37,7 +32,6 @@ class FlutterProjectFixer:
         return True
 
     def fix_main_dart(self) -> bool:
-        """اعمال تم مینیمال تاریک نئونی و فونت"""
         main_path = self.root / "lib" / "main.dart"
         correct = '''import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -76,7 +70,6 @@ class MyApp extends StatelessWidget {
         return True
 
     def fix_warp_generator(self) -> bool:
-        """تولید کانفیگ بر اساس منطق اسکریپت پایتون و حذف ارورهای PointyCastle"""
         warp_gen_path = self.root / "lib" / "services" / "warp_generator.dart"
         correct = '''import 'dart:convert';
 import 'dart:math';
@@ -84,8 +77,6 @@ import 'dart:math';
 class WARPGenerator {
   static final List<Map<String, String>> endpoints = [
     {"ip": "8.6.112.165", "port": "928"}, {"ip": "8.6.112.139", "port": "7281"},
-    {"ip": "8.6.112.178", "port": "942"}, {"ip": "8.6.112.205", "port": "3581"},
-    {"ip": "8.6.112.121", "port": "500"}, {"ip": "8.6.112.202", "port": "878"},
     {"ip": "162.159.192.1", "port": "2408"}, {"ip": "188.114.97.6", "port": "7281"},
     {"ip": "104.16.248.249", "port": "2408"}
   ];
@@ -104,9 +95,7 @@ class WARPGenerator {
     final publicKey = _generateMockKey();
     final endpoint = getRandomEndpoint();
     
-    // شبیه‌سازی ایجاد کانفیگ
     await Future.delayed(const Duration(milliseconds: 800));
-    
     final endpointHost = '${endpoint['ip']}:${endpoint['port']}';
     
     final buffer = StringBuffer();
@@ -136,7 +125,6 @@ class WARPGenerator {
         return True
 
     def fix_vpn_service(self) -> bool:
-        """سرویس اتصال اتوماتیک با دریافت واقعی IP از طریق API"""
         vpn_path = self.root / "lib" / "services" / "vpn_service.dart"
         correct = '''import 'package:flutter/foundation.dart';
 import 'dart:convert';
@@ -213,7 +201,6 @@ class VPNService extends ChangeNotifier {
         return True
 
     def fix_home_screen(self) -> bool:
-        """طراحی داشبورد با نمایش کانفیگ تولید شده و دکمه اتصال"""
         home_path = self.root / "lib" / "screens" / "home_screen.dart"
         correct = '''import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -348,7 +335,7 @@ class HomeScreen extends StatelessWidget {
                                     children: [
                                       Icon(Icons.dns_rounded, color: Color(0xFF00E5FF), size: 18),
                                       SizedBox(width: 8),
-                                      Text("اطلاعات سرور", style: TextStyle(fontWeight: FontWeight.bold)),
+                                      Text("اطلاعات سرور", style: TextStyle(fontFamily: 'Vazirmatn', fontWeight: FontWeight.bold)),
                                     ],
                                   ),
                                   const Divider(color: Colors.white10, height: 24),
@@ -380,7 +367,7 @@ class HomeScreen extends StatelessWidget {
                                         children: [
                                           Icon(Icons.code_rounded, color: Color(0xFF00E5FF), size: 18),
                                           SizedBox(width: 8),
-                                          Text("کانفیگ وایرگارد", style: TextStyle(fontWeight: FontWeight.bold)),
+                                          Text("کانفیگ وایرگارد", style: TextStyle(fontFamily: 'Vazirmatn', fontWeight: FontWeight.bold)),
                                         ],
                                       ),
                                       IconButton(
@@ -388,7 +375,7 @@ class HomeScreen extends StatelessWidget {
                                         onPressed: () {
                                           Clipboard.setData(ClipboardData(text: vpn.generatedConfig!));
                                           ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text('کانفیگ کپی شد', fontFamily: 'Vazirmatn')),
+                                            const SnackBar(content: Text('کانفیگ کپی شد', style: TextStyle(fontFamily: 'Vazirmatn'))),
                                           );
                                         },
                                       )
@@ -424,10 +411,11 @@ class HomeScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white54, fontSize: 14)),
+        Text(label, style: const TextStyle(fontFamily: 'Vazirmatn', color: Colors.white54, fontSize: 14)),
         Text(
           value, 
           style: const TextStyle(
+            fontFamily: 'Vazirmatn',
             color: Colors.white, 
             fontSize: 14, 
             fontWeight: FontWeight.bold,
@@ -444,7 +432,6 @@ class HomeScreen extends StatelessWidget {
         return True
 
     def fix_workflow(self) -> bool:
-        """تنظیم و تصحیح اکشن بیلد ویندوز (بازگردانی فایل‌ها بعد از overwrite)"""
         workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
         if not workflow_path.exists():
             return False
@@ -510,7 +497,6 @@ jobs:
         return True
 
     def scrub_tokens(self) -> bool:
-        """جایگزینی توکن‌های واقعی گیت‌هاب با YOUR_GITHUB_TOKEN"""
         token_regex = re.compile(r'ghp_[A-Za-z0-9_]{36,}')
         modified = False
         for filepath in self.root.rglob('*'):
@@ -527,7 +513,6 @@ jobs:
         return modified
 
     def update_gitignore(self) -> bool:
-        """اضافه کردن الگوهای امنیتی به .gitignore"""
         gi_path = self.root / ".gitignore"
         required = [".env", "*.token", "*.secret", "key.properties", "*.keystore", "*.jks"]
         existing = gi_path.read_text(encoding='utf-8') if gi_path.exists() else ""
@@ -540,7 +525,7 @@ jobs:
 
     def run(self) -> bool:
         print("\n" + "=" * 60)
-        print("🔧 Flutter Project Fixer (نسخه‌ی نهایی - دیزاین وی‌پی‌ان و ساخت کانفیگ)")
+        print("🔧 Flutter Project Fixer (نسخه‌ی نهایی - رفع ارور fontFamily)")
         print("=" * 60)
         print(f"\nمسیر پروژه: {self.root}\n")
 

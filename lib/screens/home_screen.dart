@@ -131,7 +131,7 @@ class HomeScreen extends StatelessWidget {
                                     children: [
                                       Icon(Icons.dns_rounded, color: Color(0xFF00E5FF), size: 18),
                                       SizedBox(width: 8),
-                                      Text("اطلاعات سرور", style: TextStyle(fontWeight: FontWeight.bold)),
+                                      Text("اطلاعات سرور", style: TextStyle(fontFamily: 'Vazirmatn', fontWeight: FontWeight.bold)),
                                     ],
                                   ),
                                   const Divider(color: Colors.white10, height: 24),
@@ -163,7 +163,7 @@ class HomeScreen extends StatelessWidget {
                                         children: [
                                           Icon(Icons.code_rounded, color: Color(0xFF00E5FF), size: 18),
                                           SizedBox(width: 8),
-                                          Text("کانفیگ وایرگارد", style: TextStyle(fontWeight: FontWeight.bold)),
+                                          Text("کانفیگ وایرگارد", style: TextStyle(fontFamily: 'Vazirmatn', fontWeight: FontWeight.bold)),
                                         ],
                                       ),
                                       IconButton(
@@ -171,7 +171,7 @@ class HomeScreen extends StatelessWidget {
                                         onPressed: () {
                                           Clipboard.setData(ClipboardData(text: vpn.generatedConfig!));
                                           ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text('کانفیگ کپی شد', fontFamily: 'Vazirmatn')),
+                                            const SnackBar(content: Text('کانفیگ کپی شد', style: TextStyle(fontFamily: 'Vazirmatn'))),
                                           );
                                         },
                                       )
@@ -207,10 +207,11 @@ class HomeScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white54, fontSize: 14)),
+        Text(label, style: const TextStyle(fontFamily: 'Vazirmatn', color: Colors.white54, fontSize: 14)),
         Text(
           value, 
           style: const TextStyle(
+            fontFamily: 'Vazirmatn',
             color: Colors.white, 
             fontSize: 14, 
             fontWeight: FontWeight.bold,
