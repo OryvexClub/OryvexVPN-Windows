@@ -15,7 +15,7 @@ if sys.platform == 'win32':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
-COMMIT_MESSAGE = "OryvexVPN: Fix 'Access is denied' tunnel install via forced elevation"
+COMMIT_MESSAGE = "OryvexVPN: Fix empty/broken files, missing pubspec deps"
 
 
 class GitHubPusher:
@@ -182,6 +182,7 @@ class GitHubPusher:
                     cwd=self.root, capture_output=True, text=True,
                     timeout=120, env=env, encoding='utf-8', errors='replace'
                 )
+                print(result.stdout)
                 if result.returncode != 0:
                     self.log(f"fixer.py failed. Output:\n{result.stdout}\n{result.stderr}", "ERROR")
                     if input("Continue? (y/n): ").strip().lower() != 'y':
@@ -297,8 +298,7 @@ class GitHubPusher:
         print("\n" + "=" * 60)
         print("OryvexVPN - Push & Build")
         print("=" * 60)
-        print("\nWill build: Windows EXE (real WireGuard connection with forced")
-        print("elevation for the tunnel install step)")
+        print("\nWill run fixer.py first, then build: Windows EXE")
 
         if not self.check_git():
             sys.exit(1)
