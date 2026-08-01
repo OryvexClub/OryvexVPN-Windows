@@ -9,6 +9,7 @@ from pathlib import Path
 from getpass import getpass
 from typing import Tuple
 
+# Fix Windows console encoding issues
 if sys.platform == 'win32':
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
@@ -125,7 +126,7 @@ class GitHubPusher:
         import json
         data = json.dumps({
             "name": self.repo_name,
-            "description": "OryvexVPN - Windows WireGuard dashboard with automatic endpoint scanning",
+            "description": "OryvexVPN - Windows WireGuard dashboard with automatic UAC Admin prompt",
             "private": False,
             "auto_init": False,
         }).encode('utf-8')
@@ -209,7 +210,7 @@ class GitHubPusher:
             return False
 
         self.log("Committing...", "STEP")
-        success, output = self.run_command('git commit -m "OryvexVPN: Fix UAC Admin privileges & LNK1327 build error"')
+        success, output = self.run_command('git commit -m "OryvexVPN: Fix [WinError 2] and Force UAC Shield Icon"')
         if not success and "nothing to commit" not in output:
             self.log(f"Commit warning: {output}", "WARNING")
 
@@ -291,7 +292,7 @@ class GitHubPusher:
         print("\n" + "=" * 60)
         print("OryvexVPN - Push & Build")
         print("=" * 60)
-        print("\nWill build: Windows EXE (real WireGuard connection with automatic config generation)")
+        print("\nWill build: Windows EXE (real WireGuard connection with automatic UAC Admin prompt)")
 
         if not self.check_git():
             sys.exit(1)

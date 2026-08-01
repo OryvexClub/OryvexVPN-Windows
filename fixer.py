@@ -5,12 +5,13 @@
 fixer.py - OryvexVPN Auto-Fixer
 Implements automatic Cloudflare WARP key generation, endpoint sweeping, 
 real WireGuard connection via bundled data/wireguard.exe, Persian UI, 
-and forced Administrator privileges for Windows without breaking mt.exe.
+and forced Administrator privileges for Windows (Shield Icon).
 """
 
 import os
 import re
 import sys
+import subprocess
 from pathlib import Path
 from typing import Optional
 
@@ -38,6 +39,12 @@ class FlutterProjectFixer:
             self.log("pubspec.yaml not found! Not a Flutter project.", "ERROR")
             return False
         self.log("Flutter project detected.", "SUCCESS")
+        return True
+
+    def initialize_windows(self) -> bool:
+        self.log("Ensuring Windows platform is initialized...", "STEP")
+        # Added shell=True to fix [WinError 2] on Windows
+        subprocess.run("flutter create --platforms windows .", shell=True, cwd=self.root, capture_output=True)
         return True
 
     def fix_main_dart(self) -> bool:
@@ -594,18 +601,38 @@ flutter:
 
     def fix_windows_manifest(self) -> bool:
         manifest_path = self.root / "windows" / "runner" / "runner.exe.manifest"
-        if not manifest_path.exists():
-            return False
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
         
-        content = manifest_path.read_text(encoding='utf-8')
-        new_content = content.replace('level="asInvoker"', 'level="requireAdministrator"')
+        # Hardcoding the manifest to guarantee requireAdministrator is injected
+        correct = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity version="1.0.0.0" name="oryvex_vpn_demo" type="win32"/>
+  <description>Oryvex VPN</description>
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+    <security>
+      <requestedPrivileges>
+        <requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/>
+      <supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}"/>
+      <supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}"/>
+    </application>
+  </compatibility>
+  <application xmlns="urn:schemas-microsoft-com:asm.v3">
+    <windowsSettings>
+      <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true</dpiAware>
+      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
+    </windowsSettings>
+  </application>
+</assembly>"""
         
-        if content != new_content:
-            manifest_path.write_text(new_content, encoding='utf-8')
-            self.fixed_files.append("runner.exe.manifest (Forced Administrator Privileges locally)")
-            return True
-            
-        return False
+        manifest_path.write_text(correct, encoding='utf-8')
+        self.fixed_files.append("windows/runner/runner.exe.manifest (Forced UAC Shield Icon & Admin Privileges)")
+        return True
 
     def fix_workflow(self) -> bool:
         workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
@@ -615,9 +642,6 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
-
-env:
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
 jobs:
   build:
@@ -633,35 +657,7 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Precache Windows artifacts
-        run: flutter precache --windows
-
-      - name: Run flutter doctor
-        run: flutter doctor -v
-
-      - name: Enable Windows desktop
-        run: flutter config --enable-windows-desktop
-
-      - name: Clean previous builds
-        run: flutter clean
-
       - name: Get dependencies
-        run: flutter pub get
-
-      - name: Update Windows Project Files
-        run: |
-          flutter create --platforms windows --overwrite .
-          git checkout lib/ pubspec.yaml README.md windows/runner/main.cpp
-
-      - name: Force Administrator Privileges (UAC)
-        run: |
-          $manifest = "windows/runner/runner.exe.manifest"
-          if (Test-Path $manifest) {
-            (Get-Content $manifest) -replace 'level="asInvoker"', 'level="requireAdministrator"' | Set-Content $manifest
-            Write-Host "Manifest patched for Administrator privileges."
-          }
-
-      - name: Get dependencies (again after create)
         run: flutter pub get
 
       - name: Build Windows app
@@ -690,7 +686,7 @@ jobs:
 """
         workflow_path.parent.mkdir(parents=True, exist_ok=True)
         workflow_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("build_windows.yml (Fixed LNK1327 issue with dynamic patch)")
+        self.fixed_files.append("build_windows.yml (Removed destructive flutter create command)")
         return True
 
     def remove_obsolete_files(self) -> bool:
@@ -734,13 +730,14 @@ jobs:
 
     def run(self) -> bool:
         print("\\n" + "=" * 60)
-        print("🔧 Flutter Project Fixer - OryvexVPN (Admin Privileges, LNK1327 Fix & Bundled WG)")
+        print("🔧 Flutter Project Fixer - OryvexVPN (Admin Shield Icon Fix)")
         print("=" * 60)
         print(f"\\nProject Path: {self.root}\\n")
 
         if not self.check_project():
             return False
 
+        self.initialize_windows()
         self.fix_main_dart()
         self.fix_pubspec()
         self.fix_warp_service()
@@ -761,7 +758,7 @@ jobs:
             for f in self.fixed_files:
                 print(f"  ✓ {f}")
 
-        print("\\n✅ All issues resolved. WireGuard will now be bundled automatically via GitHub Actions.")
+        print("\\n✅ Shield Icon enabled. The app will now demand Administrator privileges immediately upon launch.")
         return True
 
 def main():

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-  <assemblyIdentity version="1.0.0.0" name="warp_vpn_app" type="win32"/>
-  <description>WARP VPN App</description>
+  <assemblyIdentity version="1.0.0.0" name="oryvex_vpn_demo" type="win32"/>
+  <description>Oryvex VPN</description>
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
     <security>
       <requestedPrivileges>
