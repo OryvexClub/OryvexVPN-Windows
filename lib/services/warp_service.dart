@@ -46,9 +46,17 @@ class WarpService {
     return File(exePath).parent.path;
   }
 
-  /// Bundled the same way wireguard.exe used to be — see the updated
-  /// build_windows.yml, which now downloads amneziawg.exe into data/.
-  static String get _amneziawgExe => '$_exeDir\\data\\amneziawg.exe';
+  /// The MSI we ship inside data/ (built by build_windows.yml, pinned to
+  /// AmneziaWG 2.0.2). We install FROM this, we never run it in "admin
+  /// extraction" mode — that was the bug. See workflow comments.
+  static String get _bundledMsi => '$_exeDir\\data\\amneziawg-setup.msi';
+
+  /// Where the official MSI actually installs AmneziaWG once it has run a
+  /// real (non-admin-image) install.
+  static String get _installedAmneziawgExe {
+    final pf = Platform.environment['ProgramFiles'] ?? r'C:\Program Files';
+    return '$pf\\AmneziaWG\\amneziawg.exe';
+  }
 
   /// WireSock Secure Connect is a real installer + background service, not
   /// something we can portably bundle, so we just look for it where the
@@ -85,10 +93,9 @@ class WarpService {
   /// Generates a WireGuard-format config via the Cloudflare WARP
   /// registration API. Both AmneziaWG and WireSock accept this format
   /// as-is. If your server actually speaks AmneziaWG's obfuscated
-  /// protocol (the thing that made it work in the Amnezia app but not in
-  /// wireguard.exe), copy the Jc/Jmin/Jmax/S1/S2/H1-H4 lines from your
-  /// working Amnezia config into the [Interface] block this returns —
-  /// see [obfuscationParams] below.
+  /// protocol, copy the Jc/Jmin/Jmax/S1/S2/H1-H4 lines from your working
+  /// Amnezia config into the [Interface] block this returns — see
+  /// [obfuscationParams] below.
   static Future<String> generateConfig(
     Function(String) onProgress, {
     Map<String, String>? obfuscationParams,
@@ -153,7 +160,11 @@ PersistentKeepalive = 25''';
     return file.writeAsString(config);
   }
 
-  static Future<bool> isAmneziaWGAvailable() async => File(_amneziawgExe).exists();
+  static Future<bool> isAmneziaWGInstalled() async =>
+      File(_installedAmneziawgExe).exists();
+
+  static Future<bool> _hasBundledInstaller() async => File(_bundledMsi).exists();
+
   static Future<bool> isWireSockAvailable() async => File(_wiresockCli).exists();
 
   /// Escapes a string for safe embedding inside a single-quoted
@@ -186,6 +197,48 @@ PersistentKeepalive = 25''';
     return result.exitCode;
   }
 
+  /// Installs the bundled AmneziaWG MSI with a real, silent, non-admin-image
+  /// install (`msiexec /i ... /quiet /norestart`). This is the step the old
+  /// code skipped by doing `msiexec /a` extraction, which is why the driver
+  /// and AmneziaWGManager service never got registered and the tunnel
+  /// service failed to actually start.
+  static Future<void> _ensureAmneziaWGInstalled(Function(String) onProgress) async {
+    if (await isAmneziaWGInstalled()) return;
+
+    if (!await _hasBundledInstaller()) {
+      throw Exception(
+        'فایل نصب AmneziaWG (data\\amneziawg-setup.msi) در برنامه یافت نشد.',
+      );
+    }
+
+    onProgress('در حال نصب هسته AmneziaWG (یک‌بار)...');
+
+    final psCommand =
+        "\$p = Start-Process -FilePath 'msiexec.exe' "
+        "-ArgumentList @('/i', ${_psQuote(_bundledMsi)}, '/quiet', '/norestart') "
+        "-Verb RunAs -Wait -PassThru -WindowStyle Hidden; "
+        "exit \$p.ExitCode";
+
+    final result = await Process.run(
+      'powershell.exe',
+      ['-NoProfile', '-NonInteractive', '-Command', psCommand],
+      runInShell: false,
+    );
+
+    // msiexec exit code 3010 = success, reboot required (harmless for us —
+    // driver + service are already registered at that point).
+    if (result.exitCode != 0 && result.exitCode != 3010) {
+      final stderrText = (result.stderr ?? '').toString().trim();
+      throw Exception(
+        'نصب AmneziaWG ناموفق بود (کد msiexec: ${result.exitCode}).\n$stderrText',
+      );
+    }
+
+    if (!await isAmneziaWGInstalled()) {
+      throw Exception('پس از نصب، amneziawg.exe در مسیر مورد انتظار پیدا نشد.');
+    }
+  }
+
   static Future<void> connect(String config) async {
     if (!Platform.isWindows) {
       throw Exception('این نسخه فقط مخصوص ویندوز است.');
@@ -193,41 +246,41 @@ PersistentKeepalive = 25''';
 
     final file = await _writeConfigFile(config);
 
-    // AmneziaWG first — bundled, same install flow as wireguard.exe used
-    // to have, and generally fixes the driver-install "Access is denied"
-    // class of bug. Fall back to WireSock (different driver family) only
-    // if AmneziaWG isn't present or its install fails and WireSock Secure
-    // Connect happens to be installed already.
-    if (await isAmneziaWGAvailable()) {
-      try {
-        await _connectAmneziaWG(file);
-        _activeCore = VpnCore.amneziawg;
-        return;
-      } catch (e) {
-        if (!await isWireSockAvailable()) rethrow;
-      }
-    }
-
-    if (await isWireSockAvailable()) {
-      await _connectWireSock(file);
-      _activeCore = VpnCore.wiresock;
+    // AmneziaWG first, backed by a real MSI install so the driver and
+    // AmneziaWGManager service actually exist this time. Fall back to
+    // WireSock (different driver family) only if AmneziaWG install/connect
+    // fails and WireSock Secure Connect happens to be installed already.
+    // The official wireguard.exe is never downloaded or used.
+    try {
+      await _connectAmneziaWG(file);
+      _activeCore = VpnCore.amneziawg;
       return;
+    } catch (e) {
+      if (!await isWireSockAvailable()) rethrow;
     }
 
-    throw Exception(
-      'هیچ هسته وی‌پی‌ان‌ای پیدا نشد.\n'
-      'AmneziaWG (data\\amneziawg.exe) در برنامه یافت نشد و WireSock Secure Connect هم نصب نیست.\n'
-      'یکی از این دو را نصب کنید.',
-    );
+    await _connectWireSock(file);
+    _activeCore = VpnCore.wiresock;
   }
 
   static Future<void> _connectAmneziaWG(File configFile) async {
+    await _ensureAmneziaWGInstalled((msg) {});
+
     try {
-      await _runElevated(_amneziawgExe, ['/installtunnelservice', configFile.path]);
+      await _runElevated(_installedAmneziawgExe, ['/installtunnelservice', configFile.path]);
     } catch (e) {
       throw Exception('نصب تونل AmneziaWG ناموفق بود.\n$e');
     }
-    final isUp = await _isAmneziaWGConnected();
+
+    // Give the service manager a brief moment to report RUNNING before we
+    // give up — installtunnelservice returning 0 just means the service
+    // object was created, not that the adapter is fully up yet.
+    bool isUp = false;
+    for (var i = 0; i < 6; i++) {
+      isUp = await _isAmneziaWGConnected();
+      if (isUp) break;
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
     if (!isUp) {
       throw Exception('سرویس AmneziaWG پس از نصب شروع نشد.');
     }
@@ -263,7 +316,7 @@ PersistentKeepalive = 25''';
     }
 
     try {
-      await _runElevated(_amneziawgExe, ['/uninstalltunnelservice', _tunnelName]);
+      await _runElevated(_installedAmneziawgExe, ['/uninstalltunnelservice', _tunnelName]);
     } catch (e) {
       if (e.toString().contains('The system cannot find the file specified') ||
           e.toString().contains('service does not exist')) {
@@ -306,7 +359,7 @@ PersistentKeepalive = 25''';
     if (_activeCore == VpnCore.amneziawg) return _isAmneziaWGConnected();
 
     // Unknown yet (e.g. fresh app launch) — check both.
-    if (await _isAmneziaWGConnected()) {
+    if (await isAmneziaWGInstalled() && await _isAmneziaWGConnected()) {
       _activeCore = VpnCore.amneziawg;
       return true;
     }

@@ -28,32 +28,42 @@ jobs:
       - name: Build Windows app
         run: flutter build windows --release
 
-      - name: Bundle AmneziaWG inside data/
+      - name: Bundle AmneziaWG 2.0.2 MSI installer inside data/
         run: |
           $ReleaseDir = "build\windows\x64\runner\Release"
           New-Item -ItemType Directory -Force -Path "$ReleaseDir\data"
 
-          # Always grab the latest amneziawg-windows-client release asset
-          # instead of pinning a version that will go stale.
-          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/amnezia-vpn/amneziawg-windows-client/releases/latest"
-          $asset = $release.assets | Where-Object { $_.name -match "^amneziawg-amd64-.*\.msi$" } | Select-Object -First 1
-          if (-not $asset) {
-            Write-Host "Could not find an amd64 AmneziaWG MSI in the latest release."
+          # Pinned to the amnezia-vpn/amneziawg-windows-client 2.0.2 tag on
+          # purpose (not /latest) — the official wireguard.exe core is never
+          # downloaded or used anywhere in this project.
+          #
+          # IMPORTANT: unlike the old workflow, we do NOT run
+          #   msiexec /a <msi> /qb TARGETDIR=...
+          # to extract a bare amneziawg.exe. An "administrative install"
+          # (/a) only unpacks files — it does not run the MSI's install
+          # sequence, so the WireGuardNT/AmneziaWG driver never gets
+          # registered and no AmneziaWGManager service exists. That's what
+          # produced "سرویس AmneziaWG پس از نصب شروع نشد" at runtime: the
+          # extracted exe could "install" a tunnel service handle but the
+          # driver behind it was never actually set up.
+          #
+          # Fix: bundle the *real* MSI installer as-is and let the app run
+          # a normal silent `msiexec /i ... /quiet` (elevated) the first
+          # time it needs AmneziaWG, so every install-time driver/service
+          # step actually executes. See warp_service.dart.
+          $version = "2.0.2"
+          $url = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/$version/amneziawg-amd64-$version.msi"
+          $out = "$ReleaseDir\data\amneziawg-setup.msi"
+
+          Write-Host "Downloading AmneziaWG $version installer..."
+          Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing
+
+          if (-not (Test-Path $out) -or (Get-Item $out).Length -lt 100000) {
+            Write-Host "Download looks wrong/too small, asset name may have changed for this release. Failing build."
             exit 1
           }
-          Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "awg.msi"
 
-          Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD\awg.msi`" /qb TARGETDIR=`"$PWD\awg_extract`"" -Wait -NoNewWindow
-
-          # The MSI installs the client as amneziawg.exe (the driver itself
-          # ships embedded in the binary, same as upstream wireguard.exe).
-          $exe = Get-ChildItem -Path "awg_extract" -Recurse -Filter "amneziawg.exe" | Select-Object -First 1
-          if (-not $exe) {
-            Write-Host "Failed to extract amneziawg.exe from the MSI."
-            exit 1
-          }
-          Copy-Item -Path $exe.FullName -Destination "$ReleaseDir\data\amneziawg.exe"
-          Write-Host "AmneziaWG successfully bundled in data/ folder."
+          Write-Host "AmneziaWG $version MSI bundled at data\amneziawg-setup.msi"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

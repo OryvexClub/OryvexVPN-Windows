@@ -2,24 +2,34 @@
 # -*- coding: utf-8 -*-
 
 """
-fixer.py - OryvexVPN Auto-Fixer (AmneziaWG core + WireSock fallback edition)
+fixer.py - OryvexVPN Auto-Fixer (AmneziaWG real-install core + WireSock fallback)
 
-The official wireguard.exe is no longer downloaded, bundled, or called
-anywhere in this script. The VPN core is now:
-  1. AmneziaWG (data\\amneziawg.exe) — bundled by CI, same portable
-     /installtunnelservice flow the app used with wireguard.exe before.
-  2. WireSock Secure Connect — automatic fallback if AmneziaWG's install
-     fails and WireSock is already installed on the machine (it ships its
-     own installer/service, so it can't be bundled portably).
+The official wireguard.exe is never downloaded, bundled, or called anywhere
+in this script. The VPN core is now:
+  1. AmneziaWG, pinned to release 2.0.2 of amnezia-vpn/amneziawg-windows-client.
+     The app bundles the REAL MSI installer (data\amneziawg-setup.msi) and, the
+     first time it's needed, runs a normal silent install
+     (`msiexec /i ... /quiet /norestart`, elevated) so the WireGuardNT/
+     AmneziaWG driver and the AmneziaWGManager service are actually
+     registered. The previous version only ran `msiexec /a` (an
+     "administrative install" that just unpacks files without running the
+     MSI's install sequence), which is why the driver/service never got set
+     up and the app reported "AmneziaWG service did not start after
+     installation".
+  2. WireSock Secure Connect - automatic fallback if AmneziaWG's install or
+     connect fails and WireSock is already installed on the machine (it
+     ships its own installer/service, so it can't be bundled portably).
 
 Fixes:
-  1. The app manifest is set to requireAdministrator – app runs elevated once.
+  1. The app manifest is set to requireAdministrator - app runs elevated once.
   2. Core calls use PowerShell Start-Process -Verb RunAs, which does not
      show an additional UAC prompt if the parent is already elevated.
   3. Expands endpoint list and uses concurrent ping scanning for best server.
   4. Fixes disconnect: uninstall works with elevation, for whichever core
      is active.
-  5. Verifies the tunnel is running after install.
+  5. Verifies the tunnel is running after install, with a short retry loop
+     since installtunnelservice returning 0 only means the service object
+     was created, not that the adapter is fully up yet.
 """
 
 import os
@@ -44,8 +54,8 @@ class FlutterProjectFixer:
 
     def log(self, message: str, level: str = "INFO"):
         icons = {
-            "INFO": "[i]", "SUCCESS": "[✓]", "WARNING": "[!]",
-            "ERROR": "[✗]", "STEP": "[>]", "FIX": "[🔧]"
+            "INFO": "[i]", "SUCCESS": "[OK]", "WARNING": "[!]",
+            "ERROR": "[X]", "STEP": "[>]", "FIX": "[FIX]"
         }
         print(f"{icons.get(level, '[i]')} {message}")
 
@@ -114,10 +124,11 @@ class MyApp extends StatelessWidget {
 
     def fix_warp_service(self) -> bool:
         """
-        Rewrite warp_service.dart to use AmneziaWG as the primary core
-        (drop-in for the old wireguard.exe flow) with WireSock Secure
-        Connect as an automatic fallback. No official wireguard.exe
-        anywhere in this file.
+        Rewrite warp_service.dart so AmneziaWG gets a REAL msiexec /i silent
+        install (from a bundled MSI, pinned to release 2.0.2) instead of the
+        old msiexec /a extraction that never registered the driver/service.
+        WireSock Secure Connect stays as an automatic fallback. No official
+        wireguard.exe anywhere in this file.
         """
         warp_path = self.root / "lib" / "services" / "warp_service.dart"
         correct = r"""import 'dart:io';
@@ -168,9 +179,17 @@ class WarpService {
     return File(exePath).parent.path;
   }
 
-  /// Bundled the same way wireguard.exe used to be — see the updated
-  /// build_windows.yml, which now downloads amneziawg.exe into data/.
-  static String get _amneziawgExe => '$_exeDir\\data\\amneziawg.exe';
+  /// The MSI we ship inside data/ (built by build_windows.yml, pinned to
+  /// AmneziaWG 2.0.2). We install FROM this, we never run it in "admin
+  /// extraction" mode — that was the bug. See workflow comments.
+  static String get _bundledMsi => '$_exeDir\\data\\amneziawg-setup.msi';
+
+  /// Where the official MSI actually installs AmneziaWG once it has run a
+  /// real (non-admin-image) install.
+  static String get _installedAmneziawgExe {
+    final pf = Platform.environment['ProgramFiles'] ?? r'C:\Program Files';
+    return '$pf\\AmneziaWG\\amneziawg.exe';
+  }
 
   /// WireSock Secure Connect is a real installer + background service, not
   /// something we can portably bundle, so we just look for it where the
@@ -207,10 +226,9 @@ class WarpService {
   /// Generates a WireGuard-format config via the Cloudflare WARP
   /// registration API. Both AmneziaWG and WireSock accept this format
   /// as-is. If your server actually speaks AmneziaWG's obfuscated
-  /// protocol (the thing that made it work in the Amnezia app but not in
-  /// wireguard.exe), copy the Jc/Jmin/Jmax/S1/S2/H1-H4 lines from your
-  /// working Amnezia config into the [Interface] block this returns —
-  /// see [obfuscationParams] below.
+  /// protocol, copy the Jc/Jmin/Jmax/S1/S2/H1-H4 lines from your working
+  /// Amnezia config into the [Interface] block this returns — see
+  /// [obfuscationParams] below.
   static Future<String> generateConfig(
     Function(String) onProgress, {
     Map<String, String>? obfuscationParams,
@@ -275,7 +293,11 @@ PersistentKeepalive = 25''';
     return file.writeAsString(config);
   }
 
-  static Future<bool> isAmneziaWGAvailable() async => File(_amneziawgExe).exists();
+  static Future<bool> isAmneziaWGInstalled() async =>
+      File(_installedAmneziawgExe).exists();
+
+  static Future<bool> _hasBundledInstaller() async => File(_bundledMsi).exists();
+
   static Future<bool> isWireSockAvailable() async => File(_wiresockCli).exists();
 
   /// Escapes a string for safe embedding inside a single-quoted
@@ -308,6 +330,48 @@ PersistentKeepalive = 25''';
     return result.exitCode;
   }
 
+  /// Installs the bundled AmneziaWG MSI with a real, silent, non-admin-image
+  /// install (`msiexec /i ... /quiet /norestart`). This is the step the old
+  /// code skipped by doing `msiexec /a` extraction, which is why the driver
+  /// and AmneziaWGManager service never got registered and the tunnel
+  /// service failed to actually start.
+  static Future<void> _ensureAmneziaWGInstalled(Function(String) onProgress) async {
+    if (await isAmneziaWGInstalled()) return;
+
+    if (!await _hasBundledInstaller()) {
+      throw Exception(
+        'فایل نصب AmneziaWG (data\\amneziawg-setup.msi) در برنامه یافت نشد.',
+      );
+    }
+
+    onProgress('در حال نصب هسته AmneziaWG (یک‌بار)...');
+
+    final psCommand =
+        "\$p = Start-Process -FilePath 'msiexec.exe' "
+        "-ArgumentList @('/i', ${_psQuote(_bundledMsi)}, '/quiet', '/norestart') "
+        "-Verb RunAs -Wait -PassThru -WindowStyle Hidden; "
+        "exit \$p.ExitCode";
+
+    final result = await Process.run(
+      'powershell.exe',
+      ['-NoProfile', '-NonInteractive', '-Command', psCommand],
+      runInShell: false,
+    );
+
+    // msiexec exit code 3010 = success, reboot required (harmless for us —
+    // driver + service are already registered at that point).
+    if (result.exitCode != 0 && result.exitCode != 3010) {
+      final stderrText = (result.stderr ?? '').toString().trim();
+      throw Exception(
+        'نصب AmneziaWG ناموفق بود (کد msiexec: ${result.exitCode}).\n$stderrText',
+      );
+    }
+
+    if (!await isAmneziaWGInstalled()) {
+      throw Exception('پس از نصب، amneziawg.exe در مسیر مورد انتظار پیدا نشد.');
+    }
+  }
+
   static Future<void> connect(String config) async {
     if (!Platform.isWindows) {
       throw Exception('این نسخه فقط مخصوص ویندوز است.');
@@ -315,41 +379,41 @@ PersistentKeepalive = 25''';
 
     final file = await _writeConfigFile(config);
 
-    // AmneziaWG first — bundled, same install flow as wireguard.exe used
-    // to have, and generally fixes the driver-install "Access is denied"
-    // class of bug. Fall back to WireSock (different driver family) only
-    // if AmneziaWG isn't present or its install fails and WireSock Secure
-    // Connect happens to be installed already.
-    if (await isAmneziaWGAvailable()) {
-      try {
-        await _connectAmneziaWG(file);
-        _activeCore = VpnCore.amneziawg;
-        return;
-      } catch (e) {
-        if (!await isWireSockAvailable()) rethrow;
-      }
-    }
-
-    if (await isWireSockAvailable()) {
-      await _connectWireSock(file);
-      _activeCore = VpnCore.wiresock;
+    // AmneziaWG first, backed by a real MSI install so the driver and
+    // AmneziaWGManager service actually exist this time. Fall back to
+    // WireSock (different driver family) only if AmneziaWG install/connect
+    // fails and WireSock Secure Connect happens to be installed already.
+    // The official wireguard.exe is never downloaded or used.
+    try {
+      await _connectAmneziaWG(file);
+      _activeCore = VpnCore.amneziawg;
       return;
+    } catch (e) {
+      if (!await isWireSockAvailable()) rethrow;
     }
 
-    throw Exception(
-      'هیچ هسته وی‌پی‌ان‌ای پیدا نشد.\n'
-      'AmneziaWG (data\\amneziawg.exe) در برنامه یافت نشد و WireSock Secure Connect هم نصب نیست.\n'
-      'یکی از این دو را نصب کنید.',
-    );
+    await _connectWireSock(file);
+    _activeCore = VpnCore.wiresock;
   }
 
   static Future<void> _connectAmneziaWG(File configFile) async {
+    await _ensureAmneziaWGInstalled((msg) {});
+
     try {
-      await _runElevated(_amneziawgExe, ['/installtunnelservice', configFile.path]);
+      await _runElevated(_installedAmneziawgExe, ['/installtunnelservice', configFile.path]);
     } catch (e) {
       throw Exception('نصب تونل AmneziaWG ناموفق بود.\n$e');
     }
-    final isUp = await _isAmneziaWGConnected();
+
+    // Give the service manager a brief moment to report RUNNING before we
+    // give up — installtunnelservice returning 0 just means the service
+    // object was created, not that the adapter is fully up yet.
+    bool isUp = false;
+    for (var i = 0; i < 6; i++) {
+      isUp = await _isAmneziaWGConnected();
+      if (isUp) break;
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
     if (!isUp) {
       throw Exception('سرویس AmneziaWG پس از نصب شروع نشد.');
     }
@@ -385,7 +449,7 @@ PersistentKeepalive = 25''';
     }
 
     try {
-      await _runElevated(_amneziawgExe, ['/uninstalltunnelservice', _tunnelName]);
+      await _runElevated(_installedAmneziawgExe, ['/uninstalltunnelservice', _tunnelName]);
     } catch (e) {
       if (e.toString().contains('The system cannot find the file specified') ||
           e.toString().contains('service does not exist')) {
@@ -428,7 +492,7 @@ PersistentKeepalive = 25''';
     if (_activeCore == VpnCore.amneziawg) return _isAmneziaWGConnected();
 
     // Unknown yet (e.g. fresh app launch) — check both.
-    if (await _isAmneziaWGConnected()) {
+    if (await isAmneziaWGInstalled() && await _isAmneziaWGConnected()) {
       _activeCore = VpnCore.amneziawg;
       return true;
     }
@@ -442,7 +506,7 @@ PersistentKeepalive = 25''';
 """
         warp_path.parent.mkdir(parents=True, exist_ok=True)
         warp_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("warp_service.dart (AmneziaWG primary core, WireSock fallback, no wireguard.exe)")
+        self.fixed_files.append("warp_service.dart (AmneziaWG 2.0.2 real MSI install, WireSock fallback, no wireguard.exe)")
         return True
 
     def fix_vpn_service(self) -> bool:
@@ -634,32 +698,42 @@ jobs:
       - name: Build Windows app
         run: flutter build windows --release
 
-      - name: Bundle AmneziaWG inside data/
+      - name: Bundle AmneziaWG 2.0.2 MSI installer inside data/
         run: |
           $ReleaseDir = "build\windows\x64\runner\Release"
           New-Item -ItemType Directory -Force -Path "$ReleaseDir\data"
 
-          # Always grab the latest amneziawg-windows-client release asset
-          # instead of pinning a version that will go stale.
-          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/amnezia-vpn/amneziawg-windows-client/releases/latest"
-          $asset = $release.assets | Where-Object { $_.name -match "^amneziawg-amd64-.*\.msi$" } | Select-Object -First 1
-          if (-not $asset) {
-            Write-Host "Could not find an amd64 AmneziaWG MSI in the latest release."
+          # Pinned to the amnezia-vpn/amneziawg-windows-client 2.0.2 tag on
+          # purpose (not /latest) — the official wireguard.exe core is never
+          # downloaded or used anywhere in this project.
+          #
+          # IMPORTANT: unlike the old workflow, we do NOT run
+          #   msiexec /a <msi> /qb TARGETDIR=...
+          # to extract a bare amneziawg.exe. An "administrative install"
+          # (/a) only unpacks files — it does not run the MSI's install
+          # sequence, so the WireGuardNT/AmneziaWG driver never gets
+          # registered and no AmneziaWGManager service exists. That's what
+          # produced "سرویس AmneziaWG پس از نصب شروع نشد" at runtime: the
+          # extracted exe could "install" a tunnel service handle but the
+          # driver behind it was never actually set up.
+          #
+          # Fix: bundle the *real* MSI installer as-is and let the app run
+          # a normal silent `msiexec /i ... /quiet` (elevated) the first
+          # time it needs AmneziaWG, so every install-time driver/service
+          # step actually executes. See warp_service.dart.
+          $version = "2.0.2"
+          $url = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/$version/amneziawg-amd64-$version.msi"
+          $out = "$ReleaseDir\data\amneziawg-setup.msi"
+
+          Write-Host "Downloading AmneziaWG $version installer..."
+          Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing
+
+          if (-not (Test-Path $out) -or (Get-Item $out).Length -lt 100000) {
+            Write-Host "Download looks wrong/too small, asset name may have changed for this release. Failing build."
             exit 1
           }
-          Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "awg.msi"
 
-          Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD\awg.msi`" /qb TARGETDIR=`"$PWD\awg_extract`"" -Wait -NoNewWindow
-
-          # The MSI installs the client as amneziawg.exe (the driver itself
-          # ships embedded in the binary, same as upstream wireguard.exe).
-          $exe = Get-ChildItem -Path "awg_extract" -Recurse -Filter "amneziawg.exe" | Select-Object -First 1
-          if (-not $exe) {
-            Write-Host "Failed to extract amneziawg.exe from the MSI."
-            exit 1
-          }
-          Copy-Item -Path $exe.FullName -Destination "$ReleaseDir\data\amneziawg.exe"
-          Write-Host "AmneziaWG successfully bundled in data/ folder."
+          Write-Host "AmneziaWG $version MSI bundled at data\amneziawg-setup.msi"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -669,7 +743,7 @@ jobs:
 """
         workflow_path.parent.mkdir(parents=True, exist_ok=True)
         workflow_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("build_windows.yml (bundles AmneziaWG via GitHub API, no wireguard.exe)")
+        self.fixed_files.append("build_windows.yml (bundles real AmneziaWG 2.0.2 MSI, no wireguard.exe)")
         return True
 
     def remove_obsolete_files(self) -> bool:
@@ -713,7 +787,7 @@ jobs:
 
     def run(self) -> bool:
         print("\n" + "=" * 60)
-        print("🔧 Flutter Project Fixer - OryvexVPN (AmneziaWG + WireSock, no wireguard.exe)")
+        print("Flutter Project Fixer - OryvexVPN (AmneziaWG 2.0.2 real install + WireSock, no wireguard.exe)")
         print("=" * 60)
         print(f"\nProject Path: {self.root}\n")
 
@@ -735,22 +809,25 @@ jobs:
         self.update_gitignore()
 
         print("\n" + "=" * 60)
-        print("📊 Final Report")
+        print("Final Report")
         print("=" * 60)
         if self.fixed_files:
-            print("\n📁 Modified/Added Files:")
+            print("\nModified/Added Files:")
             for f in self.fixed_files:
-                print(f"  ✓ {f}")
+                print(f"  - {f}")
 
-        print("\n✅ Fixes applied:")
-        print("  • VPN core switched to AmneziaWG (bundled) with WireSock Secure Connect")
-        print("    as an automatic fallback — the official wireguard.exe is no longer used.")
-        print("  • App manifest set to requireAdministrator – app runs elevated once.")
-        print("  • Core calls use PowerShell Start-Process -Verb RunAs.")
+        print("\nFixes applied:")
+        print("  - VPN core: AmneziaWG pinned to release 2.0.2, installed via a REAL")
+        print("    silent msiexec /i (elevated), not the old /a admin-extraction that")
+        print("    skipped driver/service registration. WireSock Secure Connect stays")
+        print("    as an automatic fallback. The official wireguard.exe is never used.")
+        print("  - App manifest set to requireAdministrator - app runs elevated once.")
+        print("  - Core calls use PowerShell Start-Process -Verb RunAs.")
         print("    (No extra UAC prompt if the app is already admin).")
-        print("  • Endpoint list expanded to 300+ IPs with concurrent ping scan.")
-        print("  • Disconnect now targets whichever core is actually active.")
-        print("  • Connection verifies the tunnel is running after install.")
+        print("  - Endpoint list expanded to 300+ IPs with concurrent ping scan.")
+        print("  - Disconnect now targets whichever core is actually active.")
+        print("  - Connection verifies the tunnel is running after install, with a")
+        print("    short retry loop instead of a single immediate check.")
         print("\nRun push.py to deploy to GitHub and build the new EXE.")
         return True
 
@@ -765,10 +842,10 @@ def main():
         success = fixer.run()
         sys.exit(0 if success else 1)
     except KeyboardInterrupt:
-        print("\n⏹️ Operation cancelled by user.")
+        print("\nOperation cancelled by user.")
         sys.exit(0)
     except Exception as e:
-        print(f"\n❌ Unexpected error: {e}")
+        print(f"\nUnexpected error: {e}")
         sys.exit(1)
 
 
