@@ -706,6 +706,110 @@ class _EndpointSelectorState extends State<EndpointSelector> {
         )
 
     # ------------------------------------------------------------------ #
+    # 1b. pubspec.yaml SDK constraint vs CI Flutter version mismatch
+    # ------------------------------------------------------------------ #
+    def fix_sdk_constraint_mismatch(self) -> bool:
+        """
+        Root-cause fix for CI failures like:
+          "The current Dart SDK version is 3.5.0.
+           Because warp_vpn_app requires SDK version ^3.12.2, version
+           solving failed."
+
+        This happens when .dart_tool/package_config.json (generated locally
+        by a newer Flutter/Dart install, e.g. Flutter 3.44.2 / Dart 3.12.2)
+        gets committed to git, and/or the pubspec.yaml `environment: sdk:`
+        constraint drifts to something CI's pinned Flutter version can't
+        satisfy. We fix both sides:
+          (a) loosen pubspec.yaml's sdk constraint to a broad, safe range
+          (b) bump the CI workflow's pinned Flutter version to one that
+              actually ships a matching Dart SDK
+          (c) remove committed .dart_tool/ (it's a local build cache and
+              should never be in git - it's what caused the drift)
+        """
+        changed = False
+
+        # (a) pubspec.yaml sdk constraint
+        pubspec = self.root / "pubspec.yaml"
+        if pubspec.exists():
+            text = pubspec.read_text(encoding='utf-8')
+            new_text, count = re.subn(
+                r"sdk:\s*['\"][^'\"]*['\"]",
+                "sdk: '>=3.0.0 <4.0.0'",
+                text,
+                count=1,
+            )
+            if count > 0 and new_text != text:
+                pubspec.write_text(new_text, encoding='utf-8')
+                self.fixed_files.append(
+                    "pubspec.yaml (relaxed environment.sdk constraint to '>=3.0.0 <4.0.0' "
+                    "so it matches the Flutter/Dart version CI actually installs)"
+                )
+                self.log("Relaxed pubspec.yaml SDK constraint", "FIX")
+                changed = True
+
+        # (b) CI workflow Flutter version pin
+        workflow = self.root / ".github" / "workflows" / "build_windows.yml"
+        if workflow.exists():
+            wtext = workflow.read_text(encoding='utf-8')
+            # Flutter 3.24.0 ships Dart 3.5.0, which is too old for SDK
+            # constraints like ^3.12.2 that a locally-newer Flutter can
+            # accidentally introduce. Pin to 3.44.2 (matches local dev env
+            # referenced in .dart_tool/package_config.json) for consistency.
+            new_wtext, wcount = re.subn(
+                r"flutter-version:\s*'[^']*'",
+                "flutter-version: '3.44.2'",
+                wtext,
+                count=1,
+            )
+            if wcount > 0 and new_wtext != wtext:
+                workflow.write_text(new_wtext, encoding='utf-8')
+                self.fixed_files.append(
+                    ".github/workflows/build_windows.yml "
+                    "(bumped pinned Flutter version to 3.44.2 to match Dart SDK the "
+                    "project actually requires)"
+                )
+                self.log("Bumped CI Flutter version pin to 3.44.2", "FIX")
+                changed = True
+
+        # (c) Committed .dart_tool/ is a local cache, not source - it's the
+        # actual source of the SDK-version drift and should never be in git.
+        dart_tool = self.root / ".dart_tool"
+        gitignore = self.root / ".gitignore"
+        if dart_tool.exists() and gitignore.exists():
+            gi_text = gitignore.read_text(encoding='utf-8')
+            if ".dart_tool/" not in gi_text:
+                with gitignore.open('a', encoding='utf-8') as f:
+                    f.write("\n.dart_tool/\n")
+                self.fixed_files.append(".gitignore (ensured .dart_tool/ is ignored)")
+                changed = True
+
+            # Untrack it from git if it was previously committed, so the
+            # stale package_config.json stops being pushed to CI.
+            success, _ = self.run_git_command(["rm", "-r", "--cached", ".dart_tool"])
+            if success:
+                self.fixed_files.append(
+                    ".dart_tool/ (removed from git tracking - it's a local build "
+                    "cache that caused the SDK version mismatch in CI)"
+                )
+                changed = True
+
+        if not changed:
+            self.skipped_files.append(
+                "pubspec.yaml / CI workflow SDK constraints (already consistent)"
+            )
+        return changed
+
+    def run_git_command(self, args: List[str]) -> Tuple[bool, str]:
+        try:
+            result = subprocess.run(
+                ["git"] + args, cwd=self.root, capture_output=True,
+                text=True, timeout=30,
+            )
+            return result.returncode == 0, (result.stdout.strip() or result.stderr.strip())
+        except Exception as e:
+            return False, str(e)
+
+    # ------------------------------------------------------------------ #
     # 2. pubspec.yaml - add missing deps without nuking existing ones
     # ------------------------------------------------------------------ #
     def fix_pubspec_dependencies(self) -> bool:
@@ -886,8 +990,9 @@ class _EndpointSelectorState extends State<EndpointSelector> {
         self.fix_window_manager_service()
         self.fix_endpoint_selector()
 
-        # pubspec.yaml: add only what's missing.
+        # pubspec.yaml: add only what's missing, and fix SDK/CI mismatch.
         self.fix_pubspec_dependencies()
+        self.fix_sdk_constraint_mismatch()
 
         # Hygiene passes.
         self.scrub_tokens()
