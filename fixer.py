@@ -441,7 +441,16 @@ class WindowManagerService {
   }
 }
 '''
-        return self._write_if_needed(path, content, "مدیریت ابعاد و حالت پنجره برنامه")
+        existing = path.read_text(encoding='utf-8') if path.exists() else ""
+        # در صورت نبودن پکیج متریال، فایل را اجباری بازنویسی می‌کند
+        is_broken = not path.exists() or ('flutter/material.dart' not in existing)
+        
+        return self._write_if_needed(
+            path, 
+            content, 
+            "اصلاح فایل window_manager_service.dart (رفع ارور Size و Colors)", 
+            force=is_broken
+        )
 
     # 3. اصلاح وابستگی‌های pubspec.yaml
     def fix_pubspec_dependencies(self) -> bool:
