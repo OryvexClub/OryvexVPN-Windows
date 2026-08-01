@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:window_manager/window_manager.dart';
@@ -10,6 +11,7 @@ import 'services/tray_service.dart';
 import 'services/window_manager_service.dart';
 import 'services/vpn_service.dart';
 import 'services/warp_service.dart';
+import 'l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,13 +53,44 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
     super.dispose();
   }
 
-  // جلوگیری از خطای Not Responding با متوقف کردن فوری سرویس به صورت Static
   @override
   void onWindowClose() async {
+    // Properly cleanup all resources before closing
     try {
-      await WarpService.disconnect();
+      // Stop VPN service first
+      final vpnService = context.read<VPNService>();
+      if (vpnService.isConnected || vpnService.isConnecting) {
+        await vpnService.disconnect().timeout(
+          const Duration(seconds: 3),
+          onTimeout: () {
+            print('VPN disconnect timeout, forcing cleanup');
+          },
+        );
+      }
+    } catch (e) {
+      print('Error during VPN cleanup: $e');
+    }
+
+    try {
+      // Cleanup WarpService
+      await WarpService.disconnect().timeout(
+        const Duration(seconds: 2),
+        onTimeout: () {},
+      );
     } catch (_) {}
-    await windowManager.destroy(); // خروج قطعی
+
+    try {
+      // Stop network manager
+      NetworkManager.instance.dispose();
+    } catch (_) {}
+
+    try {
+      // Cleanup tray
+      TrayService.instance.dispose();
+    } catch (_) {}
+
+    // Force immediate window destruction
+    await windowManager.destroy();
   }
 
   @override
@@ -65,6 +98,16 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
     return MaterialApp(
       title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
+      locale: const Locale('fa', 'IR'),
+      supportedLocales: const [
+        Locale('fa', 'IR'),
+      ],
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.rtl,
@@ -76,6 +119,14 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
         scaffoldBackgroundColor: const Color(0xFF0A0A0A),
         fontFamily: GoogleFonts.vazirmatn().fontFamily,
         textTheme: GoogleFonts.vazirmatnTextTheme(ThemeData.dark().textTheme),
+        useMaterial3: true,
+        colorScheme: ColorScheme.dark(
+          primary: const Color(0xFF00E5FF),
+          secondary: const Color(0xFF00FFCC),
+          error: const Color(0xFFFF3366),
+          background: const Color(0xFF0A0A0A),
+          surface: const Color(0xFF141414),
+        ),
       ),
       home: const HomeScreen(),
     );

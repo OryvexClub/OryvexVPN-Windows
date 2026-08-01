@@ -50,3 +50,26 @@ app.*.map.json
 key.properties
 *.keystore
 *.jks
+
+# Windows specific
+*.exe
+*.dll
+*.pdb
+windows/flutter/ephemeral/
+Thumbs.db
+
+# Data folder (WireGuard binaries)
+data/wireguard.exe
+data/wg.exe
+
+# Build artifacts
+*.zip
+*.tar.gz
+
+# Logs
+*.log
+logs/
+
+# User configs
+configs/*.conf
+!configs/example.conf

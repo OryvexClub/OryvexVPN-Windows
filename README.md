@@ -2,31 +2,31 @@
 
 # 🛡️ OryvexVPN
 
-**Modern Windows VPN Client powered by AmneziaWG**
+**یک کلاینت VPN حرفه‌ای با رابط کاربری فارسی برای ویندوز**
 
-[![Build Status](https://github.com/OryvexClub/oryvex_vpn_demo/actions/workflows/build_windows.yml/badge.svg)](https://github.com/OryvexClub/oryvex_vpn_demo/actions)
-[![Flutter](https://img.shields.io/badge/Flutter-3.44.2-02569B?logo=flutter)](https://flutter.dev)
+[![Build Status](https://github.com/OryvexVPN/warp-vpn-app/actions/workflows/build-windows.yml/badge.svg)](https://github.com/OryvexVPN/warp-vpn-app/actions)
+[![Flutter](https://img.shields.io/badge/Flutter-3.24.0+-02569B?logo=flutter)](https://flutter.dev)
 [![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows)](https://www.microsoft.com/windows)
-[![License](https://img.shields.io/badge/License-Private-red)]()
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A beautiful, modern VPN client built with Flutter for Windows, featuring AmneziaWG integration and advanced connection management.
+Modern Windows VPN Client with Full Persian UI powered by WireGuard
 
-[Download Latest Release](https://github.com/OryvexClub/oryvex_vpn_demo/releases) • [Report Bug](https://github.com/OryvexClub/oryvex_vpn_demo/issues) • [Request Feature](https://github.com/OryvexClub/oryvex_vpn_demo/issues)
+[Download Latest Release](https://github.com/OryvexVPN/warp-vpn-app/releases) • [گزارش مشکل](https://github.com/OryvexVPN/warp-vpn-app/issues) • [درخواست ویژگی](https://github.com/OryvexVPN/warp-vpn-app/issues)
 
 </div>
 
 ---
 
-## ✨ Features
+## ✨ ویژگی‌ها / Features
 
-- 🚀 **Fast & Secure** - Powered by AmneziaWG protocol
-- 🎨 **Modern UI** - Clean, intuitive interface built with Flutter
-- 🔐 **Admin Privileges** - Runs with elevated permissions for tunnel management
-- 📡 **Connection Monitor** - Real-time connection status and network monitoring
-- ⚙️ **Easy Configuration** - Simple settings management
-- 🪟 **System Tray** - Minimizes to tray for background operation
-- 🎯 **Auto-Connect** - Optional automatic connection on startup
-- 📊 **Connection Stats** - Monitor your VPN usage and performance
+- 🌍 **اتصال امن / Secure Connection** - استفاده از پروتکل WireGuard / Using WireGuard Protocol
+- 🇮🇷 **رابط فارسی کامل / Full Persian UI** - تمام متن‌ها به فارسی با پشتیبانی RTL / All texts in Persian with RTL support
+- 📊 **آمار واقعی / Real Statistics** - سرعت، پینگ و IP واقعی / Real speed, ping and IP
+- 🎯 **اتصال خودکار / Auto-Connect** - انتخاب بهترین سرور / Best server selection
+- 🔄 **مانیتورینگ مداوم / Continuous Monitoring** - بررسی وضعیت اتصال / Connection status checking
+- 💾 **مدیریت تنظیمات / Config Management** - ذخیره و بارگذاری تنظیمات / Save and load configs
+- 🎨 **طراحی مدرن / Modern Design** - رابط کاربری زیبا / Beautiful UI
+- ⚡ **عملکرد بالا / High Performance** - بدون تاخیر و هنگ / No lag or freezing
 
 ## 📋 Requirements
 
@@ -219,18 +219,29 @@ This project is private and proprietary. All rights reserved.
 - [Flutter](https://flutter.dev) - For the amazing cross-platform framework
 - [WireGuard](https://www.wireguard.com) - For the foundation protocol
 
-## 📧 Support
+## 📝 تغییرات نسخه 1.0.0 (2026-08-02)
 
-For support and inquiries:
+### ✅ رفع مشکلات اصلی
+- ✅ رفع نمایش وضعیت نادرست اتصال (حالا وضعیت واقعی تونل نمایش داده می‌شود)
+- ✅ رفع آمار جعلی - سرعت، پینگ و IP واقعی
+- ✅ رفع هنگ کردن هنگام بستن برنامه
+- ✅ پشتیبانی کامل از زبان فارسی با RTL
+- ✅ مدیریت کامل تنظیمات VPN
+- ✅ مانیتورینگ مداوم اتصال
+- ✅ مدیریت خطای پیشرفته
+
+## 📧 پشتیبانی / Support
+
+برای پشتیبانی و سوالات:
 - 📧 Email: sh4es89h4es98_43678@vexomail.xyz
-- 🐛 Issues: [GitHub Issues](https://github.com/OryvexClub/oryvex_vpn_demo/issues)
+- 🐛 Issues: [GitHub Issues](https://github.com/OryvexVPN/warp-vpn-app/issues)
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by OryvexVPN Team**
+**ساخته شده با ❤️ توسط تیم OryvexVPN**
 
-[Website](https://oryvex.com) • [Documentation](https://docs.oryvex.com) • [Community](https://community.oryvex.com)
+**Made with ❤️ by OryvexVPN Team**
 
 </div>

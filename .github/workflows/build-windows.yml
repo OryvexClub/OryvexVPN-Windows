@@ -1,0 +1,122 @@
+name: Build Windows VPN App
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.0'
+        channel: 'stable'
+        cache: true
+
+    - name: Verify Flutter installation
+      run: |
+        flutter --version
+        flutter doctor -v
+
+    - name: Create data directory
+      run: |
+        New-Item -ItemType Directory -Force -Path "data"
+        echo "Data directory created"
+      shell: powershell
+
+    - name: Download WireGuard
+      run: |
+        $wgUrl = "https://download.wireguard.com/windows-client/wireguard-installer.exe"
+        $installerPath = "$env:TEMP\wireguard-installer.exe"
+
+        Write-Host "Downloading WireGuard..."
+        Invoke-WebRequest -Uri $wgUrl -OutFile $installerPath
+
+        Write-Host "Extracting WireGuard..."
+        Start-Process -FilePath $installerPath -ArgumentList "/S" -Wait -NoNewWindow
+
+        # Copy wireguard.exe to data folder
+        $wgPath = "C:\Program Files\WireGuard\wireguard.exe"
+        if (Test-Path $wgPath) {
+          Copy-Item $wgPath -Destination "data\wireguard.exe"
+          Write-Host "WireGuard copied successfully"
+        } else {
+          Write-Host "Warning: WireGuard not found at expected location"
+        }
+      shell: powershell
+      continue-on-error: true
+
+    - name: Get Flutter dependencies
+      run: flutter pub get
+
+    - name: Run Flutter analyzer
+      run: flutter analyze
+      continue-on-error: true
+
+    - name: Build Windows application
+      run: flutter build windows --release
+
+    - name: Copy data folder to build
+      run: |
+        if (Test-Path "data") {
+          Copy-Item -Path "data" -Destination "build\windows\x64\runner\Release\data" -Recurse -Force
+          Write-Host "Data folder copied to release build"
+        }
+      shell: powershell
+
+    - name: Create build info
+      run: |
+        $buildInfo = @{
+          "build_date" = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+          "commit_sha" = "${{ github.sha }}"
+          "branch" = "${{ github.ref_name }}"
+          "flutter_version" = (flutter --version | Select-String -Pattern "Flutter (\d+\.\d+\.\d+)" | ForEach-Object { $_.Matches.Groups[1].Value })
+        }
+        $buildInfo | ConvertTo-Json | Out-File -FilePath "build\windows\x64\runner\Release\build_info.json"
+      shell: powershell
+
+    - name: Package application
+      run: |
+        $releaseDir = "build\windows\x64\runner\Release"
+        $outputZip = "OryvexVPN-Windows-x64.zip"
+
+        # Create zip package
+        Compress-Archive -Path "$releaseDir\*" -DestinationPath $outputZip -Force
+
+        Write-Host "Package created: $outputZip"
+        Write-Host "Package size: $((Get-Item $outputZip).Length / 1MB) MB"
+      shell: powershell
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: OryvexVPN-Windows-Build
+        path: OryvexVPN-Windows-x64.zip
+        retention-days: 30
+
+    - name: Upload release directory
+      uses: actions/upload-artifact@v4
+      with:
+        name: OryvexVPN-Windows-Release-Files
+        path: build/windows/x64/runner/Release/
+        retention-days: 7
+
+    - name: Create Release (on tag)
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: OryvexVPN-Windows-x64.zip
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

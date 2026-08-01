@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     Color getStatusColor() {
       if (vpn.isConnected) return const Color(0xFF00E5FF);
-      if (vpn.isConnecting) return const Color(0xFF00FFCC);
+      if (vpn.isConnecting) return const Color(0xFFFFB800);
       if (vpn.stage == VpnStage.error) return const Color(0xFFFF3366);
       return const Color(0xFF555555);
     }
@@ -333,8 +333,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Expanded(
                 child: StatsCard(
                   icon: Icons.speed_rounded,
-                  label: 'Ping',
-                  value: vpn.stats.ping > 0 ? '${vpn.stats.ping}ms' : '—',
+                  label: 'پینگ',
+                  value: vpn.stats.ping > 0 ? '${vpn.stats.ping} میلی‌ثانیه' : '—',
                   color: const Color(0xFF00E5FF),
                 ),
               ),
@@ -342,7 +342,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Expanded(
                 child: StatsCard(
                   icon: Icons.language_rounded,
-                  label: 'IP Address',
+                  label: 'آدرس IP',
                   value: vpn.stats.ipInfo.ip,
                   color: const Color(0xFF00FF88),
                   valueSize: 13,
@@ -356,24 +356,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Expanded(
                 child: StatsCard(
                   icon: Icons.download_rounded,
-                  label: 'Download',
+                  label: 'دانلود',
                   value: vpn.stats.downloadSpeed > 0
-                      ? '${vpn.stats.downloadSpeed.toStringAsFixed(1)} KB/s'
-                      : '0 KB/s',
+                      ? '${vpn.stats.downloadSpeed.toStringAsFixed(1)} کیلوبایت/ثانیه'
+                      : '0 کیلوبایت/ثانیه',
                   color: const Color(0xFF00FFCC),
-                  valueSize: 13,
+                  valueSize: 11,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: StatsCard(
                   icon: Icons.upload_rounded,
-                  label: 'Upload',
+                  label: 'آپلود',
                   value: vpn.stats.uploadSpeed > 0
-                      ? '${vpn.stats.uploadSpeed.toStringAsFixed(1)} KB/s'
-                      : '0 KB/s',
+                      ? '${vpn.stats.uploadSpeed.toStringAsFixed(1)} کیلوبایت/ثانیه'
+                      : '0 کیلوبایت/ثانیه',
                   color: const Color(0xFFFF6B9D),
-                  valueSize: 13,
+                  valueSize: 11,
                 ),
               ),
             ],
