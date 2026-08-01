@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/strings.dart';
 class ConnectButton extends StatelessWidget {
   final VoidCallback? onPressed; final bool isConnected, isConnecting;
-  const ConnectButton({Key? key, this.onPressed, required this.isConnected, required this.isConnecting}) : super(key: key);
+  const ConnectButton({super.key, this.onPressed, required this.isConnected, required this.isConnecting});
   @override
   Widget build(BuildContext context) => SizedBox(width: double.infinity, child: ElevatedButton(
     onPressed: onPressed,
@@ -15,7 +15,7 @@ class ConnectButton extends StatelessWidget {
     ),
     child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
       if (isConnecting) const SizedBox(height:24,width:24,child: CircularProgressIndicator(strokeWidth:2,valueColor:AlwaysStoppedAnimation<Color>(Colors.white)))
-      else Icon(isConnected ? Icons.power_settings_new : Icons.power_settings_new, size:28),
+      else Icon(isConnected ? Icons.power_settings_new : Icons.power_settings_new_outlined, size:28),
       const SizedBox(width:12),
       Text(isConnected ? Strings.disconnect : (isConnecting ? Strings.connecting : Strings.connect), style: const TextStyle(fontSize:18,fontWeight:FontWeight.bold)),
     ]),
