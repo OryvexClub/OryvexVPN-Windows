@@ -4,13 +4,11 @@
 """
 fixer.py - OryvexVPN Auto‑Fixer (BoringTun edition)
 
-Switches the VPN core from wireguard‑go to Cloudflare BoringTun:
-  - Builds BoringTun from source in CI (Rust toolchain required).
-  - Bundles BoringTun + official wintun.dll inside the app's data/ folder.
-  - Drives BoringTun via its command‑line parameters, not UAPI.
-  - Tunnel restart is used for endpoint changes (simpler, more reliable).
-
-All other features (WARP registration, endpoint scanning, UI) are preserved.
+Switches the VPN core to Cloudflare BoringTun:
+  - Builds BoringTun from source in CI.
+  - Bundles BoringTun + official wintun.dll.
+  - Drives BoringTun via command‑line arguments.
+  - Includes correct process‑liveness checks using dart:async.
 """
 
 import os
@@ -105,11 +103,14 @@ class MyApp extends StatelessWidget {
 
     def fix_warp_service(self) -> bool:
         """
-        Rewrite warp_service.dart to use BoringTun CLI instead of wireguard‑go UAPI.
-        Includes a proper process‑liveness check that compiles correctly.
+        Rewrite warp_service.dart to use BoringTun CLI.
+        Fixes the previous errors:
+          - import 'dart:async' for TimeoutException.
+          - onTimeout callback returns an int (0) instead of null.
         """
         warp_path = self.root / "lib" / "services" / "warp_service.dart"
         correct = r"""import 'dart:io';
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:cryptography/cryptography.dart';
@@ -240,8 +241,7 @@ class WarpService {
   }
 
   /// Start BoringTun with the given parameters.
-  /// BoringTun CLI: boringtun <iface> --private-key <key> --peer-public-key <key>
-  /// --endpoint <ip:port> --allowed-ips <ips> --address <ip> --dns <dns> --mtu <mtu>
+  /// Checks that the process stays alive after startup.
   static Future<void> _startBoringTun(_WarpRegistration reg) async {
     final args = [
       _tunnelName,
@@ -249,7 +249,7 @@ class WarpService {
       '--peer-public-key', reg.peerPublicKeyBase64,
       '--endpoint', '${reg.endpointIp}:${reg.endpointPort}',
       '--allowed-ips', '0.0.0.0/0',
-      '--address', reg.address,         // e.g. 172.16.0.2/32? BoringTun accepts CIDR
+      '--address', reg.address,
       '--dns', '1.1.1.1',
       '--mtu', '1280',
       '--persistent-keepalive', '25',
@@ -262,15 +262,14 @@ class WarpService {
       mode: ProcessStartMode.detachedWithStdio,
     );
 
-    // Wait a moment, then check if the process is still alive.
-    await Future.delayed(const Duration(seconds: 1));
-    // Try to get exit code with a short timeout; if it completes, the process died.
+    // Wait a moment, then verify the process is still running.
+    await Future.delayed(const Duration(milliseconds: 500));
     try {
       await _tunnelProcess!.exitCode.timeout(const Duration(milliseconds: 100));
-      // If we get here, the process has exited.
+      // If we get here, the process has already exited.
       throw Exception('BoringTun exited immediately after start.');
     } on TimeoutException {
-      // Process still running, good.
+      // Process is still alive – good.
     }
   }
 
@@ -305,12 +304,17 @@ class WarpService {
     if (proc == null) return;
     try {
       proc.kill(ProcessSignal.sigterm);
-      await proc.exitCode.timeout(const Duration(seconds: 2), onTimeout: () {
+      // Wait a bit for graceful exit, then force kill if needed.
+      await Future.delayed(const Duration(seconds: 2));
+      // Try to get exit code, but don't block forever.
+      await proc.exitCode.timeout(const Duration(seconds: 1), onTimeout: () {
         proc.kill(ProcessSignal.sigkill);
-        return null; // ignored
+        return 0; // dummy return, will be ignored
       });
-    } catch (_) {}
-    // Clean up any remaining processes.
+    } catch (_) {
+      // Ignore errors during cleanup.
+    }
+    // Ensure no leftover process.
     await Process.run('taskkill', ['/F', '/IM', 'boringtun.exe']);
   }
 
@@ -347,7 +351,7 @@ class _WarpRegistration {
 """
         warp_path.parent.mkdir(parents=True, exist_ok=True)
         warp_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("warp_service.dart (BoringTun CLI version, fixed process check)")
+        self.fixed_files.append("warp_service.dart (BoringTun, fixed process checks)")
         return True
 
     def fix_vpn_service(self) -> bool:
@@ -662,7 +666,7 @@ jobs:
         print("  - BoringTun driven via command‑line (no UAPI named pipe issues)")
         print("  - App manifest set to requireAdministrator.")
         print("  - Endpoint list: 300+ IPs, concurrent ping scan for best server.")
-        print("  - Process liveness check now compiles correctly.")
+        print("  - Process liveness checks now use correct imports and non‑null returns.")
         print("\nRun push.py to deploy to GitHub and build the new EXE.")
         return True
 
