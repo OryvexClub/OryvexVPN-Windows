@@ -210,7 +210,7 @@ class GitHubPusher:
             return False
 
         self.log("Committing...", "STEP")
-        success, output = self.run_command('git commit -m "OryvexVPN: CMake build fix and Dynamic CI UAC Patch"')
+        success, output = self.run_command('git commit -m "OryvexVPN: Pre-initialized Local Windows Files and Clean CI Build"')
         if not success and "nothing to commit" not in output:
             self.log(f"Commit warning: {output}", "WARNING")
 

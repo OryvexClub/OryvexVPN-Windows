@@ -5,7 +5,7 @@
 fixer.py - OryvexVPN Auto-Fixer
 Implements automatic Cloudflare WARP key generation, endpoint sweeping, 
 real WireGuard connection via bundled data/wireguard.exe, Persian UI, 
-forced Administrator privileges, and dynamic CI patching to fix CMake errors.
+forced Administrator privileges, and perfectly clean GitHub Actions CI.
 """
 
 import os
@@ -42,8 +42,9 @@ class FlutterProjectFixer:
         return True
 
     def initialize_windows(self) -> bool:
-        self.log("Ensuring Windows platform is initialized...", "STEP")
-        subprocess.run("flutter create --platforms windows .", shell=True, cwd=self.root, capture_output=True)
+        self.log("Ensuring Windows platform is initialized cleanly...", "STEP")
+        # --overwrite ensures we have a perfectly clean CMake and project structure locally
+        subprocess.run("flutter create --platforms windows --overwrite .", shell=True, cwd=self.root, capture_output=True)
         return True
 
     def fix_main_dart(self) -> bool:
@@ -584,11 +585,57 @@ flutter:
         pubspec_path.write_text(correct, encoding='utf-8')
         self.fixed_files.append("pubspec.yaml")
         return True
+        
+    def fix_windows_main_cpp(self) -> bool:
+        main_cpp_path = self.root / "windows" / "runner" / "main.cpp"
+        if not main_cpp_path.exists():
+            return False
+        content = main_cpp_path.read_text(encoding='utf-8')
+        
+        content = content.replace("Win32Window::Size(1280, 720)", "Win32Window::Size(400, 700)")
+        content = content.replace("Win32Window::Point(10, 10)", "Win32Window::Point(100, 100)")
+        
+        main_cpp_path.write_text(content, encoding='utf-8')
+        self.fixed_files.append("windows/runner/main.cpp (Resized to 400x700)")
+        return True
+
+    def fix_windows_manifest(self) -> bool:
+        manifest_path = self.root / "windows" / "runner" / "runner.exe.manifest"
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        correct = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity version="1.0.0.0" name="oryvex_vpn_demo" type="win32"/>
+  <description>Oryvex VPN</description>
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+    <security>
+      <requestedPrivileges>
+        <requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/>
+      <supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}"/>
+      <supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}"/>
+    </application>
+  </compatibility>
+  <application xmlns="urn:schemas-microsoft-com:asm.v3">
+    <windowsSettings>
+      <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true</dpiAware>
+      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
+    </windowsSettings>
+  </application>
+</assembly>"""
+        
+        manifest_path.write_text(correct, encoding='utf-8')
+        self.fixed_files.append("windows/runner/runner.exe.manifest (Forced UAC Shield Icon & Admin Privileges)")
+        return True
 
     def fix_workflow(self) -> bool:
         workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
         
-        # Raw string r"..." prevents Python from interpreting backslashes like \n, \t
         correct = r"""name: Build Windows App
 
 on:
@@ -613,24 +660,14 @@ jobs:
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
 
-      - name: Create Windows Platform Files
-        run: flutter create --platforms windows .
+      - name: Precache Windows artifacts
+        run: flutter precache --windows
 
-      - name: Force UAC Administrator Privileges
-        run: |
-          $manifest = "windows/runner/runner.exe.manifest"
-          if (Test-Path $manifest) {
-            (Get-Content $manifest) -replace 'level="asInvoker"', 'level="requireAdministrator"' | Set-Content $manifest
-            Write-Host "Manifest patched for Administrator UAC Prompt successfully."
-          }
+      - name: Clean Project
+        run: flutter clean
 
-      - name: Resize Windows App
-        run: |
-          $mainCpp = "windows/runner/main.cpp"
-          if (Test-Path $mainCpp) {
-            (Get-Content $mainCpp) -replace 'Win32Window::Size\(1280, 720\)', 'Win32Window::Size(400, 700)' -replace 'Win32Window::Point\(10, 10\)', 'Win32Window::Point(100, 100)' | Set-Content $mainCpp
-            Write-Host "Window resized successfully."
-          }
+      - name: Install dependencies
+        run: flutter pub get
 
       - name: Build Windows app
         run: flutter build windows --release
@@ -658,7 +695,7 @@ jobs:
 """
         workflow_path.parent.mkdir(parents=True, exist_ok=True)
         workflow_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("build_windows.yml (Dynamic CI Patching added to fix CMake & UAC issues)")
+        self.fixed_files.append("build_windows.yml (Clean CI with Precache)")
         return True
 
     def remove_obsolete_files(self) -> bool:
@@ -702,14 +739,21 @@ jobs:
 
     def run(self) -> bool:
         print("\\n" + "=" * 60)
-        print("🔧 Flutter Project Fixer - OryvexVPN (Admin Shield Icon & Build Fix)")
+        print("🔧 Flutter Project Fixer - OryvexVPN (Admin Shield Icon & Clean CI Build)")
         print("=" * 60)
         print(f"\\nProject Path: {self.root}\\n")
 
         if not self.check_project():
             return False
 
+        # First initialize the full windows architecture LOCALLY
         self.initialize_windows()
+        
+        # Then patch them dynamically to ensure the Admin shield and sizing are applied
+        self.fix_windows_main_cpp()
+        self.fix_windows_manifest()
+
+        # Update the Dart code and workflow
         self.fix_main_dart()
         self.fix_pubspec()
         self.fix_warp_service()
@@ -728,7 +772,7 @@ jobs:
             for f in self.fixed_files:
                 print(f"  ✓ {f}")
 
-        print("\\n✅ Workflow updated to natively patch CMake and UAC Admin restrictions.")
+        print("\\n✅ Local files perfectly initialized and patched. You can now execute push.py.")
         return True
 
 def main():

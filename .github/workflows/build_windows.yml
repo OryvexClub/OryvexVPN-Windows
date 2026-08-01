@@ -22,24 +22,14 @@ jobs:
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
 
-      - name: Create Windows Platform Files
-        run: flutter create --platforms windows .
+      - name: Precache Windows artifacts
+        run: flutter precache --windows
 
-      - name: Force UAC Administrator Privileges
-        run: |
-          $manifest = "windows/runner/runner.exe.manifest"
-          if (Test-Path $manifest) {
-            (Get-Content $manifest) -replace 'level="asInvoker"', 'level="requireAdministrator"' | Set-Content $manifest
-            Write-Host "Manifest patched for Administrator UAC Prompt successfully."
-          }
+      - name: Clean Project
+        run: flutter clean
 
-      - name: Resize Windows App
-        run: |
-          $mainCpp = "windows/runner/main.cpp"
-          if (Test-Path $mainCpp) {
-            (Get-Content $mainCpp) -replace 'Win32Window::Size\(1280, 720\)', 'Win32Window::Size(400, 700)' -replace 'Win32Window::Point\(10, 10\)', 'Win32Window::Point(100, 100)' | Set-Content $mainCpp
-            Write-Host "Window resized successfully."
-          }
+      - name: Install dependencies
+        run: flutter pub get
 
       - name: Build Windows app
         run: flutter build windows --release
