@@ -92,9 +92,17 @@ jobs:
 
     - name: Copy data folder to build
       run: |
+        $releaseData = "build\windows\x64\runner\Release\data"
         if (Test-Path "data") {
-          Copy-Item -Path "data" -Destination "build\windows\x64\runner\Release\data" -Recurse -Force
-          Write-Host "Data folder copied to release build"
+          # Flutter already creates Release\data (app.so, flutter_assets...).
+          # Copy the *contents* (data\*) so our files land directly inside it;
+          # copying the folder itself would nest it as data\data\.
+          if (-not (Test-Path $releaseData)) {
+            New-Item -ItemType Directory -Force -Path $releaseData | Out-Null
+          }
+          Copy-Item -Path "data\*" -Destination $releaseData -Recurse -Force
+          Write-Host "Data folder contents copied to release build:"
+          Get-ChildItem $releaseData | ForEach-Object { Write-Host "  - $($_.Name)" }
         }
       shell: powershell
 
