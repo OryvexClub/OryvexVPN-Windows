@@ -2,11 +2,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../constants/strings.dart';
 
-/// Self-contained Cloudflare WARP endpoint picker.
-///
-/// This widget used to depend on a `WARPGenerator` helper class that no
-/// longer exists in the project; the endpoint list now lives directly in
-/// this file so the widget has no dangling imports.
 class EndpointSelector extends StatefulWidget {
   final void Function(String ip, String port) onEndpointSelected;
 
@@ -86,14 +81,6 @@ class _EndpointSelectorState extends State<EndpointSelector> {
                   onPressed: () {
                     final endpoint = _pickRandomEndpoint();
                     _applyEndpoint(endpoint['ip']!, endpoint['port']!);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          '${Strings.randomIP}: ${endpoint['ip']}:${endpoint['port']}',
-                        ),
-                        backgroundColor: const Color(0xFF10B981),
-                      ),
-                    );
                   },
                 ),
               ],
@@ -103,7 +90,7 @@ class _EndpointSelectorState extends State<EndpointSelector> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<bool>(
-                    initialValue: _useCustom,
+                    value: _useCustom,
                     style: const TextStyle(color: Colors.white),
                     dropdownColor: const Color(0xFF1A1A1A),
                     items: const [
@@ -125,90 +112,12 @@ class _EndpointSelectorState extends State<EndpointSelector> {
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey[800]!),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey[800]!),
                       ),
                     ),
                   ),
                 ),
               ],
             ),
-            if (_useCustom) ...[
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: TextField(
-                      controller: _ipController,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        labelText: Strings.ipAddress,
-                        labelStyle: TextStyle(color: Colors.grey[400]),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      controller: _portController,
-                      keyboardType: TextInputType.number,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        labelText: Strings.port,
-                        labelStyle: TextStyle(color: Colors.grey[400]),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () {
-                      final ip = _ipController.text.trim();
-                      final port = _portController.text.trim();
-                      if (ip.isNotEmpty && port.isNotEmpty) {
-                        _applyEndpoint(ip, port);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                    ),
-                    child: Text(Strings.apply),
-                  ),
-                ],
-              ),
-              if (_selectedIp.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 18),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${Strings.selected}: $_selectedIp:$_selectedPort',
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ],
           ],
         ),
       ),
