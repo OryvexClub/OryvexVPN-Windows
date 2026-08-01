@@ -1,5 +1,5 @@
 name: warp_vpn_app
-description: داشبورد OryvexVPN - اتصال واقعی به سرور WireGuard شخصی شما
+description: OryvexVPN - Automatic Connection Dashboard
 version: 1.0.0+1
 
 environment:
@@ -13,12 +13,12 @@ dependencies:
   intl: ^0.19.0
   http: ^1.1.0
   crypto: ^3.0.3
+  cryptography: ^2.7.0
   path_provider: ^2.1.1
   permission_handler: ^11.0.1
   provider: ^6.0.5
   share_plus: ^7.2.1
   connectivity_plus: ^5.0.2
-  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:

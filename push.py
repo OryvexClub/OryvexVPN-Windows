@@ -14,7 +14,6 @@ if sys.platform == 'win32':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
-
 class GitHubPusher:
     def __init__(self, project_root=None):
         self.root = Path(project_root or os.getcwd())
@@ -126,7 +125,7 @@ class GitHubPusher:
         import json
         data = json.dumps({
             "name": self.repo_name,
-            "description": "OryvexVPN - Windows WireGuard dashboard connecting to your own VPS",
+            "description": "OryvexVPN - Windows WireGuard dashboard with automatic endpoint scanning",
             "private": False,
             "auto_init": False,
         }).encode('utf-8')
@@ -153,16 +152,12 @@ class GitHubPusher:
             return False
 
     def _check_diff_for_token(self) -> bool:
-        """
-        بررسی diff فایل‌های stage شده با regex دقیق (ghp_ + ۳۶+ کاراکتر)
-        برمی‌گردونه True اگه توکن واقعی وجود داشته باشه
-        """
         success, diff = self.run_command('git diff --cached', ignore_error=True)
         if not success:
             return False
         pattern = re.compile(r'ghp_[A-Za-z0-9_]{36,}')
         if pattern.search(diff):
-            self.log("توکن گیت‌هاب در فایل‌های stage شده پیدا شد!", "ERROR")
+            self.log("GitHub token found in staged files!", "ERROR")
             return True
         return False
 
@@ -172,10 +167,9 @@ class GitHubPusher:
         print("=" * 60)
         os.chdir(self.root)
 
-        # اجرای fixer.py در صورت وجود
         fixer_path = self.root / "fixer.py"
         if fixer_path.exists():
-            self.log("اجرای fixer.py...", "STEP")
+            self.log("Running fixer.py...", "STEP")
             env = os.environ.copy()
             env["PYTHONIOENCODING"] = "utf-8"
             try:
@@ -185,12 +179,12 @@ class GitHubPusher:
                     timeout=120, env=env, encoding='utf-8', errors='replace'
                 )
                 if result.returncode != 0:
-                    self.log(f"fixer.py با خطا مواجه شد. خروجی:\n{result.stdout}\n{result.stderr}", "ERROR")
-                    if input("ادامه بدیم؟ (y/n): ").strip().lower() != 'y':
+                    self.log(f"fixer.py failed. Output:\n{result.stdout}\n{result.stderr}", "ERROR")
+                    if input("Continue? (y/n): ").strip().lower() != 'y':
                         return False
             except Exception as e:
-                self.log(f"خطا در اجرای fixer.py: {e}", "ERROR")
-                if input("ادامه بدیم؟ (y/n): ").strip().lower() != 'y':
+                self.log(f"Error running fixer.py: {e}", "ERROR")
+                if input("Continue? (y/n): ").strip().lower() != 'y':
                     return False
 
         if not (self.root / ".git").exists():
@@ -210,13 +204,12 @@ class GitHubPusher:
             self.log(f"Failed to add files: {output}", "ERROR")
             return False
 
-        # بررسی نهایی: آیا توکن واقعی توی stage هست؟
         if self._check_diff_for_token():
-            self.log("Push به دلیل وجود توکن متوقف شد. لطفاً fixer.py را اجرا کنید و دوباره تلاش کنید.", "ERROR")
+            self.log("Push blocked due to token in staging. Run fixer.py to scrub tokens.", "ERROR")
             return False
 
         self.log("Committing...", "STEP")
-        success, output = self.run_command('git commit -m "OryvexVPN: real WireGuard connection + UI update"')
+        success, output = self.run_command('git commit -m "OryvexVPN: automatic config + endpoint scanner"')
         if not success and "nothing to commit" not in output:
             self.log(f"Commit warning: {output}", "WARNING")
 
@@ -298,7 +291,7 @@ class GitHubPusher:
         print("\n" + "=" * 60)
         print("OryvexVPN - Push & Build")
         print("=" * 60)
-        print("\nWill build: Windows EXE (real WireGuard connection to your own VPS)")
+        print("\nWill build: Windows EXE (real WireGuard connection with automatic config generation)")
 
         if not self.check_git():
             sys.exit(1)
@@ -327,7 +320,6 @@ class GitHubPusher:
             print("   (Enter your GitHub username and a Personal Access Token as the password)")
             sys.exit(1)
 
-
 def main():
     try:
         pusher = GitHubPusher()
@@ -338,7 +330,6 @@ def main():
     except Exception as e:
         print(f"\nUnexpected error: {e}")
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

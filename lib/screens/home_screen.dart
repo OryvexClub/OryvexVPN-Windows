@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/vpn_service.dart';
-import 'settings_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -15,7 +14,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<VPNService>().loadSettings();
+      context.read<VPNService>().initStatus();
     });
   }
 
@@ -43,32 +42,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Icon(
-                            vpn.isConnected ? Icons.shield_rounded : Icons.shield_outlined,
-                            color: vpn.isConnected ? const Color(0xFF00E5FF) : Colors.white54,
-                          ),
-                          const SizedBox(width: 10),
-                          const Text(
-                            'OryvexVPN',
-                            style: TextStyle(
-                              fontFamily: 'Vazirmatn',
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
+                      Icon(
+                        vpn.isConnected ? Icons.shield_rounded : Icons.shield_outlined,
+                        color: vpn.isConnected ? const Color(0xFF00E5FF) : Colors.white54,
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.settings_rounded, color: Colors.white70),
-                        onPressed: () => showDialog(
-                          context: context,
-                          builder: (_) => const SettingsDialog(),
+                      const SizedBox(width: 10),
+                      const Text(
+                        'OryvexVPN',
+                        style: TextStyle(
+                          fontFamily: 'Vazirmatn',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ],
@@ -103,7 +90,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
                 const SizedBox(height: 40),
 
-                // دکمه اتصال / لودر واقعی مرحله‌به‌مرحله
                 GestureDetector(
                   onTap: vpn.isConnecting
                       ? null
@@ -176,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       Icon(Icons.dns_rounded, color: Color(0xFF00E5FF), size: 18),
                                       SizedBox(width: 8),
                                       Text(
-                                        'تانل WireGuard فعال است',
+                                        'WireGuard Tunnel Active',
                                         style: TextStyle(
                                           fontFamily: 'Vazirmatn',
                                           fontWeight: FontWeight.bold,
