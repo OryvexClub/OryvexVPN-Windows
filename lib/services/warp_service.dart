@@ -15,13 +15,13 @@ class WarpService {
   ];
 
   static String get _exeDir => File(Platform.resolvedExecutable).parent.path;
-  static String get _wireguardExe => '$_exeDir\\data\\wireguard.exe';
+  static String get _vpnExe => '$_exeDir\\data\\amneziawg.exe';
 
-  static Future<bool> _coreFilesPresent() async => File(_wireguardExe).exists();
+  static Future<bool> _coreFilesPresent() async => File(_vpnExe).exists();
 
   static Future<String> _confDir() async {
     final dir = await getApplicationSupportDirectory();
-    final confDir = Directory('${dir.path}\\wireguard');
+    final confDir = Directory('${dir.path}\\amneziawg');
     if (!await confDir.exists()) await confDir.create(recursive: true);
     return confDir.path;
   }
@@ -103,27 +103,34 @@ class WarpService {
     return b.toString();
   }
 
+  static Future<bool> _serviceExists() async {
+    final result = await Process.run('sc', ['query', 'AmneziaWGTunnel\$$_tunnelName']);
+    return result.exitCode == 0;
+  }
+
   static Future<void> _installTunnelService(_WarpRegistration reg) async {
     final confDir = await _confDir();
     final confFile = File('$confDir\\$_tunnelName.conf');
     await confFile.writeAsString(_buildConf(reg));
 
-    // Force UAC Prompt using PowerShell to resolve "Access is denied"
-    final uninstallCmd = 'Start-Process -FilePath "$_wireguardExe" -ArgumentList "/uninstalltunnelservice $_tunnelName" -Verb RunAs -WindowStyle Hidden -Wait';
-    await Process.run('powershell', ['-NoProfile', '-Command', uninstallCmd]);
-    await Future.delayed(const Duration(milliseconds: 500));
+    // فقط اگر سرویس از قبل وجود داشت آن را متوقف کن تا پاپ‌آپ ارور ظاهر نشود
+    if (await _serviceExists()) {
+      final uninstallCmd = 'Start-Process -FilePath "$_vpnExe" -ArgumentList "/uninstalltunnelservice $_tunnelName" -Verb RunAs -WindowStyle Hidden -Wait';
+      await Process.run('powershell', ['-NoProfile', '-Command', uninstallCmd]);
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
 
-    final installCmd = 'Start-Process -FilePath "$_wireguardExe" -ArgumentList "/installtunnelservice `"${confFile.path}`"" -Verb RunAs -WindowStyle Hidden -Wait';
+    final installCmd = 'Start-Process -FilePath "$_vpnExe" -ArgumentList "/installtunnelservice `"${confFile.path}`"" -Verb RunAs -WindowStyle Hidden -Wait';
     final result = await Process.run('powershell', ['-NoProfile', '-Command', installCmd]);
 
     if (result.exitCode != 0) {
-      throw Exception('اتصال لغو شد یا دسترسی ادمین (UAC) داده نشد.');
+      throw Exception('دسترسی ادمین (UAC) داده نشد یا خطا در اجرای سرویس رخ داد.');
     }
     await Future.delayed(const Duration(seconds: 1));
   }
 
   static Future<void> connectWithProgress(Function(String) onProgress) async {
-    if (!await _coreFilesPresent()) throw Exception('فایل هسته (wireguard.exe) یافت نشد.');
+    if (!await _coreFilesPresent()) throw Exception('فایل هسته (amneziawg.exe) یافت نشد.');
     final reg = await _register(onProgress);
     onProgress('درخواست دسترسی مدیریت (UAC)...');
     await _installTunnelService(reg);
@@ -135,16 +142,17 @@ class WarpService {
   static Future<void> disconnect() async {
     if (!Platform.isWindows) return;
     try {
-      final uninstallCmd = 'Start-Process -FilePath "$_wireguardExe" -ArgumentList "/uninstalltunnelservice $_tunnelName" -Verb RunAs -WindowStyle Hidden -Wait';
-      await Process.run('powershell', ['-NoProfile', '-Command', uninstallCmd]);
+      if (await _serviceExists()) {
+        final uninstallCmd = 'Start-Process -FilePath "$_vpnExe" -ArgumentList "/uninstalltunnelservice $_tunnelName" -Verb RunAs -WindowStyle Hidden -Wait';
+        await Process.run('powershell', ['-NoProfile', '-Command', uninstallCmd]);
+      }
     } catch (_) {}
     _connected = false;
   }
 
   static Future<bool> isConnected() async {
     if (!Platform.isWindows || !_connected) return false;
-    final result = await Process.run('sc', ['query', 'WireGuardTunnel\$${_tunnelName}']);
-    return result.exitCode == 0 && result.stdout.toString().contains('RUNNING');
+    return await _serviceExists();
   }
 }
 

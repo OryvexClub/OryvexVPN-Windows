@@ -2,9 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-fixer.py - OryvexVPN Full Resolution Script
-رفع کامل خطاهای کامپایل گیت‌هاب (Dart String Interpolation)
-رفع مشکلات رابط کاربری (مخفی شدن دکمه‌های کنترل پنجره و فونت)
+fixer.py - OryvexVPN Ultimate Fixer (AmneziaWG + UI/UX + UAC)
+
+- رفع خطای پایتون (Regex Escape \w)
+- تغییر هسته به AmneziaWG جهت پشتیبانی کامل از کانفیگ‌های WARP
+- رفع خطای پاپ‌آپ سرویس ویندوز
+- طراحی UI (فونت، راست‌چین و دکمه‌های کنترل پنجره)
 """
 
 import os
@@ -51,7 +54,59 @@ class FlutterProjectFixer:
             return False
         return True
 
-    # 1. Main Entrypoint & Font Global Theme
+    # 1. تغییر فایل بیلد گیت‌هاب اکشنز (دانلود AmneziaWG) و رفع باگ Regex
+    def fix_ci_workflow(self) -> bool:
+        path = self.root / ".github" / "workflows" / "build_windows.yml"
+        if not path.exists(): return False
+
+        content = path.read_text(encoding='utf-8')
+        
+        # رشته جایگزین به صورت Raw
+        replacement = r'''- name: Download and extract AmneziaWG
+      run: |
+        $wgVersion = "2.0.2"
+        $msiUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/$wgVersion/amneziawg-amd64-$wgVersion.msi"
+        Invoke-WebRequest -Uri $msiUrl -OutFile "amneziawg.msi"
+        
+        $extractDir = "$PWD\amneziawg_extracted"
+        New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
+        
+        $msiExecArgs = @("/a", "`"$PWD\amneziawg.msi`"", "/qn", "TARGETDIR=`"$extractDir`"")
+        Start-Process msiexec.exe -ArgumentList $msiExecArgs -Wait -NoNewWindow
+        
+        $wgExe = Get-ChildItem -Path $extractDir -Filter "amneziawg.exe" -Recurse | Select-Object -First 1
+        if (-not $wgExe) {
+          Write-Host "Failed to extract amneziawg.exe from MSI."
+          exit 1
+        }
+        Write-Host "Found amneziawg.exe at: $($wgExe.FullName)"
+        Copy-Item $wgExe.FullName "$PWD\amneziawg.exe"
+
+    - name: Bundle AmneziaWG binary inside data/
+      run: |
+        $ReleaseDir = "build\windows\x64\runner\Release"
+        New-Item -ItemType Directory -Force -Path "$ReleaseDir\data" | Out-Null
+        Copy-Item "$PWD\amneziawg.exe" "$ReleaseDir\data\amneziawg.exe"
+
+    - name: Upload build artifacts'''
+
+        # استفاده از lambda برای جلوگیری از خطای "bad escape \w" در پایتون
+        new_content = re.sub(
+            r'- name: Download and extract official WireGuard.*?Upload build artifacts',
+            lambda match: replacement,
+            content,
+            flags=re.DOTALL
+        )
+
+        new_content = new_content.replace('Build Windows App (Official WireGuard)', 'Build Windows App (AmneziaWG Core)')
+
+        if new_content != content:
+            path.write_text(new_content, encoding='utf-8')
+            self.fixed_files.append(".github/workflows/build_windows.yml (ارتقا به AmneziaWG)")
+            return True
+        return False
+
+    # 2. Main Entrypoint & Font Global Theme
     def fix_main_dart(self) -> bool:
         path = self.root / "lib" / "main.dart"
         content = r'''import 'package:flutter/material.dart';
@@ -125,9 +180,9 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> {
   }
 }
 '''
-        return self._write_if_needed(path, content, "اعمال فونت وزیرمتن و تنظیمات اصلی", force=True)
+        return self._write_if_needed(path, content, "اعمال فونت و تم تاریک", force=True)
 
-    # 2. UI Layout (Fix Missing Close Buttons & UI structure)
+    # 3. UI Layout (Fix Missing Close Buttons)
     def fix_home_screen(self) -> bool:
         path = self.root / "lib" / "screens" / "home_screen.dart"
         content = r'''import 'package:flutter/material.dart';
@@ -302,9 +357,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 '''
-        return self._write_if_needed(path, content, "اصلاح جایگاه دکمه‌های کنترل پنجره و ارور لاگ", force=True)
+        return self._write_if_needed(path, content, "اصلاح دکمه‌های کنترل پنجره", force=True)
 
-    # 3. Fix Warp Service (UAC and Compilation String Errors)
+    # 4. Fix Warp Service (AmneziaWG & Service Existence Check)
     def fix_warp_service(self) -> bool:
         path = self.root / "lib" / "services" / "warp_service.dart"
         content = r'''import 'dart:io';
@@ -324,13 +379,13 @@ class WarpService {
   ];
 
   static String get _exeDir => File(Platform.resolvedExecutable).parent.path;
-  static String get _wireguardExe => '$_exeDir\\data\\wireguard.exe';
+  static String get _vpnExe => '$_exeDir\\data\\amneziawg.exe';
 
-  static Future<bool> _coreFilesPresent() async => File(_wireguardExe).exists();
+  static Future<bool> _coreFilesPresent() async => File(_vpnExe).exists();
 
   static Future<String> _confDir() async {
     final dir = await getApplicationSupportDirectory();
-    final confDir = Directory('${dir.path}\\wireguard');
+    final confDir = Directory('${dir.path}\\amneziawg');
     if (!await confDir.exists()) await confDir.create(recursive: true);
     return confDir.path;
   }
@@ -412,27 +467,34 @@ class WarpService {
     return b.toString();
   }
 
+  static Future<bool> _serviceExists() async {
+    final result = await Process.run('sc', ['query', 'AmneziaWGTunnel\$$_tunnelName']);
+    return result.exitCode == 0;
+  }
+
   static Future<void> _installTunnelService(_WarpRegistration reg) async {
     final confDir = await _confDir();
     final confFile = File('$confDir\\$_tunnelName.conf');
     await confFile.writeAsString(_buildConf(reg));
 
-    // Force UAC Prompt using PowerShell to resolve "Access is denied"
-    final uninstallCmd = 'Start-Process -FilePath "$_wireguardExe" -ArgumentList "/uninstalltunnelservice $_tunnelName" -Verb RunAs -WindowStyle Hidden -Wait';
-    await Process.run('powershell', ['-NoProfile', '-Command', uninstallCmd]);
-    await Future.delayed(const Duration(milliseconds: 500));
+    // فقط اگر سرویس از قبل وجود داشت آن را متوقف کن تا پاپ‌آپ ارور ظاهر نشود
+    if (await _serviceExists()) {
+      final uninstallCmd = 'Start-Process -FilePath "$_vpnExe" -ArgumentList "/uninstalltunnelservice $_tunnelName" -Verb RunAs -WindowStyle Hidden -Wait';
+      await Process.run('powershell', ['-NoProfile', '-Command', uninstallCmd]);
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
 
-    final installCmd = 'Start-Process -FilePath "$_wireguardExe" -ArgumentList "/installtunnelservice `"${confFile.path}`"" -Verb RunAs -WindowStyle Hidden -Wait';
+    final installCmd = 'Start-Process -FilePath "$_vpnExe" -ArgumentList "/installtunnelservice `"${confFile.path}`"" -Verb RunAs -WindowStyle Hidden -Wait';
     final result = await Process.run('powershell', ['-NoProfile', '-Command', installCmd]);
 
     if (result.exitCode != 0) {
-      throw Exception('اتصال لغو شد یا دسترسی ادمین (UAC) داده نشد.');
+      throw Exception('دسترسی ادمین (UAC) داده نشد یا خطا در اجرای سرویس رخ داد.');
     }
     await Future.delayed(const Duration(seconds: 1));
   }
 
   static Future<void> connectWithProgress(Function(String) onProgress) async {
-    if (!await _coreFilesPresent()) throw Exception('فایل هسته (wireguard.exe) یافت نشد.');
+    if (!await _coreFilesPresent()) throw Exception('فایل هسته (amneziawg.exe) یافت نشد.');
     final reg = await _register(onProgress);
     onProgress('درخواست دسترسی مدیریت (UAC)...');
     await _installTunnelService(reg);
@@ -444,16 +506,17 @@ class WarpService {
   static Future<void> disconnect() async {
     if (!Platform.isWindows) return;
     try {
-      final uninstallCmd = 'Start-Process -FilePath "$_wireguardExe" -ArgumentList "/uninstalltunnelservice $_tunnelName" -Verb RunAs -WindowStyle Hidden -Wait';
-      await Process.run('powershell', ['-NoProfile', '-Command', uninstallCmd]);
+      if (await _serviceExists()) {
+        final uninstallCmd = 'Start-Process -FilePath "$_vpnExe" -ArgumentList "/uninstalltunnelservice $_tunnelName" -Verb RunAs -WindowStyle Hidden -Wait';
+        await Process.run('powershell', ['-NoProfile', '-Command', uninstallCmd]);
+      }
     } catch (_) {}
     _connected = false;
   }
 
   static Future<bool> isConnected() async {
     if (!Platform.isWindows || !_connected) return false;
-    final result = await Process.run('sc', ['query', 'WireGuardTunnel\$${_tunnelName}']);
-    return result.exitCode == 0 && result.stdout.toString().contains('RUNNING');
+    return await _serviceExists();
   }
 }
 
@@ -465,7 +528,7 @@ class _WarpRegistration {
   });
 }
 '''
-        return self._write_if_needed(path, content, "حل مشکل کامپایل Dart (Raw String) و درخواست UAC", force=True)
+        return self._write_if_needed(path, content, "اعمال AmneziaWG و حل ارور Service does not exist", force=True)
 
     def fix_window_manager_service(self) -> bool:
         path = self.root / "lib" / "services" / "window_manager_service.dart"
@@ -520,9 +583,8 @@ class WindowManagerService {
   }
 }
 '''
-        return self._write_if_needed(path, content, "اطمینان از ایمپورت شدن Material برای Colors/Size", force=True)
+        return self._write_if_needed(path, content, "رفع مشکلات Size و Color", force=True)
 
-    # 4. Fix Pubspec Dependencies
     def fix_pubspec_dependencies(self) -> bool:
         path = self.root / "pubspec.yaml"
         if not path.exists(): return False
@@ -562,7 +624,7 @@ class WindowManagerService {
         insertion = "\n".join(f"  {name}: {ver}" for name, ver in missing.items())
         new_lines = lines[:end_idx] + [insertion] + lines[end_idx:]
         path.write_text("\n".join(new_lines) + "\n", encoding='utf-8')
-        self.fixed_files.append(f"pubspec.yaml (افزودن کتابخانه‌های: {', '.join(missing.keys())})")
+        self.fixed_files.append(f"pubspec.yaml (افزودن پکیج‌های جا افتاده)")
         return True
 
     def fix_sdk_constraint(self) -> bool:
@@ -572,17 +634,17 @@ class WindowManagerService {
             new_text, count = re.subn(r"sdk:\s*['\"][^'\"]*['\"]", "sdk: '>=3.0.0 <4.0.0'", text, count=1)
             if count > 0 and new_text != text:
                 pubspec.write_text(new_text, encoding='utf-8')
-                self.fixed_files.append("pubspec.yaml (اصلاح رنج نسخه Dart)")
                 return True
         return False
 
     def run(self) -> bool:
         print("\n" + "=" * 64)
-        print("OryvexVPN Ultimate Fixer (UI + UAC + Compiler)")
+        print("OryvexVPN - AmneziaWG Migration & Bug Fixer")
         print("=" * 64)
         
         if not self.check_project(): return False
 
+        self.fix_ci_workflow()
         self.fix_main_dart()
         self.fix_home_screen()
         self.fix_warp_service()
@@ -590,7 +652,7 @@ class WindowManagerService {
         self.fix_pubspec_dependencies()
         self.fix_sdk_constraint()
 
-        print("\nکار تمام است! کدها را در گیت‌هاب Push کنید.")
+        print("\nکار تمام است! پایتون با موفقیت اجرا شد. کدها را برای بیلد نهایی در گیت‌هاب Push کنید.")
         return True
 
 if __name__ == "__main__":

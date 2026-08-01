@@ -1,4 +1,4 @@
-name: Build Windows App (Official WireGuard)
+name: Build Windows App (AmneziaWG Core)
 
 on:
   push:
@@ -34,46 +34,33 @@ jobs:
       # Instead we bundle the OFFICIAL, pre-built WireGuard for Windows
       # binary (wireguard.exe), which already includes the Wintun driver
       # and is what the real WireGuard Windows client uses.
-      - name: Download and extract official WireGuard for Windows
-        run: |
-          $wgVersion = "1.0.1"
-          $msiUrl = "https://download.wireguard.com/windows-client/wireguard-amd64-$wgVersion.msi"
-          Invoke-WebRequest -Uri $msiUrl -OutFile "wireguard.msi"
+      - name: Download and extract AmneziaWG
+      run: |
+        $wgVersion = "2.0.2"
+        $msiUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/$wgVersion/amneziawg-amd64-$wgVersion.msi"
+        Invoke-WebRequest -Uri $msiUrl -OutFile "amneziawg.msi"
+        
+        $extractDir = "$PWD\amneziawg_extracted"
+        New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
+        
+        $msiExecArgs = @("/a", "`"$PWD\amneziawg.msi`"", "/qn", "TARGETDIR=`"$extractDir`"")
+        Start-Process msiexec.exe -ArgumentList $msiExecArgs -Wait -NoNewWindow
+        
+        $wgExe = Get-ChildItem -Path $extractDir -Filter "amneziawg.exe" -Recurse | Select-Object -First 1
+        if (-not $wgExe) {
+          Write-Host "Failed to extract amneziawg.exe from MSI."
+          exit 1
+        }
+        Write-Host "Found amneziawg.exe at: $($wgExe.FullName)"
+        Copy-Item $wgExe.FullName "$PWD\amneziawg.exe"
 
-          $extractDir = "$PWD\wireguard_extracted"
-          New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
+    - name: Bundle AmneziaWG binary inside data/
+      run: |
+        $ReleaseDir = "build\windows\x64\runner\Release"
+        New-Item -ItemType Directory -Force -Path "$ReleaseDir\data" | Out-Null
+        Copy-Item "$PWD\amneziawg.exe" "$ReleaseDir\data\amneziawg.exe"
 
-          $msiExecArgs = @(
-            "/a", "`"$PWD\wireguard.msi`"",
-            "/qn",
-            "TARGETDIR=`"$extractDir`""
-          )
-          Start-Process msiexec.exe -ArgumentList $msiExecArgs -Wait -NoNewWindow
-
-          $wgExe = Get-ChildItem -Path $extractDir -Filter "wireguard.exe" -Recurse | Select-Object -First 1
-          if (-not $wgExe) {
-            Write-Host "Failed to extract wireguard.exe from MSI."
-            Get-ChildItem -Path $extractDir -Recurse | ForEach-Object { Write-Host $_.FullName }
-            exit 1
-          }
-          Write-Host "Found wireguard.exe at: $($wgExe.FullName)"
-          Copy-Item $wgExe.FullName "$PWD\wireguard.exe"
-
-      - name: Bundle WireGuard binary inside data/
-        run: |
-          $ReleaseDir = "build\windows\x64\runner\Release"
-          New-Item -ItemType Directory -Force -Path "$ReleaseDir\data" | Out-Null
-
-          Copy-Item "$PWD\wireguard.exe" "$ReleaseDir\data\wireguard.exe"
-
-          if (-not (Test-Path "$ReleaseDir\data\wireguard.exe")) {
-            Write-Host "wireguard.exe bundling failed."
-            exit 1
-          }
-
-          Write-Host "Official WireGuard for Windows bundled successfully."
-
-      - name: Upload build artifacts
+    - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: oryvexvpn-windows
