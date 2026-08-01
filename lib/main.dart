@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'core/config.dart';
 import 'screens/home_screen.dart';
@@ -31,10 +32,11 @@ class OryvexVPNApp extends StatefulWidget {
   State<OryvexVPNApp> createState() => _OryvexVPNAppState();
 }
 
-class _OryvexVPNAppState extends State<OryvexVPNApp> {
+class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
   @override
   void initState() {
     super.initState();
+    windowManager.addListener(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       TrayService.instance.init();
     });
@@ -42,9 +44,20 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> {
 
   @override
   void dispose() {
+    windowManager.removeListener(this);
     TrayService.instance.dispose();
     NetworkManager.instance.dispose();
     super.dispose();
+  }
+
+  // جلوگیری از هنگ کردن با متوقف کردن تمیز تونل پیش از بسته شدن پنجره
+  @override
+  void onWindowClose() async {
+    final vpn = context.read<VPNService>();
+    if (vpn.isConnected || vpn.isConnecting) {
+      await vpn.disconnect();
+    }
+    await windowManager.destroy(); // خروج قطعی
   }
 
   @override
@@ -54,13 +67,13 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> {
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
         return Directionality(
-          textDirection: TextDirection.rtl,
+          textDirection: TextDirection.rtl, // چینش راست‌چین مانند تصویر
           child: child!,
         );
       },
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0A0A0A),
+        scaffoldBackgroundColor: const Color(0xFF0F0F0F), // پس‌زمینه دارک مینیمال
         fontFamily: GoogleFonts.vazirmatn().fontFamily,
         textTheme: GoogleFonts.vazirmatnTextTheme(ThemeData.dark().textTheme),
       ),

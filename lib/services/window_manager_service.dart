@@ -27,6 +27,8 @@ class WindowManagerService {
     await windowManager.waitUntilReadyToShow(windowOptions, () async {
       await windowManager.show();
       await windowManager.focus();
+      // جلوگیری از بسته شدن فوری پنجره تا بتوانیم در رویداد onWindowClose فرآیند VPN را متوقف کنیم
+      await windowManager.setPreventClose(true); 
     });
   }
 
@@ -45,6 +47,6 @@ class WindowManagerService {
     if (!Platform.isWindows) {
       exit(0);
     }
-    await windowManager.destroy();
+    await windowManager.close(); // ارجاع به Listener خروج تمیز
   }
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import '../services/vpn_service.dart';
-import '../services/window_manager_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,59 +23,66 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final vpn = context.watch<VPNService>();
 
+    // رنگ فیروزه‌ای (Neon Cyan) مشابه تصویر
     Color getStatusColor() {
       if (vpn.isConnected) return const Color(0xFF00E5FF); 
-      if (vpn.isConnecting) return const Color(0xFF00FFCC); 
+      if (vpn.isConnecting) return const Color(0xFF00E5FF).withOpacity(0.7); 
       if (vpn.stage == VpnStage.error) return const Color(0xFFFF3366); 
-      return const Color(0xFF555555);
+      return const Color(0xFF333333); // رنگ حالت خاموش
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A), 
+      backgroundColor: const Color(0xFF0F0F0F), 
       body: Column(
         children: [
-          // Custom Window Controls (Fixed Layout)
-          Container(
-            height: 50,
-            color: Colors.transparent,
-            child: Row(
-              children: [
-                const SizedBox(width: 16),
-                Icon(
-                  vpn.isConnected ? Icons.shield_rounded : Icons.shield_outlined,
-                  color: getStatusColor(),
-                  size: 22,
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'اورایوکس',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+          // Header (Title & Controls)
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onPanStart: (details) => windowManager.startDragging(),
+            child: Container(
+              height: 60,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // سمت راست (چون RTL است، اولین آیتم‌ها سمت راست قرار می‌گیرند)
+                  Row(
+                    children: [
+                      const Text(
+                        'اورایوکس',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        vpn.isConnected ? Icons.shield_rounded : Icons.shield_outlined,
+                        color: const Color(0xFF00E5FF),
+                        size: 24,
+                      ),
+                    ],
                   ),
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onPanStart: (details) => windowManager.startDragging(),
-                    child: const SizedBox(height: double.infinity),
+                  // سمت چپ (دکمه‌های کنترل)
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.minimize, color: Colors.white54, size: 20),
+                        onPressed: () => windowManager.minimize(),
+                        hoverColor: Colors.white10,
+                        splashRadius: 20,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white54, size: 20),
+                        onPressed: () => windowManager.close(), // ارسال تریگر به onWindowClose
+                        hoverColor: Colors.redAccent.withOpacity(0.5),
+                        splashRadius: 20,
+                      ),
+                    ],
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.minimize, color: Colors.white54, size: 20),
-                  onPressed: () => windowManager.minimize(),
-                  hoverColor: Colors.white10,
-                  splashRadius: 20,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white54, size: 20),
-                  onPressed: () => WindowManagerService.quit(),
-                  hoverColor: Colors.redAccent.withOpacity(0.5),
-                  splashRadius: 20,
-                ),
-                const SizedBox(width: 8),
-              ],
+                ],
+              ),
             ),
           ),
           
@@ -87,59 +93,36 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text(
                     vpn.statusMessage,
-                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.bold,
                       color: getStatusColor(),
                     ),
                   ),
-                  if (vpn.lastError != null) ...[
-                    const SizedBox(height: 16),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 32),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFF3366).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFFF3366).withOpacity(0.3)),
-                      ),
-                      child: Text(
-                        vpn.lastError!,
-                        textAlign: TextAlign.left,
-                        textDirection: TextDirection.ltr, // Logs show better in LTR
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFFFF3366),
-                          fontFamily: 'Consolas',
-                        ),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 40),
                   
-                  // Main Connect Button
+                  // Main Connect Button (Neon Outline)
                   GestureDetector(
                     onTap: vpn.isConnecting
                         ? null
                         : () => vpn.isConnected ? vpn.disconnect() : vpn.connect(),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
-                      width: 160,
-                      height: 160,
+                      width: 170,
+                      height: 170,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: const Color(0xFF141414),
                         boxShadow: [
                           BoxShadow(
-                            color: getStatusColor().withOpacity(vpn.isConnected || vpn.isConnecting ? 0.2 : 0.0),
-                            blurRadius: 40,
-                            spreadRadius: vpn.isConnected || vpn.isConnecting ? 5 : 0,
+                            color: getStatusColor().withOpacity(vpn.isConnected || vpn.isConnecting ? 0.15 : 0.0),
+                            blurRadius: 50,
+                            spreadRadius: 10,
                           ),
                         ],
                         border: Border.all(
-                          color: getStatusColor().withOpacity(vpn.isConnected ? 0.8 : 0.3),
-                          width: vpn.isConnected ? 3 : 1.5,
+                          color: getStatusColor().withOpacity(vpn.isConnected ? 1.0 : 0.4),
+                          width: vpn.isConnected ? 3 : 2,
                         ),
                       ),
                       child: Center(
@@ -149,12 +132,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 height: 50,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 3,
-                                  color: Color(0xFF00FFCC),
+                                  color: Color(0xFF00E5FF),
                                 ),
                               )
                             : Icon(
                                 Icons.power_settings_new_rounded,
-                                size: 60,
+                                size: 65,
                                 color: getStatusColor(),
                               ),
                       ),

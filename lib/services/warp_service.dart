@@ -27,14 +27,12 @@ class WarpService {
   }
 
   static Future<String> _findBestEndpoint(Function(String) onProgress) async {
-    onProgress('در حال جستجوی سریع‌ترین سرور...');
+    onProgress('در حال یافتن سرور...');
     final futures = _endpoints.map((ip) async {
       try {
         final start = DateTime.now();
         final res = await Process.run('ping', ['-n', '1', '-w', '1000', ip]);
-        if (res.exitCode == 0) {
-          return {'ip': ip, 'latency': DateTime.now().difference(start).inMilliseconds};
-        }
+        if (res.exitCode == 0) return {'ip': ip, 'latency': DateTime.now().difference(start).inMilliseconds};
       } catch (_) {}
       return {'ip': ip, 'latency': 9999};
     });
@@ -45,7 +43,6 @@ class WarpService {
   }
 
   static Future<_WarpRegistration> _register(Function(String) onProgress) async {
-    onProgress('در حال ساخت کلید رمزنگاری...');
     final algorithm = X25519();
     final keyPair = await algorithm.newKeyPair();
     final publicKey = await keyPair.extractPublicKey();
@@ -54,7 +51,7 @@ class WarpService {
     final pubKeyBase64 = base64Encode(publicKey.bytes);
     final privKeyBase64 = base64Encode(privateKeyBytes);
 
-    onProgress('در حال ارتباط با کلادفلر...');
+    onProgress('ارتباط با کلادفلر...');
     final response = await http.post(
       Uri.parse('https://api.cloudflareclient.com/v0a737/reg'),
       headers: {'Content-Type': 'application/json'},
@@ -68,22 +65,17 @@ class WarpService {
       }),
     ).timeout(const Duration(seconds: 15));
 
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('ثبت‌نام دستگاه ناموفق بود.');
-    }
+    if (response.statusCode != 200 && response.statusCode != 201) throw Exception('ثبت‌نام ناموفق بود.');
 
     final data = jsonDecode(response.body);
     final peer = data['config']['peers'][0];
     final address = (data['config']['interface']['addresses']['v4'] as String);
-    final peerPublicKeyBase64 = peer['public_key'] as String;
-
-    final bestIp = await _findBestEndpoint(onProgress);
 
     return _WarpRegistration(
       privateKeyBase64: privKeyBase64,
       address: address,
-      peerPublicKeyBase64: peerPublicKeyBase64,
-      endpointIp: bestIp,
+      peerPublicKeyBase64: peer['public_key'] as String,
+      endpointIp: await _findBestEndpoint(onProgress),
       endpointPort: '2408',
     );
   }
@@ -113,26 +105,22 @@ class WarpService {
     final confFile = File('$confDir\\$_tunnelName.conf');
     await confFile.writeAsString(_buildConf(reg));
 
-    // فقط اگر سرویس از قبل وجود داشت آن را متوقف کن تا پاپ‌آپ ارور ظاهر نشود
+    // از آنجا که برنامه دسترسی ادمین دارد، مستقیما بدون PowerShell فراخوانی می‌کنیم
     if (await _serviceExists()) {
-      final uninstallCmd = 'Start-Process -FilePath "$_vpnExe" -ArgumentList "/uninstalltunnelservice $_tunnelName" -Verb RunAs -WindowStyle Hidden -Wait';
-      await Process.run('powershell', ['-NoProfile', '-Command', uninstallCmd]);
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Process.run(_vpnExe, ['/uninstalltunnelservice', _tunnelName]);
+      await Future.delayed(const Duration(milliseconds: 300));
     }
 
-    final installCmd = 'Start-Process -FilePath "$_vpnExe" -ArgumentList "/installtunnelservice `"${confFile.path}`"" -Verb RunAs -WindowStyle Hidden -Wait';
-    final result = await Process.run('powershell', ['-NoProfile', '-Command', installCmd]);
-
-    if (result.exitCode != 0) {
-      throw Exception('دسترسی ادمین (UAC) داده نشد یا خطا در اجرای سرویس رخ داد.');
-    }
-    await Future.delayed(const Duration(seconds: 1));
+    final result = await Process.run(_vpnExe, ['/installtunnelservice', confFile.path]);
+    if (result.exitCode != 0) throw Exception('خطا در اجرای سرویس هسته.');
+    
+    await Future.delayed(const Duration(milliseconds: 500));
   }
 
   static Future<void> connectWithProgress(Function(String) onProgress) async {
     if (!await _coreFilesPresent()) throw Exception('فایل هسته (amneziawg.exe) یافت نشد.');
     final reg = await _register(onProgress);
-    onProgress('درخواست دسترسی مدیریت (UAC)...');
+    onProgress('اجرای تونل...');
     await _installTunnelService(reg);
     _connected = true;
   }
@@ -143,8 +131,7 @@ class WarpService {
     if (!Platform.isWindows) return;
     try {
       if (await _serviceExists()) {
-        final uninstallCmd = 'Start-Process -FilePath "$_vpnExe" -ArgumentList "/uninstalltunnelservice $_tunnelName" -Verb RunAs -WindowStyle Hidden -Wait';
-        await Process.run('powershell', ['-NoProfile', '-Command', uninstallCmd]);
+        await Process.run(_vpnExe, ['/uninstalltunnelservice', _tunnelName]);
       }
     } catch (_) {}
     _connected = false;
