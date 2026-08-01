@@ -39,6 +39,12 @@ jobs:
           }
           Write-Host "Manifest OK: requireAdministrator present."
 
+      - name: Clean previous build output
+        run: flutter clean
+
+      - name: Get dependencies (post-clean)
+        run: flutter pub get
+
       - name: Build Windows app
         run: flutter build windows --release
 

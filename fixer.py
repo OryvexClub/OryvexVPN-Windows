@@ -11,7 +11,10 @@ What it does:
      actual cause of the missing UAC shield - your old CI step was
      patching a file, windows\\runner\\app.manifest, that never existed).
   2. Confirms windows/runner/CMakeLists.txt embeds runner.exe.manifest
-     into the exe (adds it if a hand-edited CMakeLists dropped it).
+     as a SOURCE of the add_executable() target (adds it if missing, and
+     refuses to double-add it if it's already there in some other form -
+     both a missing and a duplicated manifest reference cause the
+     linker's mt.exe step to fail with LNK1327).
   3. Fixes .github/workflows/build_windows.yml so CI stops patching a
      nonexistent file and instead verifies the manifest is correct.
   4. Writes a ready-to-build installer/installer.iss (Inno Setup 6).
@@ -151,6 +154,12 @@ jobs:
           }
           Write-Host "Manifest OK: requireAdministrator present."
 
+      - name: Clean previous build output
+        run: flutter clean
+
+      - name: Get dependencies (post-clean)
+        run: flutter pub get
+
       - name: Build Windows app
         run: flutter build windows --release
 
@@ -216,11 +225,91 @@ def check_manifest(manifest_path: Path) -> bool:
     return 'level="requireAdministrator"' in text and "<trustInfo" in text
 
 
+def _find_add_executable_block(text: str):
+    """
+    Locate the add_executable(${BINARY_NAME} ...) call and return
+    (start_index, end_index, block_text) for its parenthesised argument
+    list, or None if not found. This is deliberately narrower than a
+    plain substring search so we don't match add_executable() calls
+    for unrelated targets, or matches inside comments/strings elsewhere
+    in the file.
+    """
+    match = re.search(r"add_executable\(\s*\$\{BINARY_NAME\}", text)
+    if not match:
+        return None
+
+    start = match.start()
+    # Walk forward from the opening "(" to find the matching ")"
+    paren_start = text.index("(", start)
+    depth = 0
+    i = paren_start
+    while i < len(text):
+        if text[i] == "(":
+            depth += 1
+        elif text[i] == ")":
+            depth -= 1
+            if depth == 0:
+                return start, i + 1, text[paren_start:i + 1]
+        i += 1
+    return None  # unbalanced parens - malformed CMakeLists, bail out
+
+
 def check_cmakelists(cmake_path: Path) -> bool:
+    """
+    Correctly verify that runner.exe.manifest is listed as a SOURCE
+    inside the add_executable(${BINARY_NAME} ...) target - not just
+    mentioned anywhere in the file (e.g. in an unrelated comment or a
+    different command). A manifest that's referenced outside this
+    block is never actually embedded by the linker, which is what
+    produces LNK1327 during `mt.exe` even though a naive text search
+    would report "OK".
+    """
     if not cmake_path.exists():
         return False
     text = cmake_path.read_text(encoding="utf-8")
-    return "runner.exe.manifest" in text
+
+    block = _find_add_executable_block(text)
+    if block is None:
+        return False
+    _, _, block_text = block
+
+    # Must appear exactly once inside the target's source list.
+    # Zero occurrences = never wired in. More than one = duplicate
+    # manifest source, which also breaks mt.exe.
+    occurrences = block_text.count("runner.exe.manifest")
+    return occurrences == 1
+
+
+def _insert_manifest_into_cmakelists(text: str) -> str:
+    """
+    Insert "runner.exe.manifest" as a source file inside the
+    add_executable(${BINARY_NAME} ...) block, immediately after
+    "Runner.rc" if present, otherwise as the last argument in the
+    block. Falls back to returning the text unchanged (caller checks
+    for that) if no add_executable(${BINARY_NAME} ...) block exists.
+    """
+    block = _find_add_executable_block(text)
+    if block is None:
+        return text
+
+    start, end, block_text = block
+
+    if '"runner.exe.manifest"' in block_text:
+        # Already present exactly once somewhere unusual, or duplicated -
+        # don't blindly append and risk a second copy. Leave as-is;
+        # check_cmakelists() will flag duplicates separately.
+        return text
+
+    if '"Runner.rc"' in block_text:
+        new_block_text = block_text.replace(
+            '"Runner.rc"', '"Runner.rc"\n  "runner.exe.manifest"'
+        )
+    else:
+        # No Runner.rc anchor found - insert just before the closing paren.
+        inner = block_text[1:-1].rstrip()
+        new_block_text = inner + '\n  "runner.exe.manifest"\n)'
+
+    return text[:start] + text[start:end].replace(block_text, new_block_text, 1) + text[end:]
 
 
 def apply_fixes(root: Path, dry_run: bool) -> None:
@@ -240,15 +329,37 @@ def apply_fixes(root: Path, dry_run: bool) -> None:
             manifest_path.parent.mkdir(parents=True, exist_ok=True)
             manifest_path.write_text(MANIFEST_CONTENT, encoding="utf-8")
 
-    # 2. CMakeLists.txt must list runner.exe.manifest as a source so MSVC
-    #    embeds it as the exe's manifest resource.
+    # 2. CMakeLists.txt must list runner.exe.manifest exactly once as a
+    #    source inside add_executable(${BINARY_NAME} ...) so MSVC embeds
+    #    it as the exe's manifest resource via mt.exe.
     if cmake_path.exists() and not check_cmakelists(cmake_path):
         text = cmake_path.read_text(encoding="utf-8")
-        if 'add_executable(' in text and '"Runner.rc"' in text and '"runner.exe.manifest"' not in text:
-            new_text = text.replace('"Runner.rc"', '"Runner.rc"\n  "runner.exe.manifest"')
-            changed.append(str(cmake_path))
-            if not dry_run:
-                cmake_path.write_text(new_text, encoding="utf-8")
+        block = _find_add_executable_block(text)
+
+        if block is not None:
+            _, _, block_text = block
+            occurrences = block_text.count("runner.exe.manifest")
+
+            if occurrences == 0:
+                new_text = _insert_manifest_into_cmakelists(text)
+                if new_text != text:
+                    changed.append(str(cmake_path))
+                    if not dry_run:
+                        cmake_path.write_text(new_text, encoding="utf-8")
+            elif occurrences > 1:
+                print(
+                    f"WARNING: {cmake_path} lists runner.exe.manifest more than once "
+                    "inside add_executable(). This alone can cause mt.exe / LNK1327 "
+                    "failures. Not auto-editing this - please de-duplicate it by hand.",
+                    file=sys.stderr,
+                )
+        else:
+            print(
+                f"WARNING: could not find add_executable(${{BINARY_NAME}} ...) in "
+                f"{cmake_path}. This file may have been hand-edited beyond what "
+                "fixer.py can safely patch. Please check it manually.",
+                file=sys.stderr,
+            )
 
     # 3. CI workflow
     if ci_path.exists():
@@ -285,6 +396,10 @@ Next steps (manual, on your Windows machine - I can't compile here):
   2. flutter build windows --release
      -> confirm build\\windows\\x64\\runner\\Release\\warp_vpn_app.exe
         now shows the UAC shield icon and prompts for elevation on launch.
+     -> if you still see LNK1327, open windows\\runner\\CMakeLists.txt and
+        confirm "runner.exe.manifest" appears EXACTLY ONCE inside the
+        add_executable(${BINARY_NAME} ...) argument list, next to
+        "Runner.rc" - not duplicated, not outside that block.
   3. Install Inno Setup 6 (https://jrsoftware.org/isinfo.php) if you
      haven't, then: iscc installer\\installer.iss
   4. Open installer.iss and set your real Publisher name, AppURL, and
