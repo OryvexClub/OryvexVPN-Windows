@@ -1,65 +1,116 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
-fixer.py - OryvexVPN Ultimate Fixer (AmneziaWG + UAC Manifest + Hang Fix)
+fixer.py - OryvexVPN (warp_vpn_app) production fixer
 
-- تزریق مستقیم RequireAdministrator به Manifest ویندوز در سرور گیت‌هاب.
-- حل قطعی مشکل Not Responding هنگام خروج از برنامه.
-- اجرای مستقیم و سریع AmneziaWG بدون تأخیر PowerShell.
-- طراحی UI نئون فیروزه‌ای.
+Run this from the ROOT of the Flutter project
+(the folder that contains pubspec.yaml), on Windows, with Python 3.9+.
+
+What it does:
+  1. Rewrites windows/runner/runner.exe.manifest with a real
+     requestedExecutionLevel=requireAdministrator block (this is the
+     actual cause of the missing UAC shield - your old CI step was
+     patching a file, windows\\runner\\app.manifest, that never existed).
+  2. Confirms windows/runner/CMakeLists.txt embeds runner.exe.manifest
+     into the exe (adds it if a hand-edited CMakeLists dropped it).
+  3. Fixes .github/workflows/build_windows.yml so CI stops patching a
+     nonexistent file and instead verifies the manifest is correct.
+  4. Writes a ready-to-build installer/installer.iss (Inno Setup 6).
+  5. Prints a checklist of what still needs a human decision
+     (icon paths, publisher name, signing cert) instead of guessing.
+
+Usage:
+    python fixer.py                 # apply fixes
+    python fixer.py --dry-run       # show what would change, write nothing
+    python fixer.py --check         # verify current state only, exit 1 if broken
 """
 
-import os
+import argparse
 import re
 import sys
 from pathlib import Path
-from typing import Optional, List
 
-class FlutterProjectFixer:
-    def __init__(self, project_root: Optional[str] = None):
-        if project_root:
-            self.root = Path(project_root)
-        else:
-            script_dir = Path(__file__).resolve().parent
-            if (script_dir / "pubspec.yaml").exists():
-                self.root = script_dir
-            else:
-                self.root = Path(os.getcwd())
-        self.fixed_files: List[str] = []
+MANIFEST_CONTENT = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity type="win32" name="OryvexVPN.warp_vpn_app" version="1.0.0.0" processorArchitecture="amd64"/>
 
-    def log(self, message: str, level: str = "INFO"):
-        icons = {"INFO": "[i]", "SUCCESS": "[OK]", "WARNING": "[!]", "ERROR": "[X]", "FIX": "[FIX]"}
-        print(f"{icons.get(level, '[i]')} {message}")
+  <application xmlns="urn:schemas-microsoft-com:asm.v3">
+    <windowsSettings>
+      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
+      <longPathAware xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">true</longPathAware>
+    </windowsSettings>
+  </application>
 
-    def _write_if_needed(self, path: Path, content: str, reason: str, force: bool = False):
-        path.parent.mkdir(parents=True, exist_ok=True)
-        rel = str(path.relative_to(self.root)) if self._is_relative(path) else str(path)
-        
-        path.write_text(content, encoding='utf-8')
-        self.fixed_files.append(f"{rel} ({reason})")
-        self.log(f"اصلاح شد: {rel} <- {reason}", "FIX")
-        return True
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/>
+    </application>
+  </compatibility>
 
-    def _is_relative(self, path: Path) -> bool:
-        try:
-            path.relative_to(self.root)
-            return True
-        except ValueError:
-            return False
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+      <requestedPrivileges>
+        <requestedExecutionLevel level="requireAdministrator" uiAccess="false" />
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
 
-    def check_project(self) -> bool:
-        if not (self.root / "pubspec.yaml").exists():
-            self.log("فایل pubspec.yaml یافت نشد! مسیر پروژه درست نیست.", "ERROR")
-            return False
-        return True
+</assembly>
+"""
 
-    # 1. گیت‌هاب اکشن: اضافه کردن مرحله تبدیل اجباری فایل exe به حالت Run as Administrator
-    def fix_ci_workflow(self) -> bool:
-        path = self.root / ".github" / "workflows" / "build_windows.yml"
-        if not path.parent.exists(): path.parent.mkdir(parents=True, exist_ok=True)
+ISS_CONTENT = r"""#define MyAppName "OryvexVPN"
+#define MyAppExeName "warp_vpn_app.exe"
+#define MyAppVersion "1.0.0"
+#define MyAppPublisher "OryvexVPN"
+#define MyAppURL "https://oryvex.example.com"
+#define ReleaseDir "..\build\windows\x64\runner\Release"
 
-        content = r'''name: Build Windows App (AmneziaWG + UAC)
+[Setup]
+AppId={{5E2B7B0E-9F0A-4F49-8E4E-9C0A7E9E7A11}
+AppName={#MyAppName}
+AppVersion={#MyAppVersion}
+AppPublisher={#MyAppPublisher}
+AppPublisherURL={#MyAppURL}
+AppSupportURL={#MyAppURL}
+AppUpdatesURL={#MyAppURL}
+DefaultDirName={autopf}\{#MyAppName}
+DefaultGroupName={#MyAppName}
+DisableProgramGroupPage=yes
+PrivilegesRequired=admin
+PrivilegesRequiredOverridesAllowed=commandline
+OutputDir=Output
+OutputBaseFilename=OryvexVPN-Setup-{#MyAppVersion}
+UninstallDisplayIcon={app}\{#MyAppExeName}
+Compression=lzma2
+SolidCompression=yes
+WizardStyle=modern
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
+SetupLogging=yes
+
+[Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
+
+[Tasks]
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "startupicon"; Description: "Start {#MyAppName} when Windows starts"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+
+[Files]
+Source: "{#ReleaseDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+[Icons]
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
+Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{userstartup}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: startupicon
+
+[Run]
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent runascurrentuser
+
+[UninstallDelete]
+Type: filesandordirs; Name: "{app}"
+"""
+
+CI_YAML_CONTENT = """name: Build Windows App (AmneziaWG + UAC)
 
 on:
   push:
@@ -86,13 +137,19 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Force UAC Administrator (Manifest Injection)
+      - name: Verify UAC manifest is correct
         run: |
-          $manifest = "windows\runner\app.manifest"
-          if (Test-Path $manifest) {
-            (Get-Content $manifest) -replace 'level="asInvoker"', 'level="requireAdministrator"' | Set-Content $manifest
-            Write-Host "Manifest updated to requireAdministrator."
+          $manifest = "windows\\runner\\runner.exe.manifest"
+          if (-not (Test-Path $manifest)) {
+            Write-Error "runner.exe.manifest not found at $manifest"
+            exit 1
           }
+          $content = Get-Content $manifest -Raw
+          if ($content -notmatch 'level="requireAdministrator"') {
+            Write-Error "runner.exe.manifest is missing requireAdministrator - run fixer.py before committing."
+            exit 1
+          }
+          Write-Host "Manifest OK: requireAdministrator present."
 
       - name: Build Windows app
         run: flutter build windows --release
@@ -102,593 +159,168 @@ jobs:
           $wgVersion = "2.0.2"
           $msiUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/$wgVersion/amneziawg-amd64-$wgVersion.msi"
           Invoke-WebRequest -Uri $msiUrl -OutFile "amneziawg.msi"
-          
-          $extractDir = "$PWD\amneziawg_extracted"
+
+          $extractDir = "$PWD\\amneziawg_extracted"
           New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
-          
-          $msiExecArgs = @("/a", "`"$PWD\amneziawg.msi`"", "/qn", "TARGETDIR=`"$extractDir`"")
+
+          $msiExecArgs = @("/a", "`"$PWD\\amneziawg.msi`"", "/qn", "TARGETDIR=`"$extractDir`"")
           Start-Process msiexec.exe -ArgumentList $msiExecArgs -Wait -NoNewWindow
-          
+
           $wgExe = Get-ChildItem -Path $extractDir -Filter "amneziawg.exe" -Recurse | Select-Object -First 1
           if (-not $wgExe) {
             Write-Host "Failed to extract amneziawg.exe from MSI."
             exit 1
           }
-          Copy-Item $wgExe.FullName "$PWD\amneziawg.exe"
+          Copy-Item $wgExe.FullName "$PWD\\amneziawg.exe"
 
       - name: Bundle AmneziaWG binary inside data/
         run: |
-          $ReleaseDir = "build\windows\x64\runner\Release"
-          New-Item -ItemType Directory -Force -Path "$ReleaseDir\data" | Out-Null
-          Copy-Item "$PWD\amneziawg.exe" "$ReleaseDir\data\amneziawg.exe"
+          $ReleaseDir = "build\\windows\\x64\\runner\\Release"
+          New-Item -ItemType Directory -Force -Path "$ReleaseDir\\data" | Out-Null
+          Copy-Item "$PWD\\amneziawg.exe" "$ReleaseDir\\data\\amneziawg.exe"
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Build installer
+        run: iscc installer\\installer.iss
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: oryvexvpn-windows
+          name: oryvexvpn-windows-portable
           path: build/windows/x64/runner/Release/
-'''
-        return self._write_if_needed(path, content, "تزریق حالت Run as Administrator در سرور و دریافت AmneziaWG", force=True)
 
-    # 2. Main Entrypoint & خروج تمیز (بدون هنگ کردن)
-    def fix_main_dart(self) -> bool:
-        path = self.root / "lib" / "main.dart"
-        content = r'''import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:window_manager/window_manager.dart';
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: oryvexvpn-windows-installer
+          path: installer/Output/*.exe
+"""
 
-import 'core/config.dart';
-import 'screens/home_screen.dart';
-import 'services/network_manager.dart';
-import 'services/tray_service.dart';
-import 'services/window_manager_service.dart';
-import 'services/vpn_service.dart';
-import 'services/warp_service.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await WindowManagerService.init();
-  await NetworkManager.instance.start();
+def find_project_root(start: Path) -> Path:
+    cur = start.resolve()
+    for candidate in [cur, *cur.parents]:
+        if (candidate / "pubspec.yaml").exists():
+            return candidate
+    print("ERROR: no pubspec.yaml found above this directory. "
+          "Run fixer.py from inside the Flutter project.", file=sys.stderr)
+    sys.exit(1)
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => VPNService()),
-      ],
-      child: const OryvexVPNApp(),
-    ),
-  );
-}
 
-class OryvexVPNApp extends StatefulWidget {
-  const OryvexVPNApp({super.key});
-
-  @override
-  State<OryvexVPNApp> createState() => _OryvexVPNAppState();
-}
-
-class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
-  @override
-  void initState() {
-    super.initState();
-    windowManager.addListener(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      TrayService.instance.init();
-    });
-  }
-
-  @override
-  void dispose() {
-    windowManager.removeListener(this);
-    TrayService.instance.dispose();
-    NetworkManager.instance.dispose();
-    super.dispose();
-  }
-
-  // جلوگیری از خطای Not Responding با متوقف کردن فوری سرویس به صورت Static
-  @override
-  void onWindowClose() async {
-    try {
-      await WarpService.disconnect();
-    } catch (_) {}
-    await windowManager.destroy(); // خروج قطعی
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: AppConfig.appName,
-      debugShowCheckedModeBanner: false,
-      builder: (context, child) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: child!,
-        );
-      },
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0A0A0A),
-        fontFamily: GoogleFonts.vazirmatn().fontFamily,
-        textTheme: GoogleFonts.vazirmatnTextTheme(ThemeData.dark().textTheme),
-      ),
-      home: const HomeScreen(),
-    );
-  }
-}
-'''
-        return self._write_if_needed(path, content, "مدیریت بسته شدن پنجره (WindowListener) جهت رفع قطعی Not Responding", force=True)
-
-    # 3. UI Layout (Fix Missing Close Buttons)
-    def fix_home_screen(self) -> bool:
-        path = self.root / "lib" / "screens" / "home_screen.dart"
-        content = r'''import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:window_manager/window_manager.dart';
-import '../services/vpn_service.dart';
-import '../services/window_manager_service.dart';
-
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<VPNService>().initStatus();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final vpn = context.watch<VPNService>();
-
-    Color getStatusColor() {
-      if (vpn.isConnected) return const Color(0xFF00E5FF); 
-      if (vpn.isConnecting) return const Color(0xFF00FFCC); 
-      if (vpn.stage == VpnStage.error) return const Color(0xFFFF3366); 
-      return const Color(0xFF555555);
-    }
-
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A), 
-      body: Column(
-        children: [
-          // Header Draggable + Window Controls
-          Container(
-            height: 50,
-            color: Colors.transparent,
-            child: Row(
-              children: [
-                const SizedBox(width: 16),
-                Icon(
-                  vpn.isConnected ? Icons.shield_rounded : Icons.shield_outlined,
-                  color: getStatusColor(),
-                  size: 22,
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'اورایوکس',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onPanStart: (details) => windowManager.startDragging(),
-                    child: const SizedBox(height: double.infinity),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.minimize, color: Colors.white54, size: 20),
-                  onPressed: () => windowManager.minimize(),
-                  hoverColor: Colors.white10,
-                  splashRadius: 20,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white54, size: 20),
-                  onPressed: () => WindowManagerService.quit(),
-                  hoverColor: Colors.redAccent.withOpacity(0.5),
-                  splashRadius: 20,
-                ),
-                const SizedBox(width: 8),
-              ],
-            ),
-          ),
-          
-          Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    vpn.statusMessage,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: getStatusColor(),
-                    ),
-                  ),
-                  if (vpn.lastError != null) ...[
-                    const SizedBox(height: 16),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 32),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFF3366).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFFF3366).withOpacity(0.3)),
-                      ),
-                      child: Text(
-                        vpn.lastError!,
-                        textAlign: TextAlign.left,
-                        textDirection: TextDirection.ltr,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFFFF3366),
-                          fontFamily: 'Consolas',
-                        ),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 50),
-                  
-                  // Neon Cyan Connect Button
-                  GestureDetector(
-                    onTap: vpn.isConnecting
-                        ? null
-                        : () => vpn.isConnected ? vpn.disconnect() : vpn.connect(),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      width: 160,
-                      height: 160,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFF141414),
-                        boxShadow: [
-                          BoxShadow(
-                            color: getStatusColor().withOpacity(vpn.isConnected || vpn.isConnecting ? 0.2 : 0.0),
-                            blurRadius: 40,
-                            spreadRadius: vpn.isConnected || vpn.isConnecting ? 5 : 0,
-                          ),
-                        ],
-                        border: Border.all(
-                          color: getStatusColor().withOpacity(vpn.isConnected ? 0.8 : 0.3),
-                          width: vpn.isConnected ? 3 : 1.5,
-                        ),
-                      ),
-                      child: Center(
-                        child: vpn.isConnecting
-                            ? const SizedBox(
-                                width: 50,
-                                height: 50,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 3,
-                                  color: Color(0xFF00E5FF),
-                                ),
-                              )
-                            : Icon(
-                                Icons.power_settings_new_rounded,
-                                size: 60,
-                                color: getStatusColor(),
-                              ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-'''
-        return self._write_if_needed(path, content, "اصلاح دکمه‌های کنترل پنجره و اعمال استایل نئونی", force=True)
-
-    # 4. Warp Service (Direct Execution without PowerShell - No UAC Prompt at connection time)
-    def fix_warp_service(self) -> bool:
-        path = self.root / "lib" / "services" / "warp_service.dart"
-        content = r'''import 'dart:io';
-import 'dart:async';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:cryptography/cryptography.dart';
-import 'package:path_provider/path_provider.dart';
-
-class WarpService {
-  static const _tunnelName = 'oryvexvpn';
-  static bool _connected = false;
-
-  static const List<String> _endpoints = [
-    "162.159.192.1", "162.159.192.2", "162.159.193.1", "162.159.193.5",
-    "188.114.96.0", "188.114.96.1", "188.114.97.1", "188.114.98.1"
-  ];
-
-  static String get _exeDir => File(Platform.resolvedExecutable).parent.path;
-  static String get _vpnExe => '$_exeDir\\data\\amneziawg.exe';
-
-  static Future<bool> _coreFilesPresent() async => File(_vpnExe).exists();
-
-  static Future<String> _confDir() async {
-    final dir = await getApplicationSupportDirectory();
-    final confDir = Directory('${dir.path}\\amneziawg');
-    if (!await confDir.exists()) await confDir.create(recursive: true);
-    return confDir.path;
-  }
-
-  static Future<String> _findBestEndpoint(Function(String) onProgress) async {
-    onProgress('در حال یافتن سرور...');
-    final futures = _endpoints.map((ip) async {
-      try {
-        final start = DateTime.now();
-        final res = await Process.run('ping', ['-n', '1', '-w', '1000', ip]);
-        if (res.exitCode == 0) {
-          return {'ip': ip, 'latency': DateTime.now().difference(start).inMilliseconds};
-        }
-      } catch (_) {}
-      return {'ip': ip, 'latency': 9999};
-    });
-
-    final results = await Future.wait(futures);
-    results.sort((a, b) => (a['latency'] as int).compareTo(b['latency'] as int));
-    return results.first['latency'] != 9999 ? results.first['ip'] as String : _endpoints.first;
-  }
-
-  static Future<_WarpRegistration> _register(Function(String) onProgress) async {
-    final algorithm = X25519();
-    final keyPair = await algorithm.newKeyPair();
-    final publicKey = await keyPair.extractPublicKey();
-    final privateKeyBytes = await keyPair.extractPrivateKeyBytes();
-
-    final pubKeyBase64 = base64Encode(publicKey.bytes);
-    final privKeyBase64 = base64Encode(privateKeyBytes);
-
-    onProgress('ارتباط با کلادفلر...');
-    final response = await http.post(
-      Uri.parse('https://api.cloudflareclient.com/v0a737/reg'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        "key": pubKeyBase64,
-        "install_id": "",
-        "warp_enabled": true,
-        "tos": DateTime.now().toUtc().toIso8601String(),
-        "type": "Windows",
-        "locale": "fa_IR"
-      }),
-    ).timeout(const Duration(seconds: 15));
-
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('ثبت‌نام دستگاه ناموفق بود.');
-    }
-
-    final data = jsonDecode(response.body);
-    final peer = data['config']['peers'][0];
-    final address = (data['config']['interface']['addresses']['v4'] as String);
-
-    return _WarpRegistration(
-      privateKeyBase64: privKeyBase64,
-      address: address,
-      peerPublicKeyBase64: peer['public_key'] as String,
-      endpointIp: await _findBestEndpoint(onProgress),
-      endpointPort: '2408',
-    );
-  }
-
-  static String _buildConf(_WarpRegistration reg) {
-    final b = StringBuffer();
-    b.writeln('[Interface]');
-    b.writeln('PrivateKey = ${reg.privateKeyBase64}');
-    b.writeln('Address = ${reg.address}');
-    b.writeln('DNS = 1.1.1.1');
-    b.writeln('');
-    b.writeln('[Peer]');
-    b.writeln('PublicKey = ${reg.peerPublicKeyBase64}');
-    b.writeln('Endpoint = ${reg.endpointIp}:${reg.endpointPort}');
-    b.writeln('AllowedIPs = 0.0.0.0/0');
-    b.writeln('PersistentKeepalive = 25');
-    return b.toString();
-  }
-
-  static Future<bool> _serviceExists() async {
-    final result = await Process.run('sc', ['query', 'AmneziaWGTunnel\$$_tunnelName']);
-    return result.exitCode == 0;
-  }
-
-  static Future<void> _installTunnelService(_WarpRegistration reg) async {
-    final confDir = await _confDir();
-    final confFile = File('$confDir\\$_tunnelName.conf');
-    await confFile.writeAsString(_buildConf(reg));
-
-    // از آنجا که فایل EXE مستقیماً با دسترسی ادمین باز شده است، نیازی به PowerShell و تأخیر آن نیست
-    if (await _serviceExists()) {
-      await Process.run(_vpnExe, ['/uninstalltunnelservice', _tunnelName]);
-      await Future.delayed(const Duration(milliseconds: 300));
-    }
-
-    final result = await Process.run(_vpnExe, ['/installtunnelservice', confFile.path]);
-
-    if (result.exitCode != 0) {
-      throw Exception('خطا در اجرای سرویس هسته.');
-    }
-    await Future.delayed(const Duration(milliseconds: 500));
-  }
-
-  static Future<void> connectWithProgress(Function(String) onProgress) async {
-    if (!await _coreFilesPresent()) throw Exception('فایل هسته (amneziawg.exe) یافت نشد.');
-    final reg = await _register(onProgress);
-    onProgress('اجرای تونل...');
-    await _installTunnelService(reg);
-    _connected = true;
-  }
-
-  static Future<void> connect() async => await connectWithProgress((_) {});
-
-  static Future<void> disconnect() async {
-    if (!Platform.isWindows) return;
-    try {
-      if (await _serviceExists()) {
-        await Process.run(_vpnExe, ['/uninstalltunnelservice', _tunnelName]);
-      }
-    } catch (_) {}
-    _connected = false;
-  }
-
-  static Future<bool> isConnected() async {
-    if (!Platform.isWindows) return false;
-    // حتی در صورتی که _connected در مموری False باشد، وضعیت واقعی سرویس بررسی شود
-    return await _serviceExists();
-  }
-}
-
-class _WarpRegistration {
-  final String privateKeyBase64, address, peerPublicKeyBase64, endpointIp, endpointPort;
-  const _WarpRegistration({
-    required this.privateKeyBase64, required this.address, required this.peerPublicKeyBase64,
-    required this.endpointIp, required this.endpointPort,
-  });
-}
-'''
-        return self._write_if_needed(path, content, "اجرای مستقیم AmneziaWG (بدون PowerShell)", force=True)
-
-    def fix_window_manager_service(self) -> bool:
-        path = self.root / "lib" / "services" / "window_manager_service.dart"
-        content = r'''import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:window_manager/window_manager.dart';
-import 'package:warp_vpn_app/core/config.dart';
-
-class WindowManagerService {
-  WindowManagerService._();
-
-  static bool _initialized = false;
-
-  static Future<void> init() async {
-    if (!Platform.isWindows || _initialized) return;
-    _initialized = true;
-
-    await windowManager.ensureInitialized();
-
-    const windowOptions = WindowOptions(
-      size: Size(AppConfig.windowWidth, AppConfig.windowHeight),
-      minimumSize: Size(AppConfig.windowWidth, AppConfig.windowHeight),
-      maximumSize: Size(AppConfig.windowWidth, AppConfig.windowHeight),
-      center: true,
-      backgroundColor: Colors.transparent,
-      skipTaskbar: false,
-      titleBarStyle: TitleBarStyle.hidden,
-    );
-
-    await windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.show();
-      await windowManager.focus();
-      // جلوگیری از بسته شدن پنجره درجا، تا Listener بتواند تونل را ببندد
-      await windowManager.setPreventClose(true); 
-    });
-  }
-
-  static Future<void> hideToTray() async {
-    if (!Platform.isWindows) return;
-    await windowManager.hide();
-  }
-
-  static Future<void> restore() async {
-    if (!Platform.isWindows) return;
-    await windowManager.show();
-    await windowManager.focus();
-  }
-
-  static Future<void> quit() async {
-    if (!Platform.isWindows) {
-      exit(0);
-    }
-    await windowManager.close(); // ارجاع به Listener برای خروج تمیز
-  }
-}
-'''
-        return self._write_if_needed(path, content, "اعمال PreventClose جهت مدیریت خروج امن", force=True)
-
-    def fix_pubspec_dependencies(self) -> bool:
-        path = self.root / "pubspec.yaml"
-        if not path.exists(): return False
-
-        text = path.read_text(encoding='utf-8')
-        required_deps = {
-            "window_manager": "^0.4.3",
-            "settings_ui": "^2.0.2",
-            "shared_preferences": "^2.3.2",
-            "tray_manager": "^0.3.1",
-            "provider": "^6.1.2",
-            "connectivity_plus": "^6.1.0",
-            "http": "^1.2.2",
-            "cryptography": "^2.7.0",
-            "path_provider": "^2.1.1",
-            "google_fonts": "^6.1.0",
-        }
-
-        lines = text.splitlines()
-        try:
-            dep_idx = next(i for i, l in enumerate(lines) if l.strip() == "dependencies:")
-        except StopIteration:
-            return False
-
-        end_idx = len(lines)
-        for i in range(dep_idx + 1, len(lines)):
-            line = lines[i]
-            if line and not line.startswith(' ') and not line.startswith('\t') and line.strip():
-                end_idx = i
-                break
-
-        block = "\n".join(lines[dep_idx:end_idx])
-        missing = {name: ver for name, ver in required_deps.items() if re.search(rf'^\s*{re.escape(name)}\s*:', block, re.MULTILINE) is None}
-
-        if not missing: return False
-
-        insertion = "\n".join(f"  {name}: {ver}" for name, ver in missing.items())
-        new_lines = lines[:end_idx] + [insertion] + lines[end_idx:]
-        path.write_text("\n".join(new_lines) + "\n", encoding='utf-8')
-        self.fixed_files.append(f"pubspec.yaml (افزودن پکیج‌های جا افتاده)")
-        return True
-
-    def fix_sdk_constraint(self) -> bool:
-        pubspec = self.root / "pubspec.yaml"
-        if pubspec.exists():
-            text = pubspec.read_text(encoding='utf-8')
-            new_text, count = re.subn(r"sdk:\s*['\"][^'\"]*['\"]", "sdk: '>=3.0.0 <4.0.0'", text, count=1)
-            if count > 0 and new_text != text:
-                pubspec.write_text(new_text, encoding='utf-8')
-                return True
+def check_manifest(manifest_path: Path) -> bool:
+    if not manifest_path.exists():
         return False
+    text = manifest_path.read_text(encoding="utf-8")
+    return 'level="requireAdministrator"' in text and "<trustInfo" in text
 
-    def run(self) -> bool:
-        print("\n" + "=" * 64)
-        print("OryvexVPN - Ultimate Core & Hang Fixer")
-        print("=" * 64)
-        
-        if not self.check_project(): return False
 
-        # انجام تمام فرآیندها
-        self.fix_ci_workflow()
-        self.fix_main_dart()
-        self.fix_home_screen()
-        self.fix_warp_service()
-        self.fix_window_manager_service()
-        self.fix_pubspec_dependencies()
-        self.fix_sdk_constraint()
+def check_cmakelists(cmake_path: Path) -> bool:
+    if not cmake_path.exists():
+        return False
+    text = cmake_path.read_text(encoding="utf-8")
+    return "runner.exe.manifest" in text
 
-        print("\nکار تمام است! پایتون با موفقیت اجرا شد. کدها را در گیت‌هاب Push کنید.")
-        return True
+
+def apply_fixes(root: Path, dry_run: bool) -> None:
+    windows_runner = root / "windows" / "runner"
+    manifest_path = windows_runner / "runner.exe.manifest"
+    cmake_path = windows_runner / "CMakeLists.txt"
+    ci_path = root / ".github" / "workflows" / "build_windows.yml"
+    installer_dir = root / "installer"
+    iss_path = installer_dir / "installer.iss"
+
+    changed = []
+
+    # 1. manifest
+    if not check_manifest(manifest_path):
+        changed.append(str(manifest_path))
+        if not dry_run:
+            manifest_path.parent.mkdir(parents=True, exist_ok=True)
+            manifest_path.write_text(MANIFEST_CONTENT, encoding="utf-8")
+
+    # 2. CMakeLists.txt must list runner.exe.manifest as a source so MSVC
+    #    embeds it as the exe's manifest resource.
+    if cmake_path.exists() and not check_cmakelists(cmake_path):
+        text = cmake_path.read_text(encoding="utf-8")
+        if 'add_executable(' in text and '"Runner.rc"' in text and '"runner.exe.manifest"' not in text:
+            new_text = text.replace('"Runner.rc"', '"Runner.rc"\n  "runner.exe.manifest"')
+            changed.append(str(cmake_path))
+            if not dry_run:
+                cmake_path.write_text(new_text, encoding="utf-8")
+
+    # 3. CI workflow
+    if ci_path.exists():
+        old_ci = ci_path.read_text(encoding="utf-8")
+        if 'app.manifest' in old_ci or 'requireAdministrator' not in old_ci:
+            changed.append(str(ci_path))
+            if not dry_run:
+                ci_path.write_text(CI_YAML_CONTENT, encoding="utf-8")
+    else:
+        changed.append(str(ci_path) + " (created)")
+        if not dry_run:
+            ci_path.parent.mkdir(parents=True, exist_ok=True)
+            ci_path.write_text(CI_YAML_CONTENT, encoding="utf-8")
+
+    # 4. Inno Setup installer script
+    if not iss_path.exists():
+        changed.append(str(iss_path) + " (created)")
+        if not dry_run:
+            installer_dir.mkdir(parents=True, exist_ok=True)
+            iss_path.write_text(ISS_CONTENT, encoding="utf-8")
+
+    if not changed:
+        print("Nothing to fix - manifest, CMakeLists, CI workflow, and installer script all look correct.")
+        return
+
+    verb = "Would change" if dry_run else "Changed"
+    print(f"{verb} {len(changed)} file(s):")
+    for c in changed:
+        print(f"  - {c}")
+
+    print("""
+Next steps (manual, on your Windows machine - I can't compile here):
+  1. flutter clean && flutter pub get
+  2. flutter build windows --release
+     -> confirm build\\windows\\x64\\runner\\Release\\warp_vpn_app.exe
+        now shows the UAC shield icon and prompts for elevation on launch.
+  3. Install Inno Setup 6 (https://jrsoftware.org/isinfo.php) if you
+     haven't, then: iscc installer\\installer.iss
+  4. Open installer.iss and set your real Publisher name, AppURL, and
+     confirm SetupIconFile points at an actual .ico you have (the sample
+     I generated needs a real path filled in - I didn't guess one).
+""")
+
+
+def check_only(root: Path) -> int:
+    windows_runner = root / "windows" / "runner"
+    manifest_ok = check_manifest(windows_runner / "runner.exe.manifest")
+    cmake_ok = check_cmakelists(windows_runner / "CMakeLists.txt")
+    iss_ok = (root / "installer" / "installer.iss").exists()
+
+    print(f"manifest requireAdministrator : {'OK' if manifest_ok else 'MISSING'}")
+    print(f"CMakeLists embeds manifest    : {'OK' if cmake_ok else 'MISSING'}")
+    print(f"installer/installer.iss       : {'OK' if iss_ok else 'MISSING'}")
+
+    return 0 if (manifest_ok and cmake_ok and iss_ok) else 1
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--dry-run", action="store_true", help="show what would change, write nothing")
+    parser.add_argument("--check", action="store_true", help="only verify current state, exit code 1 if broken")
+    parser.add_argument("--root", default=".", help="path inside the project (default: current directory)")
+    args = parser.parse_args()
+
+    root = find_project_root(Path(args.root))
+    print(f"Project root: {root}\n")
+
+    if args.check:
+        sys.exit(check_only(root))
+
+    apply_fixes(root, dry_run=args.dry_run)
+
 
 if __name__ == "__main__":
-    fixer = FlutterProjectFixer(sys.argv[1] if len(sys.argv) > 1 else os.getcwd())
-    fixer.run()
+    main()

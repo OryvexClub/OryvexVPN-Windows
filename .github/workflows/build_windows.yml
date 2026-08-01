@@ -25,13 +25,19 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Force UAC Administrator (Manifest Injection)
+      - name: Verify UAC manifest is correct
         run: |
-          $manifest = "windows\runner\app.manifest"
-          if (Test-Path $manifest) {
-            (Get-Content $manifest) -replace 'level="asInvoker"', 'level="requireAdministrator"' | Set-Content $manifest
-            Write-Host "Manifest updated to requireAdministrator."
+          $manifest = "windows\runner\runner.exe.manifest"
+          if (-not (Test-Path $manifest)) {
+            Write-Error "runner.exe.manifest not found at $manifest"
+            exit 1
           }
+          $content = Get-Content $manifest -Raw
+          if ($content -notmatch 'level="requireAdministrator"') {
+            Write-Error "runner.exe.manifest is missing requireAdministrator - run fixer.py before committing."
+            exit 1
+          }
+          Write-Host "Manifest OK: requireAdministrator present."
 
       - name: Build Windows app
         run: flutter build windows --release
@@ -41,13 +47,13 @@ jobs:
           $wgVersion = "2.0.2"
           $msiUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/$wgVersion/amneziawg-amd64-$wgVersion.msi"
           Invoke-WebRequest -Uri $msiUrl -OutFile "amneziawg.msi"
-          
+
           $extractDir = "$PWD\amneziawg_extracted"
           New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
-          
+
           $msiExecArgs = @("/a", "`"$PWD\amneziawg.msi`"", "/qn", "TARGETDIR=`"$extractDir`"")
           Start-Process msiexec.exe -ArgumentList $msiExecArgs -Wait -NoNewWindow
-          
+
           $wgExe = Get-ChildItem -Path $extractDir -Filter "amneziawg.exe" -Recurse | Select-Object -First 1
           if (-not $wgExe) {
             Write-Host "Failed to extract amneziawg.exe from MSI."
@@ -61,8 +67,20 @@ jobs:
           New-Item -ItemType Directory -Force -Path "$ReleaseDir\data" | Out-Null
           Copy-Item "$PWD\amneziawg.exe" "$ReleaseDir\data\amneziawg.exe"
 
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Build installer
+        run: iscc installer\installer.iss
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: oryvexvpn-windows
+          name: oryvexvpn-windows-portable
           path: build/windows/x64/runner/Release/
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: oryvexvpn-windows-installer
+          path: installer/Output/*.exe
