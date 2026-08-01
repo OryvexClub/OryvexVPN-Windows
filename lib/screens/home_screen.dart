@@ -4,7 +4,6 @@ import 'package:window_manager/window_manager.dart';
 import '../services/vpn_service.dart';
 import '../services/window_manager_service.dart';
 import '../widgets/stats_card.dart';
-import 'dart:math' as math;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -159,8 +158,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           IconButton(
             icon: const Icon(Icons.close, color: Colors.white54, size: 20),
-            onPressed: () => WindowManagerService.quit(),
-            hoverColor: Colors.redAccent.withOpacity(0.5),
+            onPressed: () async {
+              // Force immediate close without waiting
+              await windowManager.destroy();
+            },
+            hoverColor: Colors.redAccent.withValues(alpha: 0.5),
             splashRadius: 20,
           ),
           const SizedBox(width: 8),

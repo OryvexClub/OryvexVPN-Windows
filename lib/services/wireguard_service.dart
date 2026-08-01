@@ -20,8 +20,34 @@ class WireGuardService {
 
   static String get _exeDir => File(Platform.resolvedExecutable).parent.path;
   static String get _wireguardExe => '$_exeDir\\data\\wireguard.exe';
+  static String get _wgExe => '$_exeDir\\data\\wg.exe';
 
-  static Future<bool> _coreFilesPresent() async => File(_wireguardExe).exists();
+  static Future<bool> _coreFilesPresent() async {
+    final wgFile = File(_wireguardExe);
+    final exists = await wgFile.exists();
+
+    if (!exists) {
+      print('ERROR: WireGuard not found at: $_wireguardExe');
+      print('Expected location: $_exeDir\\data\\');
+      print('Current directory: ${Directory.current.path}');
+
+      // Check if data folder exists
+      final dataDir = Directory('$_exeDir\\data');
+      if (await dataDir.exists()) {
+        print('Data folder exists, listing contents:');
+        await for (var entity in dataDir.list()) {
+          print('  - ${entity.path}');
+        }
+      } else {
+        print('ERROR: Data folder does not exist!');
+      }
+    } else {
+      final size = await wgFile.length();
+      print('✓ WireGuard found: $_wireguardExe ($size bytes)');
+    }
+
+    return exists;
+  }
 
   static Future<String> _confDir() async {
     final dir = await getApplicationSupportDirectory();
@@ -158,13 +184,13 @@ class WireGuardService {
 
   static Future<void> connectWithProgress(Function(String) onProgress) async {
     if (!await _coreFilesPresent()) {
-      throw Exception('WireGuard core files not found in data folder');
+      throw Exception('فایل‌های WireGuard یافت نشد. لطفا برنامه را دوباره نصب کنید.');
     }
 
     final reg = await _register(onProgress);
-    onProgress('Starting secure tunnel...');
+    onProgress('در حال راه‌اندازی تونل امن...');
     await _startWireGuardTunnel(reg);
-    onProgress('Verifying connection...');
+    onProgress('در حال تایید اتصال...');
 
     // Wait a bit and verify connection
     await Future.delayed(const Duration(seconds: 2));
@@ -175,10 +201,10 @@ class WireGuardService {
           .timeout(const Duration(seconds: 5));
 
       if (!testResult.body.contains('warp=on')) {
-        print('Warning: Connection may not be fully active');
+        print('هشدار: اتصال ممکن است کامل فعال نشده باشد');
       }
     } catch (e) {
-      print('Connection test warning: $e');
+      print('هشدار تست اتصال: $e');
     }
   }
 

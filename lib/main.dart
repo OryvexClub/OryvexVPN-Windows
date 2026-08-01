@@ -55,15 +55,22 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
 
   @override
   void onWindowClose() async {
-    // Properly cleanup all resources before closing
+    bool isDisconnecting = false;
+
     try {
-      // Stop VPN service first
+      // Get VPN service
       final vpnService = context.read<VPNService>();
+
+      // Only try to disconnect if connected
       if (vpnService.isConnected || vpnService.isConnecting) {
+        isDisconnecting = true;
+        print('Disconnecting VPN before closing...');
+
+        // Try to disconnect with timeout
         await vpnService.disconnect().timeout(
-          const Duration(seconds: 3),
+          const Duration(seconds: 2),
           onTimeout: () {
-            print('VPN disconnect timeout, forcing cleanup');
+            print('VPN disconnect timeout, forcing close');
           },
         );
       }
@@ -72,11 +79,13 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
     }
 
     try {
-      // Cleanup WarpService
-      await WarpService.disconnect().timeout(
-        const Duration(seconds: 2),
-        onTimeout: () {},
-      );
+      // Force cleanup WarpService
+      if (!isDisconnecting) {
+        await WarpService.disconnect().timeout(
+          const Duration(seconds: 1),
+          onTimeout: () {},
+        );
+      }
     } catch (_) {}
 
     try {
@@ -89,8 +98,8 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       TrayService.instance.dispose();
     } catch (_) {}
 
-    // Force immediate window destruction
-    await windowManager.destroy();
+    // Force immediate window destruction - DO NOT AWAIT
+    windowManager.destroy();
   }
 
   @override
