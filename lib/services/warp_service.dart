@@ -63,8 +63,14 @@ class WarpService {
   static String get _wireguardGoExe => '$_exeDir\\data\\wireguard-go.exe';
   static String get _wintunDll => '$_exeDir\\data\\wintun.dll';
 
-  static Future<bool> _coreFilesPresent() async =>
-      File(_wireguardGoExe).exists() && File(_wintunDll).exists();
+  /// Awaits both existence checks before combining them — File.exists()
+  /// returns Future<bool>, so ANDing two un-awaited calls together is a
+  /// compile-time type error. This was the bug that broke the CI build.
+  static Future<bool> _coreFilesPresent() async {
+    final goExists = await File(_wireguardGoExe).exists();
+    final wintunExists = await File(_wintunDll).exists();
+    return goExists && wintunExists;
+  }
 
   /// Concurrent ping scan to find the fastest Cloudflare endpoint.
   static Future<String> _findBestEndpoint(Function(String) onProgress) async {
@@ -251,7 +257,7 @@ try {
     for (final cmd in commands) {
       final result = await Process.run(cmd.first, cmd.sublist(1));
       if (result.exitCode != 0) {
-        final err = (result.stderr ?? '').toString().trim();
+        final err = result.stderr.toString().trim();
         throw Exception('پیکربندی آداپتور شبکه ناموفق بود: ${cmd.join(' ')}\n$err');
       }
     }

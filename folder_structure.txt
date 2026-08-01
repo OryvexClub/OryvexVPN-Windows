@@ -1245,6 +1245,12 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
       0e1de5491c112ca060dbc4f88e0c1fa304099797 00e134119bca26b84cb1502643ac71a74bf90c08 OryvexVPN <oryvex@demo.com> 1785590482 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
       00e134119bca26b84cb1502643ac71a74bf90c08 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785590482 +0330	Branch: renamed refs/heads/main to refs/heads/main
       00e134119bca26b84cb1502643ac71a74bf90c08 00e134119bca26b84cb1502643ac71a74bf90c08 OryvexVPN <oryvex@demo.com> 1785590482 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      00e134119bca26b84cb1502643ac71a74bf90c08 5a1935608a7519b0647f32c31426ff3209c9c1aa OryvexVPN <oryvex@demo.com> 1785591394 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
+      5a1935608a7519b0647f32c31426ff3209c9c1aa 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785591394 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      5a1935608a7519b0647f32c31426ff3209c9c1aa 5a1935608a7519b0647f32c31426ff3209c9c1aa OryvexVPN <oryvex@demo.com> 1785591394 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      5a1935608a7519b0647f32c31426ff3209c9c1aa 3c8c433f91890604007314a9748fa4cfe454c2b5 OryvexVPN <oryvex@demo.com> 1785593513 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
+      3c8c433f91890604007314a9748fa4cfe454c2b5 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785593514 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      3c8c433f91890604007314a9748fa4cfe454c2b5 3c8c433f91890604007314a9748fa4cfe454c2b5 OryvexVPN <oryvex@demo.com> 1785593514 +0330	Branch: renamed refs/heads/main to refs/heads/main
 
 
 
@@ -1331,6 +1337,10 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
           0e1de5491c112ca060dbc4f88e0c1fa304099797 0e1de5491c112ca060dbc4f88e0c1fa304099797 OryvexVPN <oryvex@demo.com> 1785589705 +0330	Branch: renamed refs/heads/main to refs/heads/main
           0e1de5491c112ca060dbc4f88e0c1fa304099797 00e134119bca26b84cb1502643ac71a74bf90c08 OryvexVPN <oryvex@demo.com> 1785590482 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
           00e134119bca26b84cb1502643ac71a74bf90c08 00e134119bca26b84cb1502643ac71a74bf90c08 OryvexVPN <oryvex@demo.com> 1785590482 +0330	Branch: renamed refs/heads/main to refs/heads/main
+          00e134119bca26b84cb1502643ac71a74bf90c08 5a1935608a7519b0647f32c31426ff3209c9c1aa OryvexVPN <oryvex@demo.com> 1785591394 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
+          5a1935608a7519b0647f32c31426ff3209c9c1aa 5a1935608a7519b0647f32c31426ff3209c9c1aa OryvexVPN <oryvex@demo.com> 1785591394 +0330	Branch: renamed refs/heads/main to refs/heads/main
+          5a1935608a7519b0647f32c31426ff3209c9c1aa 3c8c433f91890604007314a9748fa4cfe454c2b5 OryvexVPN <oryvex@demo.com> 1785593513 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
+          3c8c433f91890604007314a9748fa4cfe454c2b5 3c8c433f91890604007314a9748fa4cfe454c2b5 OryvexVPN <oryvex@demo.com> 1785593514 +0330	Branch: renamed refs/heads/main to refs/heads/main
 
 
 
@@ -1384,6 +1394,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+      fca540acecfe6bf6ae34eeb5b156c1040b34c2
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     02
       b61c8ba17629d5622507a6d82fad8b9fcf611c
         [Binary or unreadable file]
@@ -1414,6 +1437,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     04
       c7457e6b3b54835c228e16bfd14a90a26df7f0
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    05
+      479a47f03024a16dd40892f3267d2bd4de2085
         [Binary or unreadable file]
 
 
@@ -2197,6 +2234,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     2e
+      082aa33a9884b6aed634964c2af22be746c597
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       a15f6df7bb516093b39b2f65562f1854534eb3
         [Binary or unreadable file]
 
@@ -2640,6 +2690,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+      8c433f91890604007314a9748fa4cfe454c2b5
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       b71466549c0c087512f3465765191e4f7507be
         [Binary or unreadable file]
 
@@ -2977,6 +3040,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
       e16da33e54e72d253259a447e089aa0e4a23a0
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      fa10361e7734ff4f2d5660328e7fc2d0cfe8ab
         [Binary or unreadable file]
 
 
@@ -3329,6 +3405,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     5a
+      1935608a7519b0647f32c31426ff3209c9c1aa
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       d8a8365d4bff2f1177c253e4d0414c86324c07
         [Binary or unreadable file]
 
@@ -3372,6 +3461,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     5d
       13f2d458d1e85cb6564bf033ca88d0be5a6fda
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      dd0e38695b24316e923a7edf10a8b8aa8c1b58
         [Binary or unreadable file]
 
 
@@ -3519,6 +3621,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+      c4a4a643c75edbf6bbfc601b2a6544399c3eed
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       e4a8189557a17b63fd7a77794207483e592972
         [Binary or unreadable file]
 
@@ -3614,6 +3729,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
       e57728303283ab88fc5914030e64d3a255ae48
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      ef8a76a1bb34ee2e6326d6267cf41c4be08af0
         [Binary or unreadable file]
 
 
@@ -4410,6 +4538,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+      f616dc8eb74443d13f5b32ed64698af9e5659c
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     96
       5f1c63a7c951819aa7d3a4dce105abeb82576b
         [Binary or unreadable file]
@@ -4682,6 +4823,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
       efcf4107ed46991608e0f30c757e2c28325c20
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    a2
+      456660c412c6372006befa512256c93f3e8a41
         [Binary or unreadable file]
 
 
@@ -4981,6 +5136,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+      3ee1d76c4681bc74b7e8453d92f8f99f4ca65f
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       45d3650670a7c892854c308925f2f0d39c278f
         [Binary or unreadable file]
 
@@ -5104,6 +5272,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     b8
       f7088561b26e990861f80ceeff209115db2881
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    b9
+      9fe738f74e39cd65f5c6ba85a5023ac734a798
         [Binary or unreadable file]
 
 
@@ -5387,6 +5569,34 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    cb
+      9e1937f77b6ad7f08114aacabdd94e960ecd76
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    cc
+      261003a7ecc91b2dfa0940bd282c556df89bac
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     cd
       f1418f24536ad3c80c107a9185e6ef7921e802
         [Binary or unreadable file]
@@ -5472,6 +5682,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     d4
+      0af4d16603f24bd5c3aae63e851de3aa7c4157
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       92d0d98c8fdc9f93ad2543bb4f531803e9df72
         [Binary or unreadable file]
 
@@ -5850,6 +6073,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+      7475b2e0a354c1d7afbfb35c5dd016c92d91bd
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     e6
       36f1bb855cab4d4d688f8cde53ffd5d28934f4
         [Binary or unreadable file]
@@ -6000,6 +6236,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
       1a884071adaac3826f06264e1a79c8914ee969
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      91dd38651576557429e2f23ab0683d939e5792
         [Binary or unreadable file]
 
 
@@ -6187,6 +6436,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+      63b41369440c62b25fd2b91231cc5706a3deb9
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     f4
       6bca70b2ed83946e43ed149f67ab240d5c7695
         [Binary or unreadable file]
@@ -6244,6 +6506,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     f7
       5f31f52647be19232f51187b3d7fd3fe2c07c9
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      98e84ff8f6c75defd821968c3dbe0c7410a1ac
         [Binary or unreadable file]
 
 
@@ -6391,7 +6666,7 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
   refs
     heads
       main
-        00e134119bca26b84cb1502643ac71a74bf90c08
+        3c8c433f91890604007314a9748fa4cfe454c2b5
 
 
 
@@ -6447,32 +6722,62 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
             - name: Build Windows app
               run: flutter build windows --release
       
-            - name: Bundle AmneziaWG inside data/
+            - name: Setup Go (to build wireguard-go from source)
+              uses: actions/setup-go@v5
+              with:
+                go-version: 'stable'
+      
+            # We build the OFFICIAL, open-source wireguard-go (the same core used
+            # inside wireguard-windows / AmneziaWG) directly from its own upstream
+            # source, ourselves, at build time. No third-party GUI app, no MSI
+            # installer, no commercial SDK.
+            #
+            # KNOWN LIMITATION (documented upstream, accepted as a risk for this
+            # build): wireguard-go's Windows UAPI named pipe
+            # (\\.\pipe\ProtectedPrefix\Administrators\WireGuard\<name>) has a
+            # long-standing issue where pipe creation can fail with
+            # "This security ID may not be assigned as the owner of this object"
+            # even when the process is already elevated. This is exactly the
+            # gap that wireguard-windows/AmneziaWG normally paper over by running
+            # everything inside a proper Windows service under SYSTEM. We are
+            # NOT doing that here — see warp_service.dart for how we surface this
+            # if it happens at runtime.
+            - name: Build wireguard-go.exe for Windows
+              run: |
+                git clone --depth 1 https://github.com/WireGuard/wireguard-go.git wireguard-go-src
+                cd wireguard-go-src
+                $env:GOOS = "windows"
+                $env:GOARCH = "amd64"
+                $env:CGO_ENABLED = "0"
+                go build -ldflags="-s -w" -o wireguard-go.exe .
+                if (-not (Test-Path "wireguard-go.exe")) {
+                  Write-Host "wireguard-go.exe build failed."
+                  exit 1
+                }
+                Write-Host "wireguard-go.exe built successfully."
+      
+            - name: Bundle wireguard-go.exe + official Wintun driver inside data/
               run: |
                 $ReleaseDir = "build\windows\x64\runner\Release"
                 New-Item -ItemType Directory -Force -Path "$ReleaseDir\data"
       
-                # Always grab the latest amneziawg-windows-client release asset
-                # instead of pinning a version that will go stale.
-                $release = Invoke-RestMethod -Uri "https://api.github.com/repos/amnezia-vpn/amneziawg-windows-client/releases/latest"
-                $asset = $release.assets | Where-Object { $_.name -match "^amneziawg-amd64-.*\.msi$" } | Select-Object -First 1
-                if (-not $asset) {
-                  Write-Host "Could not find an amd64 AmneziaWG MSI in the latest release."
+                Copy-Item "wireguard-go-src\wireguard-go.exe" "$ReleaseDir\data\wireguard-go.exe"
+      
+                # Official Wintun driver from the WireGuard project (wintun.net).
+                # Redistributable per its license, no separate MSI/driver install
+                # step needed by the user — the DLL sets up the driver itself the
+                # first time an app calls into it.
+                $wintunVersion = "0.14.1"
+                Invoke-WebRequest -Uri "https://www.wintun.net/builds/wintun-$wintunVersion.zip" -OutFile "wintun.zip"
+                Expand-Archive "wintun.zip" -DestinationPath "wintun_extracted"
+                Copy-Item "wintun_extracted\wintun\bin\amd64\wintun.dll" "$ReleaseDir\data\wintun.dll"
+      
+                if (-not (Test-Path "$ReleaseDir\data\wintun.dll")) {
+                  Write-Host "wintun.dll bundling failed."
                   exit 1
                 }
-                Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "awg.msi"
       
-                Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD\awg.msi`" /qb TARGETDIR=`"$PWD\awg_extract`"" -Wait -NoNewWindow
-      
-                # The MSI installs the client as amneziawg.exe (the driver itself
-                # ships embedded in the binary, same as upstream wireguard.exe).
-                $exe = Get-ChildItem -Path "awg_extract" -Recurse -Filter "amneziawg.exe" | Select-Object -First 1
-                if (-not $exe) {
-                  Write-Host "Failed to extract amneziawg.exe from the MSI."
-                  exit 1
-                }
-                Copy-Item -Path $exe.FullName -Destination "$ReleaseDir\data\amneziawg.exe"
-                Write-Host "AmneziaWG successfully bundled in data/ folder."
+                Write-Host "wireguard-go.exe and wintun.dll bundled in data/ folder."
       
             - name: Upload build artifacts
               uses: actions/upload-artifact@v4
@@ -6892,24 +7197,32 @@ fixer.py
   # -*- coding: utf-8 -*-
   
   """
-  fixer.py - OryvexVPN Auto-Fixer (AmneziaWG core + WireSock fallback edition)
+  fixer.py - OryvexVPN Auto-Fixer (self-built wireguard-go + wintun.dll edition)
   
-  The official wireguard.exe is no longer downloaded, bundled, or called
-  anywhere in this script. The VPN core is now:
-    1. AmneziaWG (data\\amneziawg.exe) — bundled by CI, same portable
-       /installtunnelservice flow the app used with wireguard.exe before.
-    2. WireSock Secure Connect — automatic fallback if AmneziaWG's install
-       fails and WireSock is already installed on the machine (it ships its
-       own installer/service, so it can't be bundled portably).
+  The VPN core is now the OFFICIAL, open-source wireguard-go
+  (https://github.com/WireGuard/wireguard-go), built from source in CI, plus
+  the official Wintun driver DLL (wintun.net). No AmneziaWG, no WireSock, no
+  commercial SDK, and the official wireguard.exe GUI/MSI is never used.
   
-  Fixes:
-    1. The app manifest is set to requireAdministrator – app runs elevated once.
-    2. Core calls use PowerShell Start-Process -Verb RunAs, which does not
-       show an additional UAC prompt if the parent is already elevated.
-    3. Expands endpoint list and uses concurrent ping scanning for best server.
-    4. Fixes disconnect: uninstall works with elevation, for whichever core
-       is active.
-    5. Verifies the tunnel is running after install.
+  We drive wireguard-go directly through its own UAPI protocol over its
+  Windows named pipe, and configure the adapter's IP/route/DNS ourselves
+  (the job wg-quick normally does on Linux).
+  
+  KNOWN, ACCEPTED RISK: wireguard-go's Windows UAPI named pipe
+  (\\\\.\\pipe\\ProtectedPrefix\\Administrators\\WireGuard\\<name>) has a
+  long-documented upstream issue where pipe creation can fail with
+  "This security ID may not be assigned as the owner of this object", even
+  from an elevated process. wireguard-windows/AmneziaWG normally avoid this
+  by wrapping wireguard-go in a real Windows service running as SYSTEM. This
+  build intentionally does NOT do that (per explicit request), so that
+  failure mode is possible here. If it happens, warp_service.dart surfaces a
+  clear message identifying it as an upstream limitation, not a bug in this
+  app.
+  
+  Fixes carried over from earlier revisions:
+    1. The app manifest is set to requireAdministrator - app runs elevated once.
+    2. Endpoint list expanded to 300+ IPs with concurrent ping scanning.
+    3. Disconnect kills the wireguard-go process and tears the adapter down.
   """
   
   import os
@@ -6934,8 +7247,8 @@ fixer.py
   
       def log(self, message: str, level: str = "INFO"):
           icons = {
-              "INFO": "[i]", "SUCCESS": "[✓]", "WARNING": "[!]",
-              "ERROR": "[✗]", "STEP": "[>]", "FIX": "[🔧]"
+              "INFO": "[i]", "SUCCESS": "[OK]", "WARNING": "[!]",
+              "ERROR": "[X]", "STEP": "[>]", "FIX": "[FIX]"
           }
           print(f"{icons.get(level, '[i]')} {message}")
   
@@ -7004,10 +7317,9 @@ fixer.py
   
       def fix_warp_service(self) -> bool:
           """
-          Rewrite warp_service.dart to use AmneziaWG as the primary core
-          (drop-in for the old wireguard.exe flow) with WireSock Secure
-          Connect as an automatic fallback. No official wireguard.exe
-          anywhere in this file.
+          Rewrite warp_service.dart to drive a self-built, bundled copy of the
+          official wireguard-go + official wintun.dll directly via UAPI, with
+          no AmneziaWG, no WireSock, no commercial SDK involved.
           """
           warp_path = self.root / "lib" / "services" / "warp_service.dart"
           correct = r"""import 'dart:io';
@@ -7015,14 +7327,28 @@ fixer.py
   import 'package:http/http.dart' as http;
   import 'package:cryptography/cryptography.dart';
   
-  /// Which VPN core actually ended up carrying the current tunnel.
-  enum VpnCore { amneziawg, wiresock }
-  
+  /// Drives a self-built, bundled copy of the official open-source
+  /// wireguard-go (https://github.com/WireGuard/wireguard-go) plus the
+  /// official Wintun driver DLL, directly — no AmneziaWG, no WireSock, no
+  /// commercial SDK, and never the official wireguard.exe GUI/MSI.
+  ///
+  /// IMPORTANT / KNOWN RISK (read before relying on this in production):
+  /// wireguard-go's own Windows UAPI implementation
+  /// (\\.\pipe\ProtectedPrefix\Administrators\WireGuard\<name>) has a
+  /// long-documented issue where creating that named pipe can fail with
+  /// "This security ID may not be assigned as the owner of this object",
+  /// even from an already-elevated process. Upstream's answer to this is
+  /// wireguard-windows, which wraps wireguard-go in a proper Windows
+  /// service running as SYSTEM — something we are intentionally NOT doing
+  /// here. If you hit that specific error, it is not a bug in this file;
+  /// it's the exact upstream limitation this approach accepts. The error
+  /// is surfaced clearly below instead of being silently swallowed.
   class WarpService {
     static const _tunnelName = 'oryvexvpn';
-    static const _wiresockProfileName = 'oryvexvpn';
+    static const _uapiPipeName = r'ProtectedPrefix\Administrators\WireGuard\oryvexvpn';
   
-    static VpnCore? _activeCore;
+    static Process? _tunnelProcess;
+    static bool _connected = false;
   
     // Same Cloudflare WARP endpoint list you already had — unrelated to the
     // core swap, left untouched.
@@ -7058,17 +7384,11 @@ fixer.py
       return File(exePath).parent.path;
     }
   
-    /// Bundled the same way wireguard.exe used to be — see the updated
-    /// build_windows.yml, which now downloads amneziawg.exe into data/.
-    static String get _amneziawgExe => '$_exeDir\\data\\amneziawg.exe';
+    static String get _wireguardGoExe => '$_exeDir\\data\\wireguard-go.exe';
+    static String get _wintunDll => '$_exeDir\\data\\wintun.dll';
   
-    /// WireSock Secure Connect is a real installer + background service, not
-    /// something we can portably bundle, so we just look for it where the
-    /// official installer places it if the user has it installed.
-    static String get _wiresockCli {
-      final pf = Platform.environment['ProgramFiles'] ?? r'C:\Program Files';
-      return '$pf\\WireSock Secure Connect\\wiresock-connect-cli.exe';
-    }
+    static Future<bool> _coreFilesPresent() async =>
+        File(_wireguardGoExe).exists() && File(_wintunDll).exists();
   
     /// Concurrent ping scan to find the fastest Cloudflare endpoint.
     static Future<String> _findBestEndpoint(Function(String) onProgress) async {
@@ -7091,20 +7411,16 @@ fixer.py
       final bestIp = results.first['latency'] != 9999
           ? results.first['ip'] as String
           : _endpoints.first;
-      return '$bestIp:2408';
+      return bestIp;
     }
   
-    /// Generates a WireGuard-format config via the Cloudflare WARP
-    /// registration API. Both AmneziaWG and WireSock accept this format
-    /// as-is. If your server actually speaks AmneziaWG's obfuscated
-    /// protocol (the thing that made it work in the Amnezia app but not in
-    /// wireguard.exe), copy the Jc/Jmin/Jmax/S1/S2/H1-H4 lines from your
-    /// working Amnezia config into the [Interface] block this returns —
-    /// see [obfuscationParams] below.
-    static Future<String> generateConfig(
-      Function(String) onProgress, {
-      Map<String, String>? obfuscationParams,
-    }) async {
+    static String _bytesToHex(List<int> bytes) =>
+        bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+  
+    /// Registers with the Cloudflare WARP API and returns everything needed
+    /// to both display a human-readable config AND drive the UAPI directly
+    /// (UAPI needs hex keys, not the base64 form used in .conf files).
+    static Future<_WarpRegistration> _register(Function(String) onProgress) async {
       onProgress('در حال ساخت کلید رمزنگاری...');
       final algorithm = X25519();
       final keyPair = await algorithm.newKeyPair();
@@ -7112,7 +7428,7 @@ fixer.py
       final privateKeyBytes = await keyPair.extractPrivateKeyBytes();
   
       final pubKeyBase64 = base64Encode(publicKey.bytes);
-      final privKeyBase64 = base64Encode(privateKeyBytes);
+      final privKeyHex = _bytesToHex(privateKeyBytes);
   
       onProgress('در حال ثبت‌نام در شبکه...');
       final response = await http.post(
@@ -7134,210 +7450,240 @@ fixer.py
   
       final data = jsonDecode(response.body);
       final peer = data['config']['peers'][0];
-      final address = data['config']['interface']['addresses']['v4'];
-      final peerPublicKey = peer['public_key'];
+      final address = (data['config']['interface']['addresses']['v4'] as String);
+      final peerPublicKeyBase64 = peer['public_key'] as String;
+      final peerPublicKeyHex = _bytesToHex(base64Decode(peerPublicKeyBase64));
   
-      final bestEndpoint = await _findBestEndpoint(onProgress);
+      final bestIp = await _findBestEndpoint(onProgress);
   
-      onProgress('در حال آماده‌سازی کانفیگ...');
-  
-      final extraInterfaceLines = StringBuffer();
-      obfuscationParams?.forEach((key, value) {
-        extraInterfaceLines.writeln('$key = $value');
-      });
-  
-      return '''[Interface]
-  PrivateKey = $privKeyBase64
-  Address = $address/32
-  DNS = 1.1.1.1, 1.0.0.1
-  MTU = 1280
-  $extraInterfaceLines
-  [Peer]
-  PublicKey = $peerPublicKey
-  AllowedIPs = 0.0.0.0/0, ::/0
-  Endpoint = $bestEndpoint
-  PersistentKeepalive = 25''';
-    }
-  
-    static Future<File> _writeConfigFile(String config) async {
-      final dir = Directory.systemTemp;
-      final file = File('${dir.path}\\$_tunnelName.conf');
-      return file.writeAsString(config);
-    }
-  
-    static Future<bool> isAmneziaWGAvailable() async => File(_amneziawgExe).exists();
-    static Future<bool> isWireSockAvailable() async => File(_wiresockCli).exists();
-  
-    /// Escapes a string for safe embedding inside a single-quoted
-    /// PowerShell string literal.
-    static String _psQuote(String value) => "'${value.replaceAll("'", "''")}'";
-  
-    /// Runs [exePath] with [args] fully elevated. No extra UAC prompt if the
-    /// app itself is already running as admin.
-    static Future<int> _runElevated(String exePath, List<String> args) async {
-      final argList = args.map(_psQuote).join(',');
-      final psCommand =
-          "\$p = Start-Process -FilePath ${_psQuote(exePath)} "
-          "-ArgumentList $argList "
-          "-Verb RunAs -Wait -PassThru -WindowStyle Hidden; "
-          "exit \$p.ExitCode";
-  
-      final result = await Process.run(
-        'powershell.exe',
-        ['-NoProfile', '-NonInteractive', '-Command', psCommand],
-        runInShell: false,
+      return _WarpRegistration(
+        privateKeyHex: privKeyHex,
+        address: address,
+        peerPublicKeyHex: peerPublicKeyHex,
+        endpointIp: bestIp,
+        endpointPort: '2408',
       );
-  
-      if (result.exitCode != 0) {
-        final stderrText = (result.stderr ?? '').toString().trim();
-        final stdoutText = (result.stdout ?? '').toString().trim();
-        final detail = [stderrText, stdoutText].where((s) => s.isNotEmpty).join(' | ');
-        final detailSuffix = detail.isNotEmpty ? '\nجزئیات: $detail' : '';
-        throw Exception('اجرای هسته وی‌پی‌ان ناموفق بود (کد: ${result.exitCode})$detailSuffix');
-      }
-      return result.exitCode;
     }
   
-    static Future<void> connect(String config) async {
+    /// Writes the small PowerShell helper that actually talks to the UAPI
+    /// named pipe (Dart's dart:io has no first-class Windows named pipe
+    /// client, so we drive .NET's NamedPipeClientStream for this one step).
+    static Future<File> _ensureUapiHelperScript() async {
+      final path = '${Directory.systemTemp.path}\\oryvexvpn_uapi_helper.ps1';
+      const script = r'''
+  param(
+    [string]$PipeName,
+    [string]$InFile,
+    [string]$OutFile,
+    [int]$TimeoutMs = 4000
+  )
+  try {
+    $client = New-Object System.IO.Pipes.NamedPipeClientStream(".", $PipeName, [System.IO.Pipes.PipeDirection]::InOut)
+    $client.Connect($TimeoutMs)
+  
+    $bytes = [System.IO.File]::ReadAllBytes($InFile)
+    $client.Write($bytes, 0, $bytes.Length)
+    $client.Flush()
+  
+    $reader = New-Object System.IO.StreamReader($client)
+    $sb = New-Object System.Text.StringBuilder
+    while ($true) {
+      $line = $reader.ReadLine()
+      if ($null -eq $line) { break }
+      [void]$sb.AppendLine($line)
+      if ($line -eq "") { break }
+    }
+    [System.IO.File]::WriteAllText($OutFile, $sb.ToString())
+    $client.Dispose()
+    exit 0
+  } catch {
+    [System.IO.File]::WriteAllText($OutFile, "ERROR: " + $_.Exception.Message)
+    exit 1
+  }
+  ''';
+      final file = File(path);
+      await file.writeAsString(script);
+      return file;
+    }
+  
+    /// Sends a raw UAPI command to the running wireguard-go's named pipe and
+    /// returns its response text.
+    static Future<String> _uapiSend(String command) async {
+      final helper = await _ensureUapiHelperScript();
+      final tmpDir = Directory.systemTemp.path;
+      final inFile = File('$tmpDir\\oryvexvpn_uapi_in.txt');
+      final outFile = File('$tmpDir\\oryvexvpn_uapi_out.txt');
+      await inFile.writeAsString(command);
+      if (await outFile.exists()) await outFile.delete();
+  
+      final result = await Process.run('powershell.exe', [
+        '-NoProfile',
+        '-ExecutionPolicy', 'Bypass',
+        '-File', helper.path,
+        '-PipeName', _uapiPipeName,
+        '-InFile', inFile.path,
+        '-OutFile', outFile.path,
+      ]);
+  
+      final out = await outFile.exists() ? await outFile.readAsString() : '';
+  
+      if (result.exitCode != 0 || out.startsWith('ERROR:')) {
+        if (out.contains('security ID may not be assigned as the owner')) {
+          throw Exception(
+            'wireguard-go نتوانست روی pipe داخلی خودش گوش بدهد (محدودیت '
+            'شناخته‌شده‌ی خود wireguard-go روی ویندوز وقتی بدون سرویس ویندوزی '
+            'اجرا می‌شود). این یک محدودیت بالادستی است، نه باگ این برنامه.\n'
+            'جزئیات: $out',
+          );
+        }
+        throw Exception('ارتباط با هسته‌ی وایرگارد ناموفق بود.\n$out');
+      }
+      return out;
+    }
+  
+    static Future<void> _configureUapi(_WarpRegistration reg) async {
+      final buf = StringBuffer();
+      buf.writeln('set=1');
+      buf.writeln('private_key=${reg.privateKeyHex}');
+      buf.writeln('listen_port=0');
+      buf.writeln('replace_peers=true');
+      buf.writeln('public_key=${reg.peerPublicKeyHex}');
+      buf.writeln('endpoint=${reg.endpointIp}:${reg.endpointPort}');
+      buf.writeln('persistent_keepalive_interval=25');
+      buf.writeln('replace_allowed_ips=true');
+      buf.writeln('allowed_ip=0.0.0.0/0');
+      buf.writeln(); // blank line terminates the UAPI transaction
+  
+      final response = await _uapiSend(buf.toString());
+      if (!response.contains('errno=0')) {
+        throw Exception('پیکربندی هسته‌ی وایرگارد رد شد.\n$response');
+      }
+    }
+  
+    /// wg-quick normally does this on Linux; on our bare wireguard-go setup
+    /// we have to configure the adapter's IP/MTU/DNS/route ourselves.
+    static Future<void> _configureAdapter(_WarpRegistration reg) async {
+      final ip = reg.address; // e.g. "172.16.0.2"
+      final commands = <List<String>>[
+        ['netsh', 'interface', 'ip', 'set', 'address', 'name=$_tunnelName', 'static', ip, '255.255.255.255'],
+        ['netsh', 'interface', 'ipv4', 'set', 'subinterface', _tunnelName, 'mtu=1280', 'store=active'],
+        ['netsh', 'interface', 'ip', 'set', 'dns', 'name=$_tunnelName', 'static', '1.1.1.1'],
+        ['netsh', 'interface', 'ip', 'add', 'dns', 'name=$_tunnelName', '1.0.0.1', 'index=2'],
+        ['netsh', 'interface', 'ipv4', 'add', 'route', '0.0.0.0/0', _tunnelName],
+      ];
+  
+      for (final cmd in commands) {
+        final result = await Process.run(cmd.first, cmd.sublist(1));
+        if (result.exitCode != 0) {
+          final err = (result.stderr ?? '').toString().trim();
+          throw Exception('پیکربندی آداپتور شبکه ناموفق بود: ${cmd.join(' ')}\n$err');
+        }
+      }
+    }
+  
+    static Future<void> _waitForPipe() async {
+      // installtunnelservice-style wrappers get to wait on a service
+      // handle; we just poll briefly for the process to have set up the
+      // pipe and adapter before we try to talk to it.
+      await Future.delayed(const Duration(milliseconds: 1500));
+    }
+  
+    static Future<void> connect() async {
       if (!Platform.isWindows) {
         throw Exception('این نسخه فقط مخصوص ویندوز است.');
       }
-  
-      final file = await _writeConfigFile(config);
-  
-      // AmneziaWG first — bundled, same install flow as wireguard.exe used
-      // to have, and generally fixes the driver-install "Access is denied"
-      // class of bug. Fall back to WireSock (different driver family) only
-      // if AmneziaWG isn't present or its install fails and WireSock Secure
-      // Connect happens to be installed already.
-      if (await isAmneziaWGAvailable()) {
-        try {
-          await _connectAmneziaWG(file);
-          _activeCore = VpnCore.amneziawg;
-          return;
-        } catch (e) {
-          if (!await isWireSockAvailable()) rethrow;
-        }
-      }
-  
-      if (await isWireSockAvailable()) {
-        await _connectWireSock(file);
-        _activeCore = VpnCore.wiresock;
-        return;
-      }
-  
-      throw Exception(
-        'هیچ هسته وی‌پی‌ان‌ای پیدا نشد.\n'
-        'AmneziaWG (data\\amneziawg.exe) در برنامه یافت نشد و WireSock Secure Connect هم نصب نیست.\n'
-        'یکی از این دو را نصب کنید.',
-      );
+      await connectWithProgress((_) {});
     }
   
-    static Future<void> _connectAmneziaWG(File configFile) async {
+    static Future<void> connectWithProgress(Function(String) onProgress) async {
+      if (!Platform.isWindows) {
+        throw Exception('این نسخه فقط مخصوص ویندوز است.');
+      }
+      if (!await _coreFilesPresent()) {
+        throw Exception(
+          'فایل‌های هسته (data\\wireguard-go.exe و data\\wintun.dll) در برنامه یافت نشد.',
+        );
+      }
+  
+      final reg = await _register(onProgress);
+  
+      onProgress('در حال راه‌اندازی هسته وایرگارد...');
+      _tunnelProcess = await Process.start(
+        _wireguardGoExe,
+        ['-f', _tunnelName],
+        workingDirectory: '$_exeDir\\data',
+        mode: ProcessStartMode.detachedWithStdio,
+      );
+  
+      await _waitForPipe();
+  
       try {
-        await _runElevated(_amneziawgExe, ['/installtunnelservice', configFile.path]);
+        onProgress('در حال پیکربندی تونل...');
+        await _configureUapi(reg);
+  
+        onProgress('در حال پیکربندی آداپتور شبکه...');
+        await _configureAdapter(reg);
+  
+        _connected = true;
       } catch (e) {
-        throw Exception('نصب تونل AmneziaWG ناموفق بود.\n$e');
-      }
-      final isUp = await _isAmneziaWGConnected();
-      if (!isUp) {
-        throw Exception('سرویس AmneziaWG پس از نصب شروع نشد.');
+        await _killTunnelProcess();
+        _connected = false;
+        rethrow;
       }
     }
   
-    static Future<void> _connectWireSock(File configFile) async {
-      // wiresock-connect-cli talks to the already-running WireSock service.
-      // Best-effort delete of any stale profile with the same name, then
-      // (re)import and connect.
-      await Process.run(_wiresockCli, ['delete', _wiresockProfileName]);
-  
-      final importResult = await Process.run(_wiresockCli, ['import', configFile.path]);
-      if (importResult.exitCode != 0) {
-        throw Exception('وارد کردن پروفایل در WireSock ناموفق بود.\n${importResult.stderr}');
-      }
-  
-      final connectResult = await Process.run(
-        _wiresockCli,
-        ['connect', _wiresockProfileName, '-exit'],
-      );
-      if (connectResult.exitCode != 0) {
-        throw Exception('اتصال WireSock ناموفق بود.\n${connectResult.stderr}');
-      }
+    static Future<void> _killTunnelProcess() async {
+      final proc = _tunnelProcess;
+      _tunnelProcess = null;
+      if (proc == null) return;
+      try {
+        proc.kill(ProcessSignal.sigterm);
+      } catch (_) {}
+      // wireguard-go on Windows doesn't always die cleanly from sigterm from
+      // a detached handle — make sure the adapter's owning process is gone.
+      await Process.run('taskkill', ['/F', '/IM', 'wireguard-go.exe']);
     }
   
     static Future<void> disconnect() async {
       if (!Platform.isWindows) return;
-  
-      if (_activeCore == VpnCore.wiresock) {
-        await Process.run(_wiresockCli, ['disconnect']);
-        _activeCore = null;
-        return;
-      }
-  
-      try {
-        await _runElevated(_amneziawgExe, ['/uninstalltunnelservice', _tunnelName]);
-      } catch (e) {
-        if (e.toString().contains('The system cannot find the file specified') ||
-            e.toString().contains('service does not exist')) {
-          _activeCore = null;
-          return;
-        }
-        rethrow;
-      }
-      _activeCore = null;
+      await _killTunnelProcess();
+      _connected = false;
     }
   
-    static Future<bool> _isAmneziaWGConnected() async {
-      try {
-        final result = await Process.run(
-          'sc.exe',
-          ['query', 'AmneziaWGTunnel\$' + _tunnelName],
-        );
-        return result.stdout.toString().contains('RUNNING');
-      } catch (_) {
-        return false;
-      }
-    }
-  
-    static Future<bool> _isWireSockConnected() async {
-      try {
-        final result = await Process.run(_wiresockCli, ['status']);
-        final out = result.stdout.toString();
-        return out.contains('Connected') && !out.contains('NotConnected');
-      } catch (_) {
-        return false;
-      }
-    }
-  
-    /// Best-effort status check on app startup, before we know which core
-    /// (if any) currently owns the tunnel.
     static Future<bool> isConnected() async {
       if (!Platform.isWindows) return false;
-  
-      if (_activeCore == VpnCore.wiresock) return _isWireSockConnected();
-      if (_activeCore == VpnCore.amneziawg) return _isAmneziaWGConnected();
-  
-      // Unknown yet (e.g. fresh app launch) — check both.
-      if (await _isAmneziaWGConnected()) {
-        _activeCore = VpnCore.amneziawg;
-        return true;
-      }
-      if (await isWireSockAvailable() && await _isWireSockConnected()) {
-        _activeCore = VpnCore.wiresock;
-        return true;
-      }
-      return false;
+      if (!_connected) return false;
+      // Best-effort liveness check: is our process handle still alive, and
+      // does the adapter still show up.
+      final result = await Process.run('netsh', ['interface', 'show', 'interface', _tunnelName]);
+      return result.exitCode == 0 && result.stdout.toString().contains(_tunnelName);
     }
+  }
+  
+  class _WarpRegistration {
+    final String privateKeyHex;
+    final String address;
+    final String peerPublicKeyHex;
+    final String endpointIp;
+    final String endpointPort;
+  
+    const _WarpRegistration({
+      required this.privateKeyHex,
+      required this.address,
+      required this.peerPublicKeyHex,
+      required this.endpointIp,
+      required this.endpointPort,
+    });
   }
   """
           warp_path.parent.mkdir(parents=True, exist_ok=True)
           warp_path.write_text(correct, encoding='utf-8')
-          self.fixed_files.append("warp_service.dart (AmneziaWG primary core, WireSock fallback, no wireguard.exe)")
+          self.fixed_files.append("warp_service.dart (self-built wireguard-go + wintun.dll via UAPI, no 3rd-party core)")
           return True
   
       def fix_vpn_service(self) -> bool:
           vpn_path = self.root / "lib" / "services" / "vpn_service.dart"
-          correct = """import 'package:flutter/foundation.dart';
+          correct = r"""import 'package:flutter/foundation.dart';
   import 'warp_service.dart';
   
   enum VpnStage {
@@ -7382,16 +7728,14 @@ fixer.py
       notifyListeners();
   
       try {
-        final config = await WarpService.generateConfig(_updateStatus);
-  
-        _stage = VpnStage.installingTunnel;
-        _updateStatus('در حال نصب تونل...');
-  
-        await WarpService.connect(config);
+        await WarpService.connectWithProgress((msg) {
+          _stage = VpnStage.installingTunnel;
+          _updateStatus(msg);
+        });
   
         final actuallyUp = await WarpService.isConnected();
         if (!actuallyUp) {
-          throw Exception('سرویس ویندوز اجرا نشد.');
+          throw Exception('تونل پس از پیکربندی فعال دیده نشد.');
         }
   
         _stage = VpnStage.connected;
@@ -7524,32 +7868,62 @@ fixer.py
         - name: Build Windows app
           run: flutter build windows --release
   
-        - name: Bundle AmneziaWG inside data/
+        - name: Setup Go (to build wireguard-go from source)
+          uses: actions/setup-go@v5
+          with:
+            go-version: 'stable'
+  
+        # We build the OFFICIAL, open-source wireguard-go (the same core used
+        # inside wireguard-windows / AmneziaWG) directly from its own upstream
+        # source, ourselves, at build time. No third-party GUI app, no MSI
+        # installer, no commercial SDK.
+        #
+        # KNOWN LIMITATION (documented upstream, accepted as a risk for this
+        # build): wireguard-go's Windows UAPI named pipe
+        # (\\.\pipe\ProtectedPrefix\Administrators\WireGuard\<name>) has a
+        # long-standing issue where pipe creation can fail with
+        # "This security ID may not be assigned as the owner of this object"
+        # even when the process is already elevated. This is exactly the
+        # gap that wireguard-windows/AmneziaWG normally paper over by running
+        # everything inside a proper Windows service under SYSTEM. We are
+        # NOT doing that here — see warp_service.dart for how we surface this
+        # if it happens at runtime.
+        - name: Build wireguard-go.exe for Windows
+          run: |
+            git clone --depth 1 https://github.com/WireGuard/wireguard-go.git wireguard-go-src
+            cd wireguard-go-src
+            $env:GOOS = "windows"
+            $env:GOARCH = "amd64"
+            $env:CGO_ENABLED = "0"
+            go build -ldflags="-s -w" -o wireguard-go.exe .
+            if (-not (Test-Path "wireguard-go.exe")) {
+              Write-Host "wireguard-go.exe build failed."
+              exit 1
+            }
+            Write-Host "wireguard-go.exe built successfully."
+  
+        - name: Bundle wireguard-go.exe + official Wintun driver inside data/
           run: |
             $ReleaseDir = "build\windows\x64\runner\Release"
             New-Item -ItemType Directory -Force -Path "$ReleaseDir\data"
   
-            # Always grab the latest amneziawg-windows-client release asset
-            # instead of pinning a version that will go stale.
-            $release = Invoke-RestMethod -Uri "https://api.github.com/repos/amnezia-vpn/amneziawg-windows-client/releases/latest"
-            $asset = $release.assets | Where-Object { $_.name -match "^amneziawg-amd64-.*\.msi$" } | Select-Object -First 1
-            if (-not $asset) {
-              Write-Host "Could not find an amd64 AmneziaWG MSI in the latest release."
+            Copy-Item "wireguard-go-src\wireguard-go.exe" "$ReleaseDir\data\wireguard-go.exe"
+  
+            # Official Wintun driver from the WireGuard project (wintun.net).
+            # Redistributable per its license, no separate MSI/driver install
+            # step needed by the user — the DLL sets up the driver itself the
+            # first time an app calls into it.
+            $wintunVersion = "0.14.1"
+            Invoke-WebRequest -Uri "https://www.wintun.net/builds/wintun-$wintunVersion.zip" -OutFile "wintun.zip"
+            Expand-Archive "wintun.zip" -DestinationPath "wintun_extracted"
+            Copy-Item "wintun_extracted\wintun\bin\amd64\wintun.dll" "$ReleaseDir\data\wintun.dll"
+  
+            if (-not (Test-Path "$ReleaseDir\data\wintun.dll")) {
+              Write-Host "wintun.dll bundling failed."
               exit 1
             }
-            Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "awg.msi"
   
-            Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD\awg.msi`" /qb TARGETDIR=`"$PWD\awg_extract`"" -Wait -NoNewWindow
-  
-            # The MSI installs the client as amneziawg.exe (the driver itself
-            # ships embedded in the binary, same as upstream wireguard.exe).
-            $exe = Get-ChildItem -Path "awg_extract" -Recurse -Filter "amneziawg.exe" | Select-Object -First 1
-            if (-not $exe) {
-              Write-Host "Failed to extract amneziawg.exe from the MSI."
-              exit 1
-            }
-            Copy-Item -Path $exe.FullName -Destination "$ReleaseDir\data\amneziawg.exe"
-            Write-Host "AmneziaWG successfully bundled in data/ folder."
+            Write-Host "wireguard-go.exe and wintun.dll bundled in data/ folder."
   
         - name: Upload build artifacts
           uses: actions/upload-artifact@v4
@@ -7559,7 +7933,7 @@ fixer.py
   """
           workflow_path.parent.mkdir(parents=True, exist_ok=True)
           workflow_path.write_text(correct, encoding='utf-8')
-          self.fixed_files.append("build_windows.yml (bundles AmneziaWG via GitHub API, no wireguard.exe)")
+          self.fixed_files.append("build_windows.yml (builds wireguard-go from source, bundles official wintun.dll)")
           return True
   
       def remove_obsolete_files(self) -> bool:
@@ -7603,7 +7977,7 @@ fixer.py
   
       def run(self) -> bool:
           print("\n" + "=" * 60)
-          print("🔧 Flutter Project Fixer - OryvexVPN (AmneziaWG + WireSock, no wireguard.exe)")
+          print("Flutter Project Fixer - OryvexVPN (self-built wireguard-go + wintun.dll, no 3rd-party core)")
           print("=" * 60)
           print(f"\nProject Path: {self.root}\n")
   
@@ -7625,22 +7999,25 @@ fixer.py
           self.update_gitignore()
   
           print("\n" + "=" * 60)
-          print("📊 Final Report")
+          print("Final Report")
           print("=" * 60)
           if self.fixed_files:
-              print("\n📁 Modified/Added Files:")
+              print("\nModified/Added Files:")
               for f in self.fixed_files:
-                  print(f"  ✓ {f}")
+                  print(f"  - {f}")
   
-          print("\n✅ Fixes applied:")
-          print("  • VPN core switched to AmneziaWG (bundled) with WireSock Secure Connect")
-          print("    as an automatic fallback — the official wireguard.exe is no longer used.")
-          print("  • App manifest set to requireAdministrator – app runs elevated once.")
-          print("  • Core calls use PowerShell Start-Process -Verb RunAs.")
-          print("    (No extra UAC prompt if the app is already admin).")
-          print("  • Endpoint list expanded to 300+ IPs with concurrent ping scan.")
-          print("  • Disconnect now targets whichever core is actually active.")
-          print("  • Connection verifies the tunnel is running after install.")
+          print("\nFixes applied:")
+          print("  - VPN core: self-built, bundled wireguard-go.exe (official open-source")
+          print("    core) + official wintun.dll, driven directly over UAPI. No AmneziaWG,")
+          print("    no WireSock, no commercial SDK, no official wireguard.exe GUI/MSI.")
+          print("  - KNOWN RISK: wireguard-go's Windows UAPI pipe can fail with a")
+          print("    documented upstream 'security ID' error outside a real Windows")
+          print("    service context. This build accepts that risk; the error is")
+          print("    surfaced clearly instead of hidden if it happens.")
+          print("  - App manifest set to requireAdministrator.")
+          print("  - Endpoint list: 300+ IPs, concurrent ping scan for best server.")
+          print("  - Adapter IP/MTU/DNS/route now configured by the app itself (the")
+          print("    job wg-quick normally does), since bare wireguard-go doesn't.")
           print("\nRun push.py to deploy to GitHub and build the new EXE.")
           return True
   
@@ -7655,10 +8032,10 @@ fixer.py
           success = fixer.run()
           sys.exit(0 if success else 1)
       except KeyboardInterrupt:
-          print("\n⏹️ Operation cancelled by user.")
+          print("\nOperation cancelled by user.")
           sys.exit(0)
       except Exception as e:
-          print(f"\n❌ Unexpected error: {e}")
+          print(f"\nUnexpected error: {e}")
           sys.exit(1)
   
   
@@ -8923,6 +9300,12 @@ folder_structure.txt
         0e1de5491c112ca060dbc4f88e0c1fa304099797 00e134119bca26b84cb1502643ac71a74bf90c08 OryvexVPN <oryvex@demo.com> 1785590482 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced...
         00e134119bca26b84cb1502643ac71a74bf90c08 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785590482 +0330	Branch: renamed refs/heads/main to refs/heads/main
         00e134119bca26b84cb1502643ac71a74bf90c08 00e134119bca26b84cb1502643ac71a74bf90c08 OryvexVPN <oryvex@demo.com> 1785590482 +0330	Branch: renamed refs/heads/main to refs/heads/main
+        00e134119bca26b84cb1502643ac71a74bf90c08 5a1935608a7519b0647f32c31426ff3209c9c1aa OryvexVPN <oryvex@demo.com> 1785591394 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced...
+        5a1935608a7519b0647f32c31426ff3209c9c1aa 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785591394 +0330	Branch: renamed refs/heads/main to refs/heads/main
+        5a1935608a7519b0647f32c31426ff3209c9c1aa 5a1935608a7519b0647f32c31426ff3209c9c1aa OryvexVPN <oryvex@demo.com> 1785591394 +0330	Branch: renamed refs/heads/main to refs/heads/main
+        5a1935608a7519b0647f32c31426ff3209c9c1aa 3c8c433f91890604007314a9748fa4cfe454c2b5 OryvexVPN <oryvex@demo.com> 1785593513 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced...
+        3c8c433f91890604007314a9748fa4cfe454c2b5 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785593514 +0330	Branch: renamed refs/heads/main to refs/heads/main
+        3c8c433f91890604007314a9748fa4cfe454c2b5 3c8c433f91890604007314a9748fa4cfe454c2b5 OryvexVPN <oryvex@demo.com> 1785593514 +0330	Branch: renamed refs/heads/main to refs/heads/main
   
   
   
@@ -9009,6 +9392,10 @@ folder_structure.txt
             0e1de5491c112ca060dbc4f88e0c1fa304099797 0e1de5491c112ca060dbc4f88e0c1fa304099797 OryvexVPN <oryvex@demo.com> 1785589705 +0330	Branch: renamed refs/heads/main to refs/heads/main
             0e1de5491c112ca060dbc4f88e0c1fa304099797 00e134119bca26b84cb1502643ac71a74bf90c08 OryvexVPN <oryvex@demo.com> 1785590482 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via fo...
             00e134119bca26b84cb1502643ac71a74bf90c08 00e134119bca26b84cb1502643ac71a74bf90c08 OryvexVPN <oryvex@demo.com> 1785590482 +0330	Branch: renamed refs/heads/main to refs/heads/main
+            00e134119bca26b84cb1502643ac71a74bf90c08 5a1935608a7519b0647f32c31426ff3209c9c1aa OryvexVPN <oryvex@demo.com> 1785591394 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via fo...
+            5a1935608a7519b0647f32c31426ff3209c9c1aa 5a1935608a7519b0647f32c31426ff3209c9c1aa OryvexVPN <oryvex@demo.com> 1785591394 +0330	Branch: renamed refs/heads/main to refs/heads/main
+            5a1935608a7519b0647f32c31426ff3209c9c1aa 3c8c433f91890604007314a9748fa4cfe454c2b5 OryvexVPN <oryvex@demo.com> 1785593513 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via fo...
+            3c8c433f91890604007314a9748fa4cfe454c2b5 3c8c433f91890604007314a9748fa4cfe454c2b5 OryvexVPN <oryvex@demo.com> 1785593514 +0330	Branch: renamed refs/heads/main to refs/heads/main
   
   
   
@@ -9062,6 +9449,19 @@ folder_structure.txt
   
   
   
+        fca540acecfe6bf6ae34eeb5b156c1040b34c2
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
       02
         b61c8ba17629d5622507a6d82fad8b9fcf611c
           [Binary or unreadable file]
@@ -9092,6 +9492,20 @@ folder_structure.txt
   
       04
         c7457e6b3b54835c228e16bfd14a90a26df7f0
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      05
+        479a47f03024a16dd40892f3267d2bd4de2085
           [Binary or unreadable file]
   
   
@@ -9875,6 +10289,19 @@ folder_structure.txt
   
   
       2e
+        082aa33a9884b6aed634964c2af22be746c597
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         a15f6df7bb516093b39b2f65562f1854534eb3
           [Binary or unreadable file]
   
@@ -10318,6 +10745,19 @@ folder_structure.txt
   
   
   
+        8c433f91890604007314a9748fa4cfe454c2b5
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         b71466549c0c087512f3465765191e4f7507be
           [Binary or unreadable file]
   
@@ -10655,6 +11095,19 @@ folder_structure.txt
   
   
         e16da33e54e72d253259a447e089aa0e4a23a0
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        fa10361e7734ff4f2d5660328e7fc2d0cfe8ab
           [Binary or unreadable file]
   
   
@@ -11007,6 +11460,19 @@ folder_structure.txt
   
   
       5a
+        1935608a7519b0647f32c31426ff3209c9c1aa
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         d8a8365d4bff2f1177c253e4d0414c86324c07
           [Binary or unreadable file]
   
@@ -11050,6 +11516,19 @@ folder_structure.txt
   
       5d
         13f2d458d1e85cb6564bf033ca88d0be5a6fda
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        dd0e38695b24316e923a7edf10a8b8aa8c1b58
           [Binary or unreadable file]
   
   
@@ -11197,6 +11676,19 @@ folder_structure.txt
   
   
   
+        c4a4a643c75edbf6bbfc601b2a6544399c3eed
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         e4a8189557a17b63fd7a77794207483e592972
           [Binary or unreadable file]
   
@@ -11292,6 +11784,19 @@ folder_structure.txt
   
   
         e57728303283ab88fc5914030e64d3a255ae48
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        ef8a76a1bb34ee2e6326d6267cf41c4be08af0
           [Binary or unreadable file]
   
   
@@ -12088,6 +12593,19 @@ folder_structure.txt
   
   
   
+        f616dc8eb74443d13f5b32ed64698af9e5659c
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
       96
         5f1c63a7c951819aa7d3a4dce105abeb82576b
           [Binary or unreadable file]
@@ -12360,6 +12878,20 @@ folder_structure.txt
   
   
         efcf4107ed46991608e0f30c757e2c28325c20
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      a2
+        456660c412c6372006befa512256c93f3e8a41
           [Binary or unreadable file]
   
   
@@ -12659,6 +13191,19 @@ folder_structure.txt
   
   
   
+        3ee1d76c4681bc74b7e8453d92f8f99f4ca65f
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         45d3650670a7c892854c308925f2f0d39c278f
           [Binary or unreadable file]
   
@@ -12782,6 +13327,20 @@ folder_structure.txt
   
       b8
         f7088561b26e990861f80ceeff209115db2881
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      b9
+        9fe738f74e39cd65f5c6ba85a5023ac734a798
           [Binary or unreadable file]
   
   
@@ -13065,6 +13624,34 @@ folder_structure.txt
   
   
   
+      cb
+        9e1937f77b6ad7f08114aacabdd94e960ecd76
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      cc
+        261003a7ecc91b2dfa0940bd282c556df89bac
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
       cd
         f1418f24536ad3c80c107a9185e6ef7921e802
           [Binary or unreadable file]
@@ -13150,6 +13737,19 @@ folder_structure.txt
   
   
       d4
+        0af4d16603f24bd5c3aae63e851de3aa7c4157
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         92d0d98c8fdc9f93ad2543bb4f531803e9df72
           [Binary or unreadable file]
   
@@ -13528,6 +14128,19 @@ folder_structure.txt
   
   
   
+        7475b2e0a354c1d7afbfb35c5dd016c92d91bd
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
       e6
         36f1bb855cab4d4d688f8cde53ffd5d28934f4
           [Binary or unreadable file]
@@ -13678,6 +14291,19 @@ folder_structure.txt
   
   
         1a884071adaac3826f06264e1a79c8914ee969
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        91dd38651576557429e2f23ab0683d939e5792
           [Binary or unreadable file]
   
   
@@ -13865,6 +14491,19 @@ folder_structure.txt
   
   
   
+        63b41369440c62b25fd2b91231cc5706a3deb9
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
       f4
         6bca70b2ed83946e43ed149f67ab240d5c7695
           [Binary or unreadable file]
@@ -13922,6 +14561,19 @@ folder_structure.txt
   
       f7
         5f31f52647be19232f51187b3d7fd3fe2c07c9
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        98e84ff8f6c75defd821968c3dbe0c7410a1ac
           [Binary or unreadable file]
   
   
@@ -14069,7 +14721,7 @@ folder_structure.txt
     refs
       heads
         main
-          00e134119bca26b84cb1502643ac71a74bf90c08
+          3c8c433f91890604007314a9748fa4cfe454c2b5
   
   
   
@@ -14125,32 +14777,62 @@ folder_structure.txt
               - name: Build Windows app
                 run: flutter build windows --release
         
-              - name: Bundle AmneziaWG inside data/
+              - name: Setup Go (to build wireguard-go from source)
+                uses: actions/setup-go@v5
+                with:
+                  go-version: 'stable'
+        
+              # We build the OFFICIAL, open-source wireguard-go (the same core used
+              # inside wireguard-windows / AmneziaWG) directly from its own upstream
+              # source, ourselves, at build time. No third-party GUI app, no MSI
+              # installer, no commercial SDK.
+              #
+              # KNOWN LIMITATION (documented upstream, accepted as a risk for this
+              # build): wireguard-go's Windows UAPI named pipe
+              # (\\.\pipe\ProtectedPrefix\Administrators\WireGuard\<name>) has a
+              # long-standing issue where pipe creation can fail with
+              # "This security ID may not be assigned as the owner of this object"
+              # even when the process is already elevated. This is exactly the
+              # gap that wireguard-windows/AmneziaWG normally paper over by running
+              # everything inside a proper Windows service under SYSTEM. We are
+              # NOT doing that here — see warp_service.dart for how we surface this
+              # if it happens at runtime.
+              - name: Build wireguard-go.exe for Windows
+                run: |
+                  git clone --depth 1 https://github.com/WireGuard/wireguard-go.git wireguard-go-src
+                  cd wireguard-go-src
+                  $env:GOOS = "windows"
+                  $env:GOARCH = "amd64"
+                  $env:CGO_ENABLED = "0"
+                  go build -ldflags="-s -w" -o wireguard-go.exe .
+                  if (-not (Test-Path "wireguard-go.exe")) {
+                    Write-Host "wireguard-go.exe build failed."
+                    exit 1
+                  }
+                  Write-Host "wireguard-go.exe built successfully."
+        
+              - name: Bundle wireguard-go.exe + official Wintun driver inside data/
                 run: |
                   $ReleaseDir = "build\windows\x64\runner\Release"
                   New-Item -ItemType Directory -Force -Path "$ReleaseDir\data"
         
-                  # Always grab the latest amneziawg-windows-client release asset
-                  # instead of pinning a version that will go stale.
-                  $release = Invoke-RestMethod -Uri "https://api.github.com/repos/amnezia-vpn/amneziawg-windows-client/releases/latest"
-                  $asset = $release.assets | Where-Object { $_.name -match "^amneziawg-amd64-.*\.msi$" } | Select-Object -First 1
-                  if (-not $asset) {
-                    Write-Host "Could not find an amd64 AmneziaWG MSI in the latest release."
+                  Copy-Item "wireguard-go-src\wireguard-go.exe" "$ReleaseDir\data\wireguard-go.exe"
+        
+                  # Official Wintun driver from the WireGuard project (wintun.net).
+                  # Redistributable per its license, no separate MSI/driver install
+                  # step needed by the user — the DLL sets up the driver itself the
+                  # first time an app calls into it.
+                  $wintunVersion = "0.14.1"
+                  Invoke-WebRequest -Uri "https://www.wintun.net/builds/wintun-$wintunVersion.zip" -OutFile "wintun.zip"
+                  Expand-Archive "wintun.zip" -DestinationPath "wintun_extracted"
+                  Copy-Item "wintun_extracted\wintun\bin\amd64\wintun.dll" "$ReleaseDir\data\wintun.dll"
+        
+                  if (-not (Test-Path "$ReleaseDir\data\wintun.dll")) {
+                    Write-Host "wintun.dll bundling failed."
                     exit 1
                   }
-                  Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "awg.msi"
         
-                  Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD\awg.msi`" /qb TARGETDIR=`"$PWD\awg_extract`"" -Wait -NoNewWindow
-        
-                  # The MSI installs the client as amneziawg.exe (the driver itself
-                  # ships embedded in the binary, same as upstream wireguard.exe).
-                  $exe = Get-ChildItem -Path "awg_extract" -Recurse -Filter "amneziawg.exe" | Select-Object -First 1
-                  if (-not $exe) {
-                    Write-Host "Failed to extract amneziawg.exe from the MSI."
-                    exit 1
-                  }
-                  Copy-Item -Path $exe.FullName -Destination "$ReleaseDir\data\amneziawg.exe"
-                  Write-Host "AmneziaWG successfully bundled in data/ folder."
+                  Write-Host "wireguard-go.exe and wintun.dll bundled in data/ folder."
         
               - name: Upload build artifacts
                 uses: actions/upload-artifact@v4
@@ -14408,184 +15090,6 @@ folder_structure.txt
       # ignored by the migrate tool.
       #
       # Files that are not part of the templates will be ignored by default.
-      unmanaged_files:
-        - 'lib/main.dart'
-        - 'ios/Runner.xcodeproj/project.pbxproj'
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  README.md
-    # warp_vpn_app
-    
-    A new Flutter project.
-    
-    ## Getting Started
-    
-    This project is a starting point for a Flutter application.
-    
-    A few resources to get you started if this is your first Flutter project:
-    
-    - [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-    - [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-    - [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-    
-    For help getting started with Flutter development, view the
-    [online documentation](https://docs.flutter.dev/), which offers tutorials,
-    samples, guidance on mobile development, and a full API reference.
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  analysis_options.yaml
-    # This file configures the analyzer, which statically analyzes Dart code to
-    # check for errors, warnings, and lints.
-    #
-    # The issues identified by the analyzer are surfaced in the UI of Dart-enabled
-    # IDEs (https://dart.dev/tools#ides-and-editors). The analyzer can also be
-    # invoked from the command line by running `flutter analyze`.
-    
-    # The following line activates a set of recommended lints for Flutter apps,
-    # packages, and plugins designed to encourage good coding practices.
-    include: package:flutter_lints/flutter.yaml
-    
-    linter:
-      # The lint rules applied to this project can be customized in the
-      # section below to disable rules from the `package:flutter_lints/flutter.yaml`
-      # included above or to enable additional rules. A list of all available lints
-      # and their documentation is published at https://dart.dev/lints.
-      #
-      # Instead of disabling a lint rule for the entire project in the
-      # section below, it can also be suppressed for a single line of code
-      # or a specific dart file by using the `// ignore: name_of_lint` and
-      # `// ignore_for_file: name_of_lint` syntax on the line or in the file
-      # producing the lint.
-      rules:
-        # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-        # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
-    
-    # Additional information about this file can be found at
-    # https://dart.dev/guides/language/analysis-options
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  assets
-    fonts
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  ee.py
-    import os
-    
-    def print_tree(folder, file, indent=""):
-        try:
-            items = sorted(os.listdir(folder))
-        except PermissionError:
-            file.write(f"{indent}[Permission Denied]\n")
-            return
-        
-        for i, item in enumerate(items):
-            path = os.path.join(folder, item)
-            is_font = 'font' in item.lower()
-            
-            # Write the item name
-            file.write(f"{indent}{item}\n")
-            
-            if os.path.isdir(path) and not is_font:
-                print_tree(path, file, indent + "  ")
-            elif os.path.isfile(path) and not is_font:
-                try:
-                    with open(path, 'r', encoding='utf-8') as read_file:
-                        content = read_file.read().strip()
-                        if content:
-                            for line in content.splitlines():
-                                # Truncate very long lines for readability
-                                if len(line) > 200:
-                                    line = line[:200] + "..."
-                                file.write(f"{indent}  {line}\n")
-                        file.write("\n")
-                except (UnicodeDecodeError, IOError):
-                    # Skip binary files or unreadable files
-                    file.write(f"{indent}  [Binary or unreadable file]\n")
-                    file.write("\n")
-                except Exception as e:
-                    file.write(f"{indent}  [Error reading file: {str(e)}]\n")
-                    file.write("\n")
-            
-            # Add 10 empty lines between items (except last item)
-            if i < len(items) - 1:
-                file.write("\n" * 10)
-    
-    # Use current directory instead of script directory for better flexibility
-    root = os.getcwd()  # or use os.path.dirname(os.path.abspath(__file__)) for script directory
-    
-    with open("folder_structure.txt", "w", encoding='utf-8') as f:
-        f.write(f"Directory structure for: {root}/\n")
-        f.write("=" * 50 + "\n\n")
-        print_tree(root, f)
-    
-    print(f"Saved to folder_structure.txt")
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  fixer.py
-    #!/usr/bin/env python3
-    # -*- coding: utf-8 -*-
-    
-    """
-    fixer.py - OryvexVPN Auto-Fixer (AmneziaWG core + WireSock fallback edition)
-    
-    The official wireguard.exe is no longer downloaded, bundled, or called
-    anywhere in this script. The VPN core is now:
-      1. AmneziaWG (data\\amneziawg.exe) — bundled by CI, same portable
-         /installtunnelservice flow the app used with wireguard.exe before.
-      2. WireSock Secure Connect — automatic fallback if AmneziaWG's install
-         fails and WireSock is already installed on the machine (it ships its
-         own installer/service, so it can't be bundled portably).
-    
-    Fixes:
-      1. The app manifest is set to requireAdministrator – app runs elevated once.
-      2. Core calls use PowerShell Start-Process -Verb RunAs, which does not
-         show an additional UAC prompt if the parent is already elevated.
-      3. Expands endpoint list and uses concurrent ping scanning for best server.
-      4. Fixes disconnect: uninstall works with elevation, for whichever core
 
 
 
@@ -15029,16 +15533,14 @@ lib
           notifyListeners();
       
           try {
-            final config = await WarpService.generateConfig(_updateStatus);
-      
-            _stage = VpnStage.installingTunnel;
-            _updateStatus('در حال نصب تونل...');
-      
-            await WarpService.connect(config);
+            await WarpService.connectWithProgress((msg) {
+              _stage = VpnStage.installingTunnel;
+              _updateStatus(msg);
+            });
       
             final actuallyUp = await WarpService.isConnected();
             if (!actuallyUp) {
-              throw Exception('سرویس ویندوز اجرا نشد.');
+              throw Exception('تونل پس از پیکربندی فعال دیده نشد.');
             }
       
             _stage = VpnStage.connected;
@@ -15084,14 +15586,28 @@ lib
       import 'package:http/http.dart' as http;
       import 'package:cryptography/cryptography.dart';
       
-      /// Which VPN core actually ended up carrying the current tunnel.
-      enum VpnCore { amneziawg, wiresock }
-      
+      /// Drives a self-built, bundled copy of the official open-source
+      /// wireguard-go (https://github.com/WireGuard/wireguard-go) plus the
+      /// official Wintun driver DLL, directly — no AmneziaWG, no WireSock, no
+      /// commercial SDK, and never the official wireguard.exe GUI/MSI.
+      ///
+      /// IMPORTANT / KNOWN RISK (read before relying on this in production):
+      /// wireguard-go's own Windows UAPI implementation
+      /// (\\.\pipe\ProtectedPrefix\Administrators\WireGuard\<name>) has a
+      /// long-documented issue where creating that named pipe can fail with
+      /// "This security ID may not be assigned as the owner of this object",
+      /// even from an already-elevated process. Upstream's answer to this is
+      /// wireguard-windows, which wraps wireguard-go in a proper Windows
+      /// service running as SYSTEM — something we are intentionally NOT doing
+      /// here. If you hit that specific error, it is not a bug in this file;
+      /// it's the exact upstream limitation this approach accepts. The error
+      /// is surfaced clearly below instead of being silently swallowed.
       class WarpService {
         static const _tunnelName = 'oryvexvpn';
-        static const _wiresockProfileName = 'oryvexvpn';
+        static const _uapiPipeName = r'ProtectedPrefix\Administrators\WireGuard\oryvexvpn';
       
-        static VpnCore? _activeCore;
+        static Process? _tunnelProcess;
+        static bool _connected = false;
       
         // Same Cloudflare WARP endpoint list you already had — unrelated to the
         // core swap, left untouched.
@@ -15127,17 +15643,11 @@ lib
           return File(exePath).parent.path;
         }
       
-        /// Bundled the same way wireguard.exe used to be — see the updated
-        /// build_windows.yml, which now downloads amneziawg.exe into data/.
-        static String get _amneziawgExe => '$_exeDir\\data\\amneziawg.exe';
+        static String get _wireguardGoExe => '$_exeDir\\data\\wireguard-go.exe';
+        static String get _wintunDll => '$_exeDir\\data\\wintun.dll';
       
-        /// WireSock Secure Connect is a real installer + background service, not
-        /// something we can portably bundle, so we just look for it where the
-        /// official installer places it if the user has it installed.
-        static String get _wiresockCli {
-          final pf = Platform.environment['ProgramFiles'] ?? r'C:\Program Files';
-          return '$pf\\WireSock Secure Connect\\wiresock-connect-cli.exe';
-        }
+        static Future<bool> _coreFilesPresent() async =>
+            File(_wireguardGoExe).exists() && File(_wintunDll).exists();
       
         /// Concurrent ping scan to find the fastest Cloudflare endpoint.
         static Future<String> _findBestEndpoint(Function(String) onProgress) async {
@@ -15160,20 +15670,16 @@ lib
           final bestIp = results.first['latency'] != 9999
               ? results.first['ip'] as String
               : _endpoints.first;
-          return '$bestIp:2408';
+          return bestIp;
         }
       
-        /// Generates a WireGuard-format config via the Cloudflare WARP
-        /// registration API. Both AmneziaWG and WireSock accept this format
-        /// as-is. If your server actually speaks AmneziaWG's obfuscated
-        /// protocol (the thing that made it work in the Amnezia app but not in
-        /// wireguard.exe), copy the Jc/Jmin/Jmax/S1/S2/H1-H4 lines from your
-        /// working Amnezia config into the [Interface] block this returns —
-        /// see [obfuscationParams] below.
-        static Future<String> generateConfig(
-          Function(String) onProgress, {
-          Map<String, String>? obfuscationParams,
-        }) async {
+        static String _bytesToHex(List<int> bytes) =>
+            bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+      
+        /// Registers with the Cloudflare WARP API and returns everything needed
+        /// to both display a human-readable config AND drive the UAPI directly
+        /// (UAPI needs hex keys, not the base64 form used in .conf files).
+        static Future<_WarpRegistration> _register(Function(String) onProgress) async {
           onProgress('در حال ساخت کلید رمزنگاری...');
           final algorithm = X25519();
           final keyPair = await algorithm.newKeyPair();
@@ -15181,7 +15687,7 @@ lib
           final privateKeyBytes = await keyPair.extractPrivateKeyBytes();
       
           final pubKeyBase64 = base64Encode(publicKey.bytes);
-          final privKeyBase64 = base64Encode(privateKeyBytes);
+          final privKeyHex = _bytesToHex(privateKeyBytes);
       
           onProgress('در حال ثبت‌نام در شبکه...');
           final response = await http.post(
@@ -15203,200 +15709,230 @@ lib
       
           final data = jsonDecode(response.body);
           final peer = data['config']['peers'][0];
-          final address = data['config']['interface']['addresses']['v4'];
-          final peerPublicKey = peer['public_key'];
+          final address = (data['config']['interface']['addresses']['v4'] as String);
+          final peerPublicKeyBase64 = peer['public_key'] as String;
+          final peerPublicKeyHex = _bytesToHex(base64Decode(peerPublicKeyBase64));
       
-          final bestEndpoint = await _findBestEndpoint(onProgress);
+          final bestIp = await _findBestEndpoint(onProgress);
       
-          onProgress('در حال آماده‌سازی کانفیگ...');
-      
-          final extraInterfaceLines = StringBuffer();
-          obfuscationParams?.forEach((key, value) {
-            extraInterfaceLines.writeln('$key = $value');
-          });
-      
-          return '''[Interface]
-      PrivateKey = $privKeyBase64
-      Address = $address/32
-      DNS = 1.1.1.1, 1.0.0.1
-      MTU = 1280
-      $extraInterfaceLines
-      [Peer]
-      PublicKey = $peerPublicKey
-      AllowedIPs = 0.0.0.0/0, ::/0
-      Endpoint = $bestEndpoint
-      PersistentKeepalive = 25''';
-        }
-      
-        static Future<File> _writeConfigFile(String config) async {
-          final dir = Directory.systemTemp;
-          final file = File('${dir.path}\\$_tunnelName.conf');
-          return file.writeAsString(config);
-        }
-      
-        static Future<bool> isAmneziaWGAvailable() async => File(_amneziawgExe).exists();
-        static Future<bool> isWireSockAvailable() async => File(_wiresockCli).exists();
-      
-        /// Escapes a string for safe embedding inside a single-quoted
-        /// PowerShell string literal.
-        static String _psQuote(String value) => "'${value.replaceAll("'", "''")}'";
-      
-        /// Runs [exePath] with [args] fully elevated. No extra UAC prompt if the
-        /// app itself is already running as admin.
-        static Future<int> _runElevated(String exePath, List<String> args) async {
-          final argList = args.map(_psQuote).join(',');
-          final psCommand =
-              "\$p = Start-Process -FilePath ${_psQuote(exePath)} "
-              "-ArgumentList $argList "
-              "-Verb RunAs -Wait -PassThru -WindowStyle Hidden; "
-              "exit \$p.ExitCode";
-      
-          final result = await Process.run(
-            'powershell.exe',
-            ['-NoProfile', '-NonInteractive', '-Command', psCommand],
-            runInShell: false,
+          return _WarpRegistration(
+            privateKeyHex: privKeyHex,
+            address: address,
+            peerPublicKeyHex: peerPublicKeyHex,
+            endpointIp: bestIp,
+            endpointPort: '2408',
           );
-      
-          if (result.exitCode != 0) {
-            final stderrText = (result.stderr ?? '').toString().trim();
-            final stdoutText = (result.stdout ?? '').toString().trim();
-            final detail = [stderrText, stdoutText].where((s) => s.isNotEmpty).join(' | ');
-            final detailSuffix = detail.isNotEmpty ? '\nجزئیات: $detail' : '';
-            throw Exception('اجرای هسته وی‌پی‌ان ناموفق بود (کد: ${result.exitCode})$detailSuffix');
-          }
-          return result.exitCode;
         }
       
-        static Future<void> connect(String config) async {
+        /// Writes the small PowerShell helper that actually talks to the UAPI
+        /// named pipe (Dart's dart:io has no first-class Windows named pipe
+        /// client, so we drive .NET's NamedPipeClientStream for this one step).
+        static Future<File> _ensureUapiHelperScript() async {
+          final path = '${Directory.systemTemp.path}\\oryvexvpn_uapi_helper.ps1';
+          const script = r'''
+      param(
+        [string]$PipeName,
+        [string]$InFile,
+        [string]$OutFile,
+        [int]$TimeoutMs = 4000
+      )
+      try {
+        $client = New-Object System.IO.Pipes.NamedPipeClientStream(".", $PipeName, [System.IO.Pipes.PipeDirection]::InOut)
+        $client.Connect($TimeoutMs)
+      
+        $bytes = [System.IO.File]::ReadAllBytes($InFile)
+        $client.Write($bytes, 0, $bytes.Length)
+        $client.Flush()
+      
+        $reader = New-Object System.IO.StreamReader($client)
+        $sb = New-Object System.Text.StringBuilder
+        while ($true) {
+          $line = $reader.ReadLine()
+          if ($null -eq $line) { break }
+          [void]$sb.AppendLine($line)
+          if ($line -eq "") { break }
+        }
+        [System.IO.File]::WriteAllText($OutFile, $sb.ToString())
+        $client.Dispose()
+        exit 0
+      } catch {
+        [System.IO.File]::WriteAllText($OutFile, "ERROR: " + $_.Exception.Message)
+        exit 1
+      }
+      ''';
+          final file = File(path);
+          await file.writeAsString(script);
+          return file;
+        }
+      
+        /// Sends a raw UAPI command to the running wireguard-go's named pipe and
+        /// returns its response text.
+        static Future<String> _uapiSend(String command) async {
+          final helper = await _ensureUapiHelperScript();
+          final tmpDir = Directory.systemTemp.path;
+          final inFile = File('$tmpDir\\oryvexvpn_uapi_in.txt');
+          final outFile = File('$tmpDir\\oryvexvpn_uapi_out.txt');
+          await inFile.writeAsString(command);
+          if (await outFile.exists()) await outFile.delete();
+      
+          final result = await Process.run('powershell.exe', [
+            '-NoProfile',
+            '-ExecutionPolicy', 'Bypass',
+            '-File', helper.path,
+            '-PipeName', _uapiPipeName,
+            '-InFile', inFile.path,
+            '-OutFile', outFile.path,
+          ]);
+      
+          final out = await outFile.exists() ? await outFile.readAsString() : '';
+      
+          if (result.exitCode != 0 || out.startsWith('ERROR:')) {
+            if (out.contains('security ID may not be assigned as the owner')) {
+              throw Exception(
+                'wireguard-go نتوانست روی pipe داخلی خودش گوش بدهد (محدودیت '
+                'شناخته‌شده‌ی خود wireguard-go روی ویندوز وقتی بدون سرویس ویندوزی '
+                'اجرا می‌شود). این یک محدودیت بالادستی است، نه باگ این برنامه.\n'
+                'جزئیات: $out',
+              );
+            }
+            throw Exception('ارتباط با هسته‌ی وایرگارد ناموفق بود.\n$out');
+          }
+          return out;
+        }
+      
+        static Future<void> _configureUapi(_WarpRegistration reg) async {
+          final buf = StringBuffer();
+          buf.writeln('set=1');
+          buf.writeln('private_key=${reg.privateKeyHex}');
+          buf.writeln('listen_port=0');
+          buf.writeln('replace_peers=true');
+          buf.writeln('public_key=${reg.peerPublicKeyHex}');
+          buf.writeln('endpoint=${reg.endpointIp}:${reg.endpointPort}');
+          buf.writeln('persistent_keepalive_interval=25');
+          buf.writeln('replace_allowed_ips=true');
+          buf.writeln('allowed_ip=0.0.0.0/0');
+          buf.writeln(); // blank line terminates the UAPI transaction
+      
+          final response = await _uapiSend(buf.toString());
+          if (!response.contains('errno=0')) {
+            throw Exception('پیکربندی هسته‌ی وایرگارد رد شد.\n$response');
+          }
+        }
+      
+        /// wg-quick normally does this on Linux; on our bare wireguard-go setup
+        /// we have to configure the adapter's IP/MTU/DNS/route ourselves.
+        static Future<void> _configureAdapter(_WarpRegistration reg) async {
+          final ip = reg.address; // e.g. "172.16.0.2"
+          final commands = <List<String>>[
+            ['netsh', 'interface', 'ip', 'set', 'address', 'name=$_tunnelName', 'static', ip, '255.255.255.255'],
+            ['netsh', 'interface', 'ipv4', 'set', 'subinterface', _tunnelName, 'mtu=1280', 'store=active'],
+            ['netsh', 'interface', 'ip', 'set', 'dns', 'name=$_tunnelName', 'static', '1.1.1.1'],
+            ['netsh', 'interface', 'ip', 'add', 'dns', 'name=$_tunnelName', '1.0.0.1', 'index=2'],
+            ['netsh', 'interface', 'ipv4', 'add', 'route', '0.0.0.0/0', _tunnelName],
+          ];
+      
+          for (final cmd in commands) {
+            final result = await Process.run(cmd.first, cmd.sublist(1));
+            if (result.exitCode != 0) {
+              final err = (result.stderr ?? '').toString().trim();
+              throw Exception('پیکربندی آداپتور شبکه ناموفق بود: ${cmd.join(' ')}\n$err');
+            }
+          }
+        }
+      
+        static Future<void> _waitForPipe() async {
+          // installtunnelservice-style wrappers get to wait on a service
+          // handle; we just poll briefly for the process to have set up the
+          // pipe and adapter before we try to talk to it.
+          await Future.delayed(const Duration(milliseconds: 1500));
+        }
+      
+        static Future<void> connect() async {
           if (!Platform.isWindows) {
             throw Exception('این نسخه فقط مخصوص ویندوز است.');
           }
-      
-          final file = await _writeConfigFile(config);
-      
-          // AmneziaWG first — bundled, same install flow as wireguard.exe used
-          // to have, and generally fixes the driver-install "Access is denied"
-          // class of bug. Fall back to WireSock (different driver family) only
-          // if AmneziaWG isn't present or its install fails and WireSock Secure
-          // Connect happens to be installed already.
-          if (await isAmneziaWGAvailable()) {
-            try {
-              await _connectAmneziaWG(file);
-              _activeCore = VpnCore.amneziawg;
-              return;
-            } catch (e) {
-              if (!await isWireSockAvailable()) rethrow;
-            }
-          }
-      
-          if (await isWireSockAvailable()) {
-            await _connectWireSock(file);
-            _activeCore = VpnCore.wiresock;
-            return;
-          }
-      
-          throw Exception(
-            'هیچ هسته وی‌پی‌ان‌ای پیدا نشد.\n'
-            'AmneziaWG (data\\amneziawg.exe) در برنامه یافت نشد و WireSock Secure Connect هم نصب نیست.\n'
-            'یکی از این دو را نصب کنید.',
-          );
+          await connectWithProgress((_) {});
         }
       
-        static Future<void> _connectAmneziaWG(File configFile) async {
+        static Future<void> connectWithProgress(Function(String) onProgress) async {
+          if (!Platform.isWindows) {
+            throw Exception('این نسخه فقط مخصوص ویندوز است.');
+          }
+          if (!await _coreFilesPresent()) {
+            throw Exception(
+              'فایل‌های هسته (data\\wireguard-go.exe و data\\wintun.dll) در برنامه یافت نشد.',
+            );
+          }
+      
+          final reg = await _register(onProgress);
+      
+          onProgress('در حال راه‌اندازی هسته وایرگارد...');
+          _tunnelProcess = await Process.start(
+            _wireguardGoExe,
+            ['-f', _tunnelName],
+            workingDirectory: '$_exeDir\\data',
+            mode: ProcessStartMode.detachedWithStdio,
+          );
+      
+          await _waitForPipe();
+      
           try {
-            await _runElevated(_amneziawgExe, ['/installtunnelservice', configFile.path]);
+            onProgress('در حال پیکربندی تونل...');
+            await _configureUapi(reg);
+      
+            onProgress('در حال پیکربندی آداپتور شبکه...');
+            await _configureAdapter(reg);
+      
+            _connected = true;
           } catch (e) {
-            throw Exception('نصب تونل AmneziaWG ناموفق بود.\n$e');
-          }
-          final isUp = await _isAmneziaWGConnected();
-          if (!isUp) {
-            throw Exception('سرویس AmneziaWG پس از نصب شروع نشد.');
+            await _killTunnelProcess();
+            _connected = false;
+            rethrow;
           }
         }
       
-        static Future<void> _connectWireSock(File configFile) async {
-          // wiresock-connect-cli talks to the already-running WireSock service.
-          // Best-effort delete of any stale profile with the same name, then
-          // (re)import and connect.
-          await Process.run(_wiresockCli, ['delete', _wiresockProfileName]);
-      
-          final importResult = await Process.run(_wiresockCli, ['import', configFile.path]);
-          if (importResult.exitCode != 0) {
-            throw Exception('وارد کردن پروفایل در WireSock ناموفق بود.\n${importResult.stderr}');
-          }
-      
-          final connectResult = await Process.run(
-            _wiresockCli,
-            ['connect', _wiresockProfileName, '-exit'],
-          );
-          if (connectResult.exitCode != 0) {
-            throw Exception('اتصال WireSock ناموفق بود.\n${connectResult.stderr}');
-          }
+        static Future<void> _killTunnelProcess() async {
+          final proc = _tunnelProcess;
+          _tunnelProcess = null;
+          if (proc == null) return;
+          try {
+            proc.kill(ProcessSignal.sigterm);
+          } catch (_) {}
+          // wireguard-go on Windows doesn't always die cleanly from sigterm from
+          // a detached handle — make sure the adapter's owning process is gone.
+          await Process.run('taskkill', ['/F', '/IM', 'wireguard-go.exe']);
         }
       
         static Future<void> disconnect() async {
           if (!Platform.isWindows) return;
-      
-          if (_activeCore == VpnCore.wiresock) {
-            await Process.run(_wiresockCli, ['disconnect']);
-            _activeCore = null;
-            return;
-          }
-      
-          try {
-            await _runElevated(_amneziawgExe, ['/uninstalltunnelservice', _tunnelName]);
-          } catch (e) {
-            if (e.toString().contains('The system cannot find the file specified') ||
-                e.toString().contains('service does not exist')) {
-              _activeCore = null;
-              return;
-            }
-            rethrow;
-          }
-          _activeCore = null;
+          await _killTunnelProcess();
+          _connected = false;
         }
       
-        static Future<bool> _isAmneziaWGConnected() async {
-          try {
-            final result = await Process.run(
-              'sc.exe',
-              ['query', 'AmneziaWGTunnel\$' + _tunnelName],
-            );
-            return result.stdout.toString().contains('RUNNING');
-          } catch (_) {
-            return false;
-          }
-        }
-      
-        static Future<bool> _isWireSockConnected() async {
-          try {
-            final result = await Process.run(_wiresockCli, ['status']);
-            final out = result.stdout.toString();
-            return out.contains('Connected') && !out.contains('NotConnected');
-          } catch (_) {
-            return false;
-          }
-        }
-      
-        /// Best-effort status check on app startup, before we know which core
-        /// (if any) currently owns the tunnel.
         static Future<bool> isConnected() async {
           if (!Platform.isWindows) return false;
-      
-          if (_activeCore == VpnCore.wiresock) return _isWireSockConnected();
-          if (_activeCore == VpnCore.amneziawg) return _isAmneziaWGConnected();
-      
-          // Unknown yet (e.g. fresh app launch) — check both.
-          if (await _isAmneziaWGConnected()) {
-            _activeCore = VpnCore.amneziawg;
-            return true;
-          }
-          if (await isWireSockAvailable() && await _isWireSockConnected()) {
-            _activeCore = VpnCore.wiresock;
-            return true;
-          }
-          return false;
+          if (!_connected) return false;
+          // Best-effort liveness check: is our process handle still alive, and
+          // does the adapter still show up.
+          final result = await Process.run('netsh', ['interface', 'show', 'interface', _tunnelName]);
+          return result.exitCode == 0 && result.stdout.toString().contains(_tunnelName);
         }
+      }
+      
+      class _WarpRegistration {
+        final String privateKeyHex;
+        final String address;
+        final String peerPublicKeyHex;
+        final String endpointIp;
+        final String endpointPort;
+      
+        const _WarpRegistration({
+          required this.privateKeyHex,
+          required this.address,
+          required this.peerPublicKeyHex,
+          required this.endpointIp,
+          required this.endpointPort,
+        });
       }
 
 

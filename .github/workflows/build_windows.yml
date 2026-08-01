@@ -64,10 +64,10 @@ jobs:
 
       - name: Bundle wireguard-go.exe + official Wintun driver inside data/
         run: |
-          $ReleaseDir = "build\windows\x64\runner\Release"
-          New-Item -ItemType Directory -Force -Path "$ReleaseDir\data"
+          $ReleaseDir = "build\\windows\\x64\\runner\\Release"
+          New-Item -ItemType Directory -Force -Path "$ReleaseDir\\data"
 
-          Copy-Item "wireguard-go-src\wireguard-go.exe" "$ReleaseDir\data\wireguard-go.exe"
+          Copy-Item "wireguard-go-src\\wireguard-go.exe" "$ReleaseDir\\data\\wireguard-go.exe"
 
           # Official Wintun driver from the WireGuard project (wintun.net).
           # Redistributable per its license, no separate MSI/driver install
@@ -76,9 +76,9 @@ jobs:
           $wintunVersion = "0.14.1"
           Invoke-WebRequest -Uri "https://www.wintun.net/builds/wintun-$wintunVersion.zip" -OutFile "wintun.zip"
           Expand-Archive "wintun.zip" -DestinationPath "wintun_extracted"
-          Copy-Item "wintun_extracted\wintun\bin\amd64\wintun.dll" "$ReleaseDir\data\wintun.dll"
+          Copy-Item "wintun_extracted\\wintun\\bin\\amd64\\wintun.dll" "$ReleaseDir\\data\\wintun.dll"
 
-          if (-not (Test-Path "$ReleaseDir\data\wintun.dll")) {
+          if (-not (Test-Path "$ReleaseDir\\data\\wintun.dll")) {
             Write-Host "wintun.dll bundling failed."
             exit 1
           }

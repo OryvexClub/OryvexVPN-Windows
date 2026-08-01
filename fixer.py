@@ -28,6 +28,8 @@ Fixes carried over from earlier revisions:
   1. The app manifest is set to requireAdministrator - app runs elevated once.
   2. Endpoint list expanded to 300+ IPs with concurrent ping scanning.
   3. Disconnect kills the wireguard-go process and tears the adapter down.
+  4. _coreFilesPresent() now correctly awaits File.exists() (was a
+     Future<bool> && Future<bool> compile error that broke the CI build).
 """
 
 import os
@@ -192,8 +194,14 @@ class WarpService {
   static String get _wireguardGoExe => '$_exeDir\\data\\wireguard-go.exe';
   static String get _wintunDll => '$_exeDir\\data\\wintun.dll';
 
-  static Future<bool> _coreFilesPresent() async =>
-      File(_wireguardGoExe).exists() && File(_wintunDll).exists();
+  /// Awaits both existence checks before combining them — File.exists()
+  /// returns Future<bool>, so ANDing two un-awaited calls together is a
+  /// compile-time type error. This was the bug that broke the CI build.
+  static Future<bool> _coreFilesPresent() async {
+    final goExists = await File(_wireguardGoExe).exists();
+    final wintunExists = await File(_wintunDll).exists();
+    return goExists && wintunExists;
+  }
 
   /// Concurrent ping scan to find the fastest Cloudflare endpoint.
   static Future<String> _findBestEndpoint(Function(String) onProgress) async {
@@ -380,7 +388,7 @@ try {
     for (final cmd in commands) {
       final result = await Process.run(cmd.first, cmd.sublist(1));
       if (result.exitCode != 0) {
-        final err = (result.stderr ?? '').toString().trim();
+        final err = result.stderr.toString().trim();
         throw Exception('پیکربندی آداپتور شبکه ناموفق بود: ${cmd.join(' ')}\n$err');
       }
     }
@@ -483,7 +491,7 @@ class _WarpRegistration {
 """
         warp_path.parent.mkdir(parents=True, exist_ok=True)
         warp_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("warp_service.dart (self-built wireguard-go + wintun.dll via UAPI, no 3rd-party core)")
+        self.fixed_files.append("warp_service.dart (self-built wireguard-go + wintun.dll via UAPI, no 3rd-party core; _coreFilesPresent() await fix applied)")
         return True
 
     def fix_vpn_service(self) -> bool:
@@ -709,10 +717,10 @@ jobs:
 
       - name: Bundle wireguard-go.exe + official Wintun driver inside data/
         run: |
-          $ReleaseDir = "build\windows\x64\runner\Release"
-          New-Item -ItemType Directory -Force -Path "$ReleaseDir\data"
+          $ReleaseDir = "build\\windows\\x64\\runner\\Release"
+          New-Item -ItemType Directory -Force -Path "$ReleaseDir\\data"
 
-          Copy-Item "wireguard-go-src\wireguard-go.exe" "$ReleaseDir\data\wireguard-go.exe"
+          Copy-Item "wireguard-go-src\\wireguard-go.exe" "$ReleaseDir\\data\\wireguard-go.exe"
 
           # Official Wintun driver from the WireGuard project (wintun.net).
           # Redistributable per its license, no separate MSI/driver install
@@ -721,9 +729,9 @@ jobs:
           $wintunVersion = "0.14.1"
           Invoke-WebRequest -Uri "https://www.wintun.net/builds/wintun-$wintunVersion.zip" -OutFile "wintun.zip"
           Expand-Archive "wintun.zip" -DestinationPath "wintun_extracted"
-          Copy-Item "wintun_extracted\wintun\bin\amd64\wintun.dll" "$ReleaseDir\data\wintun.dll"
+          Copy-Item "wintun_extracted\\wintun\\bin\\amd64\\wintun.dll" "$ReleaseDir\\data\\wintun.dll"
 
-          if (-not (Test-Path "$ReleaseDir\data\wintun.dll")) {
+          if (-not (Test-Path "$ReleaseDir\\data\\wintun.dll")) {
             Write-Host "wintun.dll bundling failed."
             exit 1
           }
@@ -823,6 +831,8 @@ jobs:
         print("  - Endpoint list: 300+ IPs, concurrent ping scan for best server.")
         print("  - Adapter IP/MTU/DNS/route now configured by the app itself (the")
         print("    job wg-quick normally does), since bare wireguard-go doesn't.")
+        print("  - _coreFilesPresent() now awaits both File.exists() checks before")
+        print("    ANDing them (fixes the CI build error).")
         print("\nRun push.py to deploy to GitHub and build the new EXE.")
         return True
 
