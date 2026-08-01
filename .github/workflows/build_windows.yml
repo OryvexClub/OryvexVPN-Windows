@@ -45,32 +45,8 @@ jobs:
       - name: Get dependencies (post-clean)
         run: flutter pub get
 
-      - name: Exclude workspace from Windows Defender scanning
-        run: |
-          Add-MpPreference -ExclusionPath "${{ github.workspace }}"
-          Add-MpPreference -ExclusionProcess "mt.exe"
-          Add-MpPreference -ExclusionProcess "link.exe"
-        shell: pwsh
-
       - name: Build Windows app
-        shell: pwsh
-        run: |
-          $maxAttempts = 3
-          for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
-            Write-Host "Build attempt $attempt of $maxAttempts..."
-            flutter build windows --release
-            if ($LASTEXITCODE -eq 0) {
-              Write-Host "Build succeeded on attempt $attempt."
-              exit 0
-            }
-            Write-Host "Build failed on attempt $attempt (exit code $LASTEXITCODE)."
-            if ($attempt -lt $maxAttempts) {
-              Write-Host "Retrying after a short delay..."
-              Start-Sleep -Seconds 10
-            }
-          }
-          Write-Error "flutter build windows --release failed after $maxAttempts attempts."
-          exit 1
+        run: flutter build windows --release
 
       - name: Download and extract AmneziaWG
         run: |
