@@ -28,42 +28,62 @@ jobs:
       - name: Build Windows app
         run: flutter build windows --release
 
-      - name: Bundle AmneziaWG 2.0.2 MSI installer inside data/
+      - name: Setup Go (to build wireguard-go from source)
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      # We build the OFFICIAL, open-source wireguard-go (the same core used
+      # inside wireguard-windows / AmneziaWG) directly from its own upstream
+      # source, ourselves, at build time. No third-party GUI app, no MSI
+      # installer, no commercial SDK.
+      #
+      # KNOWN LIMITATION (documented upstream, accepted as a risk for this
+      # build): wireguard-go's Windows UAPI named pipe
+      # (\\.\pipe\ProtectedPrefix\Administrators\WireGuard\<name>) has a
+      # long-standing issue where pipe creation can fail with
+      # "This security ID may not be assigned as the owner of this object"
+      # even when the process is already elevated. This is exactly the
+      # gap that wireguard-windows/AmneziaWG normally paper over by running
+      # everything inside a proper Windows service under SYSTEM. We are
+      # NOT doing that here — see warp_service.dart for how we surface this
+      # if it happens at runtime.
+      - name: Build wireguard-go.exe for Windows
+        run: |
+          git clone --depth 1 https://github.com/WireGuard/wireguard-go.git wireguard-go-src
+          cd wireguard-go-src
+          $env:GOOS = "windows"
+          $env:GOARCH = "amd64"
+          $env:CGO_ENABLED = "0"
+          go build -ldflags="-s -w" -o wireguard-go.exe .
+          if (-not (Test-Path "wireguard-go.exe")) {
+            Write-Host "wireguard-go.exe build failed."
+            exit 1
+          }
+          Write-Host "wireguard-go.exe built successfully."
+
+      - name: Bundle wireguard-go.exe + official Wintun driver inside data/
         run: |
           $ReleaseDir = "build\windows\x64\runner\Release"
           New-Item -ItemType Directory -Force -Path "$ReleaseDir\data"
 
-          # Pinned to the amnezia-vpn/amneziawg-windows-client 2.0.2 tag on
-          # purpose (not /latest) — the official wireguard.exe core is never
-          # downloaded or used anywhere in this project.
-          #
-          # IMPORTANT: unlike the old workflow, we do NOT run
-          #   msiexec /a <msi> /qb TARGETDIR=...
-          # to extract a bare amneziawg.exe. An "administrative install"
-          # (/a) only unpacks files — it does not run the MSI's install
-          # sequence, so the WireGuardNT/AmneziaWG driver never gets
-          # registered and no AmneziaWGManager service exists. That's what
-          # produced "سرویس AmneziaWG پس از نصب شروع نشد" at runtime: the
-          # extracted exe could "install" a tunnel service handle but the
-          # driver behind it was never actually set up.
-          #
-          # Fix: bundle the *real* MSI installer as-is and let the app run
-          # a normal silent `msiexec /i ... /quiet` (elevated) the first
-          # time it needs AmneziaWG, so every install-time driver/service
-          # step actually executes. See warp_service.dart.
-          $version = "2.0.2"
-          $url = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/$version/amneziawg-amd64-$version.msi"
-          $out = "$ReleaseDir\data\amneziawg-setup.msi"
+          Copy-Item "wireguard-go-src\wireguard-go.exe" "$ReleaseDir\data\wireguard-go.exe"
 
-          Write-Host "Downloading AmneziaWG $version installer..."
-          Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing
+          # Official Wintun driver from the WireGuard project (wintun.net).
+          # Redistributable per its license, no separate MSI/driver install
+          # step needed by the user — the DLL sets up the driver itself the
+          # first time an app calls into it.
+          $wintunVersion = "0.14.1"
+          Invoke-WebRequest -Uri "https://www.wintun.net/builds/wintun-$wintunVersion.zip" -OutFile "wintun.zip"
+          Expand-Archive "wintun.zip" -DestinationPath "wintun_extracted"
+          Copy-Item "wintun_extracted\wintun\bin\amd64\wintun.dll" "$ReleaseDir\data\wintun.dll"
 
-          if (-not (Test-Path $out) -or (Get-Item $out).Length -lt 100000) {
-            Write-Host "Download looks wrong/too small, asset name may have changed for this release. Failing build."
+          if (-not (Test-Path "$ReleaseDir\data\wintun.dll")) {
+            Write-Host "wintun.dll bundling failed."
             exit 1
           }
 
-          Write-Host "AmneziaWG $version MSI bundled at data\amneziawg-setup.msi"
+          Write-Host "wireguard-go.exe and wintun.dll bundled in data/ folder."
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

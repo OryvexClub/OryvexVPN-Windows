@@ -43,16 +43,14 @@ class VPNService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final config = await WarpService.generateConfig(_updateStatus);
-
-      _stage = VpnStage.installingTunnel;
-      _updateStatus('در حال نصب تونل...');
-
-      await WarpService.connect(config);
+      await WarpService.connectWithProgress((msg) {
+        _stage = VpnStage.installingTunnel;
+        _updateStatus(msg);
+      });
 
       final actuallyUp = await WarpService.isConnected();
       if (!actuallyUp) {
-        throw Exception('سرویس ویندوز اجرا نشد.');
+        throw Exception('تونل پس از پیکربندی فعال دیده نشد.');
       }
 
       _stage = VpnStage.connected;

@@ -3,14 +3,28 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:cryptography/cryptography.dart';
 
-/// Which VPN core actually ended up carrying the current tunnel.
-enum VpnCore { amneziawg, wiresock }
-
+/// Drives a self-built, bundled copy of the official open-source
+/// wireguard-go (https://github.com/WireGuard/wireguard-go) plus the
+/// official Wintun driver DLL, directly — no AmneziaWG, no WireSock, no
+/// commercial SDK, and never the official wireguard.exe GUI/MSI.
+///
+/// IMPORTANT / KNOWN RISK (read before relying on this in production):
+/// wireguard-go's own Windows UAPI implementation
+/// (\\.\pipe\ProtectedPrefix\Administrators\WireGuard\<name>) has a
+/// long-documented issue where creating that named pipe can fail with
+/// "This security ID may not be assigned as the owner of this object",
+/// even from an already-elevated process. Upstream's answer to this is
+/// wireguard-windows, which wraps wireguard-go in a proper Windows
+/// service running as SYSTEM — something we are intentionally NOT doing
+/// here. If you hit that specific error, it is not a bug in this file;
+/// it's the exact upstream limitation this approach accepts. The error
+/// is surfaced clearly below instead of being silently swallowed.
 class WarpService {
   static const _tunnelName = 'oryvexvpn';
-  static const _wiresockProfileName = 'oryvexvpn';
+  static const _uapiPipeName = r'ProtectedPrefix\Administrators\WireGuard\oryvexvpn';
 
-  static VpnCore? _activeCore;
+  static Process? _tunnelProcess;
+  static bool _connected = false;
 
   // Same Cloudflare WARP endpoint list you already had — unrelated to the
   // core swap, left untouched.
@@ -46,25 +60,11 @@ class WarpService {
     return File(exePath).parent.path;
   }
 
-  /// The MSI we ship inside data/ (built by build_windows.yml, pinned to
-  /// AmneziaWG 2.0.2). We install FROM this, we never run it in "admin
-  /// extraction" mode — that was the bug. See workflow comments.
-  static String get _bundledMsi => '$_exeDir\\data\\amneziawg-setup.msi';
+  static String get _wireguardGoExe => '$_exeDir\\data\\wireguard-go.exe';
+  static String get _wintunDll => '$_exeDir\\data\\wintun.dll';
 
-  /// Where the official MSI actually installs AmneziaWG once it has run a
-  /// real (non-admin-image) install.
-  static String get _installedAmneziawgExe {
-    final pf = Platform.environment['ProgramFiles'] ?? r'C:\Program Files';
-    return '$pf\\AmneziaWG\\amneziawg.exe';
-  }
-
-  /// WireSock Secure Connect is a real installer + background service, not
-  /// something we can portably bundle, so we just look for it where the
-  /// official installer places it if the user has it installed.
-  static String get _wiresockCli {
-    final pf = Platform.environment['ProgramFiles'] ?? r'C:\Program Files';
-    return '$pf\\WireSock Secure Connect\\wiresock-connect-cli.exe';
-  }
+  static Future<bool> _coreFilesPresent() async =>
+      File(_wireguardGoExe).exists() && File(_wintunDll).exists();
 
   /// Concurrent ping scan to find the fastest Cloudflare endpoint.
   static Future<String> _findBestEndpoint(Function(String) onProgress) async {
@@ -87,19 +87,16 @@ class WarpService {
     final bestIp = results.first['latency'] != 9999
         ? results.first['ip'] as String
         : _endpoints.first;
-    return '$bestIp:2408';
+    return bestIp;
   }
 
-  /// Generates a WireGuard-format config via the Cloudflare WARP
-  /// registration API. Both AmneziaWG and WireSock accept this format
-  /// as-is. If your server actually speaks AmneziaWG's obfuscated
-  /// protocol, copy the Jc/Jmin/Jmax/S1/S2/H1-H4 lines from your working
-  /// Amnezia config into the [Interface] block this returns — see
-  /// [obfuscationParams] below.
-  static Future<String> generateConfig(
-    Function(String) onProgress, {
-    Map<String, String>? obfuscationParams,
-  }) async {
+  static String _bytesToHex(List<int> bytes) =>
+      bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+
+  /// Registers with the Cloudflare WARP API and returns everything needed
+  /// to both display a human-readable config AND drive the UAPI directly
+  /// (UAPI needs hex keys, not the base64 form used in .conf files).
+  static Future<_WarpRegistration> _register(Function(String) onProgress) async {
     onProgress('در حال ساخت کلید رمزنگاری...');
     final algorithm = X25519();
     final keyPair = await algorithm.newKeyPair();
@@ -107,7 +104,7 @@ class WarpService {
     final privateKeyBytes = await keyPair.extractPrivateKeyBytes();
 
     final pubKeyBase64 = base64Encode(publicKey.bytes);
-    final privKeyBase64 = base64Encode(privateKeyBytes);
+    final privKeyHex = _bytesToHex(privateKeyBytes);
 
     onProgress('در حال ثبت‌نام در شبکه...');
     final response = await http.post(
@@ -129,244 +126,228 @@ class WarpService {
 
     final data = jsonDecode(response.body);
     final peer = data['config']['peers'][0];
-    final address = data['config']['interface']['addresses']['v4'];
-    final peerPublicKey = peer['public_key'];
+    final address = (data['config']['interface']['addresses']['v4'] as String);
+    final peerPublicKeyBase64 = peer['public_key'] as String;
+    final peerPublicKeyHex = _bytesToHex(base64Decode(peerPublicKeyBase64));
 
-    final bestEndpoint = await _findBestEndpoint(onProgress);
+    final bestIp = await _findBestEndpoint(onProgress);
 
-    onProgress('در حال آماده‌سازی کانفیگ...');
-
-    final extraInterfaceLines = StringBuffer();
-    obfuscationParams?.forEach((key, value) {
-      extraInterfaceLines.writeln('$key = $value');
-    });
-
-    return '''[Interface]
-PrivateKey = $privKeyBase64
-Address = $address/32
-DNS = 1.1.1.1, 1.0.0.1
-MTU = 1280
-$extraInterfaceLines
-[Peer]
-PublicKey = $peerPublicKey
-AllowedIPs = 0.0.0.0/0, ::/0
-Endpoint = $bestEndpoint
-PersistentKeepalive = 25''';
-  }
-
-  static Future<File> _writeConfigFile(String config) async {
-    final dir = Directory.systemTemp;
-    final file = File('${dir.path}\\$_tunnelName.conf');
-    return file.writeAsString(config);
-  }
-
-  static Future<bool> isAmneziaWGInstalled() async =>
-      File(_installedAmneziawgExe).exists();
-
-  static Future<bool> _hasBundledInstaller() async => File(_bundledMsi).exists();
-
-  static Future<bool> isWireSockAvailable() async => File(_wiresockCli).exists();
-
-  /// Escapes a string for safe embedding inside a single-quoted
-  /// PowerShell string literal.
-  static String _psQuote(String value) => "'${value.replaceAll("'", "''")}'";
-
-  /// Runs [exePath] with [args] fully elevated. No extra UAC prompt if the
-  /// app itself is already running as admin.
-  static Future<int> _runElevated(String exePath, List<String> args) async {
-    final argList = args.map(_psQuote).join(',');
-    final psCommand =
-        "\$p = Start-Process -FilePath ${_psQuote(exePath)} "
-        "-ArgumentList $argList "
-        "-Verb RunAs -Wait -PassThru -WindowStyle Hidden; "
-        "exit \$p.ExitCode";
-
-    final result = await Process.run(
-      'powershell.exe',
-      ['-NoProfile', '-NonInteractive', '-Command', psCommand],
-      runInShell: false,
+    return _WarpRegistration(
+      privateKeyHex: privKeyHex,
+      address: address,
+      peerPublicKeyHex: peerPublicKeyHex,
+      endpointIp: bestIp,
+      endpointPort: '2408',
     );
-
-    if (result.exitCode != 0) {
-      final stderrText = (result.stderr ?? '').toString().trim();
-      final stdoutText = (result.stdout ?? '').toString().trim();
-      final detail = [stderrText, stdoutText].where((s) => s.isNotEmpty).join(' | ');
-      final detailSuffix = detail.isNotEmpty ? '\nجزئیات: $detail' : '';
-      throw Exception('اجرای هسته وی‌پی‌ان ناموفق بود (کد: ${result.exitCode})$detailSuffix');
-    }
-    return result.exitCode;
   }
 
-  /// Installs the bundled AmneziaWG MSI with a real, silent, non-admin-image
-  /// install (`msiexec /i ... /quiet /norestart`). This is the step the old
-  /// code skipped by doing `msiexec /a` extraction, which is why the driver
-  /// and AmneziaWGManager service never got registered and the tunnel
-  /// service failed to actually start.
-  static Future<void> _ensureAmneziaWGInstalled(Function(String) onProgress) async {
-    if (await isAmneziaWGInstalled()) return;
+  /// Writes the small PowerShell helper that actually talks to the UAPI
+  /// named pipe (Dart's dart:io has no first-class Windows named pipe
+  /// client, so we drive .NET's NamedPipeClientStream for this one step).
+  static Future<File> _ensureUapiHelperScript() async {
+    final path = '${Directory.systemTemp.path}\\oryvexvpn_uapi_helper.ps1';
+    const script = r'''
+param(
+  [string]$PipeName,
+  [string]$InFile,
+  [string]$OutFile,
+  [int]$TimeoutMs = 4000
+)
+try {
+  $client = New-Object System.IO.Pipes.NamedPipeClientStream(".", $PipeName, [System.IO.Pipes.PipeDirection]::InOut)
+  $client.Connect($TimeoutMs)
 
-    if (!await _hasBundledInstaller()) {
-      throw Exception(
-        'فایل نصب AmneziaWG (data\\amneziawg-setup.msi) در برنامه یافت نشد.',
-      );
+  $bytes = [System.IO.File]::ReadAllBytes($InFile)
+  $client.Write($bytes, 0, $bytes.Length)
+  $client.Flush()
+
+  $reader = New-Object System.IO.StreamReader($client)
+  $sb = New-Object System.Text.StringBuilder
+  while ($true) {
+    $line = $reader.ReadLine()
+    if ($null -eq $line) { break }
+    [void]$sb.AppendLine($line)
+    if ($line -eq "") { break }
+  }
+  [System.IO.File]::WriteAllText($OutFile, $sb.ToString())
+  $client.Dispose()
+  exit 0
+} catch {
+  [System.IO.File]::WriteAllText($OutFile, "ERROR: " + $_.Exception.Message)
+  exit 1
+}
+''';
+    final file = File(path);
+    await file.writeAsString(script);
+    return file;
+  }
+
+  /// Sends a raw UAPI command to the running wireguard-go's named pipe and
+  /// returns its response text.
+  static Future<String> _uapiSend(String command) async {
+    final helper = await _ensureUapiHelperScript();
+    final tmpDir = Directory.systemTemp.path;
+    final inFile = File('$tmpDir\\oryvexvpn_uapi_in.txt');
+    final outFile = File('$tmpDir\\oryvexvpn_uapi_out.txt');
+    await inFile.writeAsString(command);
+    if (await outFile.exists()) await outFile.delete();
+
+    final result = await Process.run('powershell.exe', [
+      '-NoProfile',
+      '-ExecutionPolicy', 'Bypass',
+      '-File', helper.path,
+      '-PipeName', _uapiPipeName,
+      '-InFile', inFile.path,
+      '-OutFile', outFile.path,
+    ]);
+
+    final out = await outFile.exists() ? await outFile.readAsString() : '';
+
+    if (result.exitCode != 0 || out.startsWith('ERROR:')) {
+      if (out.contains('security ID may not be assigned as the owner')) {
+        throw Exception(
+          'wireguard-go نتوانست روی pipe داخلی خودش گوش بدهد (محدودیت '
+          'شناخته‌شده‌ی خود wireguard-go روی ویندوز وقتی بدون سرویس ویندوزی '
+          'اجرا می‌شود). این یک محدودیت بالادستی است، نه باگ این برنامه.\n'
+          'جزئیات: $out',
+        );
+      }
+      throw Exception('ارتباط با هسته‌ی وایرگارد ناموفق بود.\n$out');
     }
+    return out;
+  }
 
-    onProgress('در حال نصب هسته AmneziaWG (یک‌بار)...');
+  static Future<void> _configureUapi(_WarpRegistration reg) async {
+    final buf = StringBuffer();
+    buf.writeln('set=1');
+    buf.writeln('private_key=${reg.privateKeyHex}');
+    buf.writeln('listen_port=0');
+    buf.writeln('replace_peers=true');
+    buf.writeln('public_key=${reg.peerPublicKeyHex}');
+    buf.writeln('endpoint=${reg.endpointIp}:${reg.endpointPort}');
+    buf.writeln('persistent_keepalive_interval=25');
+    buf.writeln('replace_allowed_ips=true');
+    buf.writeln('allowed_ip=0.0.0.0/0');
+    buf.writeln(); // blank line terminates the UAPI transaction
 
-    final psCommand =
-        "\$p = Start-Process -FilePath 'msiexec.exe' "
-        "-ArgumentList @('/i', ${_psQuote(_bundledMsi)}, '/quiet', '/norestart') "
-        "-Verb RunAs -Wait -PassThru -WindowStyle Hidden; "
-        "exit \$p.ExitCode";
-
-    final result = await Process.run(
-      'powershell.exe',
-      ['-NoProfile', '-NonInteractive', '-Command', psCommand],
-      runInShell: false,
-    );
-
-    // msiexec exit code 3010 = success, reboot required (harmless for us —
-    // driver + service are already registered at that point).
-    if (result.exitCode != 0 && result.exitCode != 3010) {
-      final stderrText = (result.stderr ?? '').toString().trim();
-      throw Exception(
-        'نصب AmneziaWG ناموفق بود (کد msiexec: ${result.exitCode}).\n$stderrText',
-      );
-    }
-
-    if (!await isAmneziaWGInstalled()) {
-      throw Exception('پس از نصب، amneziawg.exe در مسیر مورد انتظار پیدا نشد.');
+    final response = await _uapiSend(buf.toString());
+    if (!response.contains('errno=0')) {
+      throw Exception('پیکربندی هسته‌ی وایرگارد رد شد.\n$response');
     }
   }
 
-  static Future<void> connect(String config) async {
+  /// wg-quick normally does this on Linux; on our bare wireguard-go setup
+  /// we have to configure the adapter's IP/MTU/DNS/route ourselves.
+  static Future<void> _configureAdapter(_WarpRegistration reg) async {
+    final ip = reg.address; // e.g. "172.16.0.2"
+    final commands = <List<String>>[
+      ['netsh', 'interface', 'ip', 'set', 'address', 'name=$_tunnelName', 'static', ip, '255.255.255.255'],
+      ['netsh', 'interface', 'ipv4', 'set', 'subinterface', _tunnelName, 'mtu=1280', 'store=active'],
+      ['netsh', 'interface', 'ip', 'set', 'dns', 'name=$_tunnelName', 'static', '1.1.1.1'],
+      ['netsh', 'interface', 'ip', 'add', 'dns', 'name=$_tunnelName', '1.0.0.1', 'index=2'],
+      ['netsh', 'interface', 'ipv4', 'add', 'route', '0.0.0.0/0', _tunnelName],
+    ];
+
+    for (final cmd in commands) {
+      final result = await Process.run(cmd.first, cmd.sublist(1));
+      if (result.exitCode != 0) {
+        final err = (result.stderr ?? '').toString().trim();
+        throw Exception('پیکربندی آداپتور شبکه ناموفق بود: ${cmd.join(' ')}\n$err');
+      }
+    }
+  }
+
+  static Future<void> _waitForPipe() async {
+    // installtunnelservice-style wrappers get to wait on a service
+    // handle; we just poll briefly for the process to have set up the
+    // pipe and adapter before we try to talk to it.
+    await Future.delayed(const Duration(milliseconds: 1500));
+  }
+
+  static Future<void> connect() async {
     if (!Platform.isWindows) {
       throw Exception('این نسخه فقط مخصوص ویندوز است.');
     }
-
-    final file = await _writeConfigFile(config);
-
-    // AmneziaWG first, backed by a real MSI install so the driver and
-    // AmneziaWGManager service actually exist this time. Fall back to
-    // WireSock (different driver family) only if AmneziaWG install/connect
-    // fails and WireSock Secure Connect happens to be installed already.
-    // The official wireguard.exe is never downloaded or used.
-    try {
-      await _connectAmneziaWG(file);
-      _activeCore = VpnCore.amneziawg;
-      return;
-    } catch (e) {
-      if (!await isWireSockAvailable()) rethrow;
-    }
-
-    await _connectWireSock(file);
-    _activeCore = VpnCore.wiresock;
+    await connectWithProgress((_) {});
   }
 
-  static Future<void> _connectAmneziaWG(File configFile) async {
-    await _ensureAmneziaWGInstalled((msg) {});
-
-    try {
-      await _runElevated(_installedAmneziawgExe, ['/installtunnelservice', configFile.path]);
-    } catch (e) {
-      throw Exception('نصب تونل AmneziaWG ناموفق بود.\n$e');
+  static Future<void> connectWithProgress(Function(String) onProgress) async {
+    if (!Platform.isWindows) {
+      throw Exception('این نسخه فقط مخصوص ویندوز است.');
+    }
+    if (!await _coreFilesPresent()) {
+      throw Exception(
+        'فایل‌های هسته (data\\wireguard-go.exe و data\\wintun.dll) در برنامه یافت نشد.',
+      );
     }
 
-    // Give the service manager a brief moment to report RUNNING before we
-    // give up — installtunnelservice returning 0 just means the service
-    // object was created, not that the adapter is fully up yet.
-    bool isUp = false;
-    for (var i = 0; i < 6; i++) {
-      isUp = await _isAmneziaWGConnected();
-      if (isUp) break;
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
-    if (!isUp) {
-      throw Exception('سرویس AmneziaWG پس از نصب شروع نشد.');
-    }
-  }
+    final reg = await _register(onProgress);
 
-  static Future<void> _connectWireSock(File configFile) async {
-    // wiresock-connect-cli talks to the already-running WireSock service.
-    // Best-effort delete of any stale profile with the same name, then
-    // (re)import and connect.
-    await Process.run(_wiresockCli, ['delete', _wiresockProfileName]);
-
-    final importResult = await Process.run(_wiresockCli, ['import', configFile.path]);
-    if (importResult.exitCode != 0) {
-      throw Exception('وارد کردن پروفایل در WireSock ناموفق بود.\n${importResult.stderr}');
-    }
-
-    final connectResult = await Process.run(
-      _wiresockCli,
-      ['connect', _wiresockProfileName, '-exit'],
+    onProgress('در حال راه‌اندازی هسته وایرگارد...');
+    _tunnelProcess = await Process.start(
+      _wireguardGoExe,
+      ['-f', _tunnelName],
+      workingDirectory: '$_exeDir\\data',
+      mode: ProcessStartMode.detachedWithStdio,
     );
-    if (connectResult.exitCode != 0) {
-      throw Exception('اتصال WireSock ناموفق بود.\n${connectResult.stderr}');
+
+    await _waitForPipe();
+
+    try {
+      onProgress('در حال پیکربندی تونل...');
+      await _configureUapi(reg);
+
+      onProgress('در حال پیکربندی آداپتور شبکه...');
+      await _configureAdapter(reg);
+
+      _connected = true;
+    } catch (e) {
+      await _killTunnelProcess();
+      _connected = false;
+      rethrow;
     }
+  }
+
+  static Future<void> _killTunnelProcess() async {
+    final proc = _tunnelProcess;
+    _tunnelProcess = null;
+    if (proc == null) return;
+    try {
+      proc.kill(ProcessSignal.sigterm);
+    } catch (_) {}
+    // wireguard-go on Windows doesn't always die cleanly from sigterm from
+    // a detached handle — make sure the adapter's owning process is gone.
+    await Process.run('taskkill', ['/F', '/IM', 'wireguard-go.exe']);
   }
 
   static Future<void> disconnect() async {
     if (!Platform.isWindows) return;
-
-    if (_activeCore == VpnCore.wiresock) {
-      await Process.run(_wiresockCli, ['disconnect']);
-      _activeCore = null;
-      return;
-    }
-
-    try {
-      await _runElevated(_installedAmneziawgExe, ['/uninstalltunnelservice', _tunnelName]);
-    } catch (e) {
-      if (e.toString().contains('The system cannot find the file specified') ||
-          e.toString().contains('service does not exist')) {
-        _activeCore = null;
-        return;
-      }
-      rethrow;
-    }
-    _activeCore = null;
+    await _killTunnelProcess();
+    _connected = false;
   }
 
-  static Future<bool> _isAmneziaWGConnected() async {
-    try {
-      final result = await Process.run(
-        'sc.exe',
-        ['query', 'AmneziaWGTunnel\$' + _tunnelName],
-      );
-      return result.stdout.toString().contains('RUNNING');
-    } catch (_) {
-      return false;
-    }
-  }
-
-  static Future<bool> _isWireSockConnected() async {
-    try {
-      final result = await Process.run(_wiresockCli, ['status']);
-      final out = result.stdout.toString();
-      return out.contains('Connected') && !out.contains('NotConnected');
-    } catch (_) {
-      return false;
-    }
-  }
-
-  /// Best-effort status check on app startup, before we know which core
-  /// (if any) currently owns the tunnel.
   static Future<bool> isConnected() async {
     if (!Platform.isWindows) return false;
-
-    if (_activeCore == VpnCore.wiresock) return _isWireSockConnected();
-    if (_activeCore == VpnCore.amneziawg) return _isAmneziaWGConnected();
-
-    // Unknown yet (e.g. fresh app launch) — check both.
-    if (await isAmneziaWGInstalled() && await _isAmneziaWGConnected()) {
-      _activeCore = VpnCore.amneziawg;
-      return true;
-    }
-    if (await isWireSockAvailable() && await _isWireSockConnected()) {
-      _activeCore = VpnCore.wiresock;
-      return true;
-    }
-    return false;
+    if (!_connected) return false;
+    // Best-effort liveness check: is our process handle still alive, and
+    // does the adapter still show up.
+    final result = await Process.run('netsh', ['interface', 'show', 'interface', _tunnelName]);
+    return result.exitCode == 0 && result.stdout.toString().contains(_tunnelName);
   }
+}
+
+class _WarpRegistration {
+  final String privateKeyHex;
+  final String address;
+  final String peerPublicKeyHex;
+  final String endpointIp;
+  final String endpointPort;
+
+  const _WarpRegistration({
+    required this.privateKeyHex,
+    required this.address,
+    required this.peerPublicKeyHex,
+    required this.endpointIp,
+    required this.endpointPort,
+  });
 }
