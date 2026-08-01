@@ -12,7 +12,7 @@ enum VpnStage {
 
 class VPNService extends ChangeNotifier {
   VpnStage _stage = VpnStage.idle;
-  String _statusMessage = 'Click to Connect';
+  String _statusMessage = 'برای اتصال کلیک کنید';
   String? _lastError;
 
   VpnStage get stage => _stage;
@@ -30,7 +30,7 @@ class VPNService extends ChangeNotifier {
   Future<void> initStatus() async {
     if (await WarpService.isConnected()) {
       _stage = VpnStage.connected;
-      _statusMessage = 'Connected';
+      _statusMessage = 'متصل شد';
       notifyListeners();
     }
   }
@@ -46,32 +46,32 @@ class VPNService extends ChangeNotifier {
       final config = await WarpService.generateConfig(_updateStatus);
 
       _stage = VpnStage.installingTunnel;
-      _updateStatus('Establishing WireGuard tunnel...');
+      _updateStatus('در حال اجرای تونل وایرگارد...');
 
       await WarpService.connect(config);
 
       final actuallyUp = await WarpService.isConnected();
       if (!actuallyUp) {
-        throw Exception('Windows service failed to start.');
+        throw Exception('سرویس ویندوز اجرا نشد.');
       }
 
       _stage = VpnStage.connected;
-      _updateStatus('Connected');
+      _updateStatus('متصل شد');
     } catch (e) {
       _stage = VpnStage.error;
       _lastError = e.toString().replaceFirst('Exception: ', '');
-      _updateStatus('Connection Failed');
+      _updateStatus('اتصال ناموفق بود');
     }
     notifyListeners();
   }
 
   Future<void> disconnect() async {
     _stage = VpnStage.disconnecting;
-    _updateStatus('Disconnecting...');
-
+    _updateStatus('در حال قطع اتصال...');
+    
     await WarpService.disconnect();
 
     _stage = VpnStage.idle;
-    _updateStatus('Disconnected');
+    _updateStatus('قطع شد');
   }
 }

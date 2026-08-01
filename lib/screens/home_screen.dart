@@ -22,6 +22,13 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final vpn = context.watch<VPNService>();
 
+    Color getStatusColor() {
+      if (vpn.isConnected) return const Color(0xFF00E5FF);
+      if (vpn.isConnecting) return const Color(0xFFFF9800);
+      if (vpn.stage == VpnStage.error) return const Color(0xFFFF3B30);
+      return Colors.white54;
+    }
+
     return Scaffold(
       body: Stack(
         children: [
@@ -29,9 +36,9 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF0D0D12), Color(0xFF15151C)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF09090B), Color(0xFF18181B)],
                 ),
               ),
             ),
@@ -40,142 +47,146 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
                   child: Row(
                     children: [
                       Icon(
                         vpn.isConnected ? Icons.shield_rounded : Icons.shield_outlined,
-                        color: vpn.isConnected ? const Color(0xFF00E5FF) : Colors.white54,
+                        color: getStatusColor(),
+                        size: 32,
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 12),
                       const Text(
-                        'OryvexVPN',
+                        'اورایوکس',
                         style: TextStyle(
                           fontFamily: 'Vazirmatn',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
                           color: Colors.white,
-                          letterSpacing: 0.5,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 30),
+                
+                const Spacer(flex: 1),
+                
+                // Status Text
                 Text(
                   vpn.statusMessage,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'Vazirmatn',
-                    fontSize: 16,
-                    color: vpn.isConnected
-                        ? const Color(0xFF00E5FF)
-                        : (vpn.stage == VpnStage.error ? Colors.redAccent : Colors.white54),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: getStatusColor(),
                   ),
                 ),
                 if (vpn.lastError != null) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Text(
-                      vpn.lastError!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontFamily: 'Vazirmatn',
-                        fontSize: 12,
-                        color: Colors.redAccent,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF3B30).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFF3B30).withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        vpn.lastError!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontFamily: 'Vazirmatn',
+                          fontSize: 13,
+                          height: 1.5,
+                          color: Color(0xFFFF3B30),
+                        ),
                       ),
                     ),
                   ),
                 ],
-                const SizedBox(height: 40),
+                
+                const SizedBox(height: 50),
 
+                // Main Connect Button
                 GestureDetector(
                   onTap: vpn.isConnecting
                       ? null
                       : () => vpn.isConnected ? vpn.disconnect() : vpn.connect(),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    width: 180,
-                    height: 180,
+                    duration: const Duration(milliseconds: 400),
+                    width: 220,
+                    height: 220,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFF1A1A22),
+                      color: const Color(0xFF18181B),
                       boxShadow: [
                         BoxShadow(
-                          color: vpn.isConnected
-                              ? const Color(0xFF00E5FF).withOpacity(0.35)
-                              : (vpn.isConnecting
-                                  ? Colors.orangeAccent.withOpacity(0.3)
-                                  : Colors.black26),
-                          blurRadius: vpn.isConnected || vpn.isConnecting ? 50 : 15,
-                          spreadRadius: vpn.isConnected || vpn.isConnecting ? 5 : 0,
+                          color: getStatusColor().withOpacity(vpn.isConnected || vpn.isConnecting ? 0.4 : 0.0),
+                          blurRadius: vpn.isConnected || vpn.isConnecting ? 60 : 20,
+                          spreadRadius: vpn.isConnected || vpn.isConnecting ? 10 : 0,
                         ),
                       ],
                       border: Border.all(
-                        color: vpn.isConnected
-                            ? const Color(0xFF00E5FF)
-                            : (vpn.isConnecting ? Colors.orangeAccent : Colors.white12),
-                        width: vpn.isConnected ? 4 : 2,
+                        color: getStatusColor().withOpacity(vpn.isConnected ? 1.0 : (vpn.isConnecting ? 0.8 : 0.1)),
+                        width: vpn.isConnected ? 6 : 2,
                       ),
                     ),
                     child: Center(
                       child: vpn.isConnecting
                           ? const SizedBox(
-                              width: 46,
-                              height: 46,
+                              width: 60,
+                              height: 60,
                               child: CircularProgressIndicator(
-                                strokeWidth: 3,
-                                color: Colors.orangeAccent,
+                                strokeWidth: 4,
+                                color: Color(0xFFFF9800),
                               ),
                             )
                           : Icon(
                               Icons.power_settings_new_rounded,
-                              size: 70,
-                              color: vpn.isConnected ? const Color(0xFF00E5FF) : Colors.white30,
+                              size: 90,
+                              color: getStatusColor(),
                             ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 40),
+                const Spacer(flex: 2),
 
-                Expanded(
-                  child: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 400),
-                    opacity: vpn.isConnected ? 1.0 : 0.0,
-                    child: vpn.isConnected
-                        ? Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1A1A22),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.white10),
-                              ),
-                              child: const Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(Icons.dns_rounded, color: Color(0xFF00E5FF), size: 18),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'WireGuard Tunnel Active',
-                                        style: TextStyle(
-                                          fontFamily: 'Vazirmatn',
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                // Bottom Status Card
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 400),
+                  opacity: vpn.isConnected ? 1.0 : 0.0,
+                  child: vpn.isConnected
+                      ? Padding(
+                          padding: const EdgeInsets.only(bottom: 40, left: 24, right: 24),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF18181B),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.3)),
                             ),
-                          )
-                        : const SizedBox(),
-                  ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.security_rounded, color: Color(0xFF00E5FF), size: 22),
+                                SizedBox(width: 12),
+                                Text(
+                                  'تونل وایرگارد فعال و ایمن است',
+                                  style: TextStyle(
+                                    fontFamily: 'Vazirmatn',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : const SizedBox(height: 98),
                 ),
               ],
             ),

@@ -3,8 +3,8 @@
 
 """
 fixer.py - OryvexVPN Auto-Fixer
-Implements automatic Cloudflare WARP key generation, endpoint sweeping,
-and real WireGuard connection without any manual configuration.
+Implements automatic Cloudflare WARP key generation, endpoint sweeping, 
+real WireGuard connection via bundled data/wireguard.exe, and a fully Persian UI.
 """
 
 import os
@@ -12,7 +12,6 @@ import re
 import sys
 from pathlib import Path
 from typing import Optional
-
 
 class FlutterProjectFixer:
     def __init__(self, project_root: Optional[str] = None):
@@ -44,6 +43,7 @@ class FlutterProjectFixer:
         main_path = self.root / "lib" / "main.dart"
         correct = """import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:warp_vpn_app/screens/home_screen.dart';
 import 'package:warp_vpn_app/services/vpn_service.dart';
 
@@ -57,18 +57,30 @@ class MyApp extends StatelessWidget {
     create: (_) => VPNService(),
     child: MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'OryvexVPN',
+      title: 'اورایوکس وی‌پی‌ان',
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('fa', 'IR'),
+      ],
+      locale: const Locale('fa', 'IR'),
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0D0D12),
+        scaffoldBackgroundColor: const Color(0xFF09090B),
         primaryColor: const Color(0xFF00E5FF),
         fontFamily: 'Vazirmatn',
         colorScheme: const ColorScheme.dark(
           primary: Color(0xFF00E5FF),
-          surface: Color(0xFF1A1A22),
+          surface: Color(0xFF18181B),
         ),
       ),
-      home: const HomeScreen(),
+      home: const Directionality(
+        textDirection: TextDirection.rtl,
+        child: HomeScreen(),
+      ),
     ),
   );
 }
@@ -87,8 +99,7 @@ import 'package:cryptography/cryptography.dart';
 
 class WarpService {
   static const _tunnelName = 'oryvexvpn';
-
-  // Hand-picked reliable endpoints
+  
   static const List<String> _endpoints = [
     "162.159.192.1", "162.159.193.1", "162.159.195.1",
     "188.114.96.1", "188.114.97.1", "188.114.98.1",
@@ -96,8 +107,14 @@ class WarpService {
     "104.16.248.249", "103.21.244.0"
   ];
 
+  static String get _wireguardExe {
+    final exePath = Platform.resolvedExecutable;
+    final exeDir = File(exePath).parent.path;
+    return '$exeDir\\\\data\\\\wireguard.exe';
+  }
+
   static Future<String> _findBestEndpoint(Function(String) onProgress) async {
-    onProgress('Scanning endpoints for best latency...');
+    onProgress('در حال جستجوی سریع‌ترین سرور...');
     final futures = _endpoints.map((ip) async {
       try {
         final start = DateTime.now();
@@ -112,13 +129,13 @@ class WarpService {
 
     final results = await Future.wait(futures);
     results.sort((a, b) => (a['latency'] as int).compareTo(b['latency'] as int));
-
+    
     final bestIp = results.first['latency'] != 9999 ? results.first['ip'] as String : _endpoints.first;
     return '$bestIp:2408';
   }
 
   static Future<String> generateConfig(Function(String) onProgress) async {
-    onProgress('Generating X25519 keypair...');
+    onProgress('در حال ساخت کلید رمزنگاری...');
     final algorithm = X25519();
     final keyPair = await algorithm.newKeyPair();
     final publicKey = await keyPair.extractPublicKey();
@@ -127,7 +144,7 @@ class WarpService {
     final pubKeyBase64 = base64Encode(publicKey.bytes);
     final privKeyBase64 = base64Encode(privateKeyBytes);
 
-    onProgress('Registering with Cloudflare WARP...');
+    onProgress('در حال ثبت‌نام در شبکه...');
     final response = await http.post(
       Uri.parse('https://api.cloudflareclient.com/v0a737/reg'),
       headers: {'Content-Type': 'application/json'},
@@ -137,12 +154,12 @@ class WarpService {
         "warp_enabled": true,
         "tos": DateTime.now().toUtc().toIso8601String(),
         "type": "Windows",
-        "locale": "en_US"
+        "locale": "fa_IR"
       }),
     ).timeout(const Duration(seconds: 15));
 
     if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Failed to register device.');
+      throw Exception('ثبت‌نام دستگاه ناموفق بود.');
     }
 
     final data = jsonDecode(response.body);
@@ -152,7 +169,7 @@ class WarpService {
 
     final bestEndpoint = await _findBestEndpoint(onProgress);
 
-    onProgress('Building configuration...');
+    onProgress('در حال آماده‌سازی کانفیگ...');
     return '''[Interface]
 PrivateKey = $privKeyBase64
 Address = $address/32
@@ -168,38 +185,32 @@ PersistentKeepalive = 25''';
 
   static Future<File> _writeConfigFile(String config) async {
     final dir = Directory.systemTemp;
-    final file = File('${dir.path}\\\\_tunnelName.conf');
+    final file = File('${dir.path}\\\\$_tunnelName.conf');
     return file.writeAsString(config);
   }
 
   static Future<bool> isWireGuardInstalled() async {
-    try {
-      final result = await Process.run('where', ['wireguard.exe']);
-      return result.exitCode == 0 &&
-          result.stdout.toString().trim().isNotEmpty;
-    } catch (_) {
-      return false;
-    }
+    return File(_wireguardExe).exists();
   }
 
   static Future<void> connect(String config) async {
     if (!Platform.isWindows) {
-      throw Exception('Currently only supports Windows.');
+      throw Exception('این نسخه فقط مخصوص ویندوز است.');
     }
     if (!await isWireGuardInstalled()) {
-      throw Exception('WireGuard for Windows is not installed. Download from wireguard.com');
+      throw Exception('هسته وایرگارد در پوشه data یافت نشد. لطفاً برنامه را مجدد دانلود کنید.');
     }
 
     final file = await _writeConfigFile(config);
     final result = await Process.run(
-      'wireguard.exe',
+      _wireguardExe,
       ['/installtunnelservice', file.path],
       runInShell: true,
     );
 
     if (result.exitCode != 0) {
       throw Exception(
-        'Failed to install tunnel. Please run this app as Administrator.\\n'
+        'نصب تونل ناموفق بود. برنامه باید با دسترسی Administrator (Run as admin) اجرا شود.\\n'
         '${result.stderr}'
       );
     }
@@ -208,7 +219,7 @@ PersistentKeepalive = 25''';
   static Future<void> disconnect() async {
     if (!Platform.isWindows) return;
     await Process.run(
-      'wireguard.exe',
+      _wireguardExe,
       ['/uninstalltunnelservice', _tunnelName],
       runInShell: true,
     );
@@ -250,7 +261,7 @@ enum VpnStage {
 
 class VPNService extends ChangeNotifier {
   VpnStage _stage = VpnStage.idle;
-  String _statusMessage = 'Click to Connect';
+  String _statusMessage = 'برای اتصال کلیک کنید';
   String? _lastError;
 
   VpnStage get stage => _stage;
@@ -268,7 +279,7 @@ class VPNService extends ChangeNotifier {
   Future<void> initStatus() async {
     if (await WarpService.isConnected()) {
       _stage = VpnStage.connected;
-      _statusMessage = 'Connected';
+      _statusMessage = 'متصل شد';
       notifyListeners();
     }
   }
@@ -284,33 +295,33 @@ class VPNService extends ChangeNotifier {
       final config = await WarpService.generateConfig(_updateStatus);
 
       _stage = VpnStage.installingTunnel;
-      _updateStatus('Establishing WireGuard tunnel...');
+      _updateStatus('در حال اجرای تونل وایرگارد...');
 
       await WarpService.connect(config);
 
       final actuallyUp = await WarpService.isConnected();
       if (!actuallyUp) {
-        throw Exception('Windows service failed to start.');
+        throw Exception('سرویس ویندوز اجرا نشد.');
       }
 
       _stage = VpnStage.connected;
-      _updateStatus('Connected');
+      _updateStatus('متصل شد');
     } catch (e) {
       _stage = VpnStage.error;
       _lastError = e.toString().replaceFirst('Exception: ', '');
-      _updateStatus('Connection Failed');
+      _updateStatus('اتصال ناموفق بود');
     }
     notifyListeners();
   }
 
   Future<void> disconnect() async {
     _stage = VpnStage.disconnecting;
-    _updateStatus('Disconnecting...');
-
+    _updateStatus('در حال قطع اتصال...');
+    
     await WarpService.disconnect();
 
     _stage = VpnStage.idle;
-    _updateStatus('Disconnected');
+    _updateStatus('قطع شد');
   }
 }
 """
@@ -345,6 +356,13 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final vpn = context.watch<VPNService>();
 
+    Color getStatusColor() {
+      if (vpn.isConnected) return const Color(0xFF00E5FF);
+      if (vpn.isConnecting) return const Color(0xFFFF9800);
+      if (vpn.stage == VpnStage.error) return const Color(0xFFFF3B30);
+      return Colors.white54;
+    }
+
     return Scaffold(
       body: Stack(
         children: [
@@ -352,9 +370,9 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF0D0D12), Color(0xFF15151C)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF09090B), Color(0xFF18181B)],
                 ),
               ),
             ),
@@ -363,142 +381,146 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
                   child: Row(
                     children: [
                       Icon(
                         vpn.isConnected ? Icons.shield_rounded : Icons.shield_outlined,
-                        color: vpn.isConnected ? const Color(0xFF00E5FF) : Colors.white54,
+                        color: getStatusColor(),
+                        size: 32,
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 12),
                       const Text(
-                        'OryvexVPN',
+                        'اورایوکس',
                         style: TextStyle(
                           fontFamily: 'Vazirmatn',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
                           color: Colors.white,
-                          letterSpacing: 0.5,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 30),
+                
+                const Spacer(flex: 1),
+                
+                // Status Text
                 Text(
                   vpn.statusMessage,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'Vazirmatn',
-                    fontSize: 16,
-                    color: vpn.isConnected
-                        ? const Color(0xFF00E5FF)
-                        : (vpn.stage == VpnStage.error ? Colors.redAccent : Colors.white54),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: getStatusColor(),
                   ),
                 ),
                 if (vpn.lastError != null) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Text(
-                      vpn.lastError!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontFamily: 'Vazirmatn',
-                        fontSize: 12,
-                        color: Colors.redAccent,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF3B30).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFF3B30).withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        vpn.lastError!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontFamily: 'Vazirmatn',
+                          fontSize: 13,
+                          height: 1.5,
+                          color: Color(0xFFFF3B30),
+                        ),
                       ),
                     ),
                   ),
                 ],
-                const SizedBox(height: 40),
+                
+                const SizedBox(height: 50),
 
+                // Main Connect Button
                 GestureDetector(
                   onTap: vpn.isConnecting
                       ? null
                       : () => vpn.isConnected ? vpn.disconnect() : vpn.connect(),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    width: 180,
-                    height: 180,
+                    duration: const Duration(milliseconds: 400),
+                    width: 220,
+                    height: 220,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFF1A1A22),
+                      color: const Color(0xFF18181B),
                       boxShadow: [
                         BoxShadow(
-                          color: vpn.isConnected
-                              ? const Color(0xFF00E5FF).withOpacity(0.35)
-                              : (vpn.isConnecting
-                                  ? Colors.orangeAccent.withOpacity(0.3)
-                                  : Colors.black26),
-                          blurRadius: vpn.isConnected || vpn.isConnecting ? 50 : 15,
-                          spreadRadius: vpn.isConnected || vpn.isConnecting ? 5 : 0,
+                          color: getStatusColor().withOpacity(vpn.isConnected || vpn.isConnecting ? 0.4 : 0.0),
+                          blurRadius: vpn.isConnected || vpn.isConnecting ? 60 : 20,
+                          spreadRadius: vpn.isConnected || vpn.isConnecting ? 10 : 0,
                         ),
                       ],
                       border: Border.all(
-                        color: vpn.isConnected
-                            ? const Color(0xFF00E5FF)
-                            : (vpn.isConnecting ? Colors.orangeAccent : Colors.white12),
-                        width: vpn.isConnected ? 4 : 2,
+                        color: getStatusColor().withOpacity(vpn.isConnected ? 1.0 : (vpn.isConnecting ? 0.8 : 0.1)),
+                        width: vpn.isConnected ? 6 : 2,
                       ),
                     ),
                     child: Center(
                       child: vpn.isConnecting
                           ? const SizedBox(
-                              width: 46,
-                              height: 46,
+                              width: 60,
+                              height: 60,
                               child: CircularProgressIndicator(
-                                strokeWidth: 3,
-                                color: Colors.orangeAccent,
+                                strokeWidth: 4,
+                                color: Color(0xFFFF9800),
                               ),
                             )
                           : Icon(
                               Icons.power_settings_new_rounded,
-                              size: 70,
-                              color: vpn.isConnected ? const Color(0xFF00E5FF) : Colors.white30,
+                              size: 90,
+                              color: getStatusColor(),
                             ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 40),
+                const Spacer(flex: 2),
 
-                Expanded(
-                  child: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 400),
-                    opacity: vpn.isConnected ? 1.0 : 0.0,
-                    child: vpn.isConnected
-                        ? Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1A1A22),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.white10),
-                              ),
-                              child: const Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(Icons.dns_rounded, color: Color(0xFF00E5FF), size: 18),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'WireGuard Tunnel Active',
-                                        style: TextStyle(
-                                          fontFamily: 'Vazirmatn',
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                // Bottom Status Card
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 400),
+                  opacity: vpn.isConnected ? 1.0 : 0.0,
+                  child: vpn.isConnected
+                      ? Padding(
+                          padding: const EdgeInsets.only(bottom: 40, left: 24, right: 24),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF18181B),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.3)),
                             ),
-                          )
-                        : const SizedBox(),
-                  ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.security_rounded, color: Color(0xFF00E5FF), size: 22),
+                                SizedBox(width: 12),
+                                Text(
+                                  'تونل وایرگارد فعال و ایمن است',
+                                  style: TextStyle(
+                                    fontFamily: 'Vazirmatn',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : const SizedBox(height: 98),
                 ),
               ],
             ),
@@ -553,7 +575,99 @@ flutter:
         - asset: assets/fonts/Vazirmatn-Regular.ttf
 """
         pubspec_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("pubspec.yaml (Added cryptography, removed unused)")
+        self.fixed_files.append("pubspec.yaml")
+        return True
+        
+    def fix_windows_main_cpp(self) -> bool:
+        main_cpp_path = self.root / "windows" / "runner" / "main.cpp"
+        if not main_cpp_path.exists():
+            return False
+        content = main_cpp_path.read_text(encoding='utf-8')
+        
+        # Adjusting the window size to a sleek mobile-like dimension (400x700)
+        content = content.replace("Win32Window::Size(1280, 720)", "Win32Window::Size(400, 700)")
+        content = content.replace("Win32Window::Point(10, 10)", "Win32Window::Point(100, 100)")
+        
+        main_cpp_path.write_text(content, encoding='utf-8')
+        self.fixed_files.append("windows/runner/main.cpp (Resized to 400x700)")
+        return True
+
+    def fix_workflow(self) -> bool:
+        workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
+        correct = """name: Build Windows App
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Precache Windows artifacts
+        run: flutter precache --windows
+
+      - name: Run flutter doctor
+        run: flutter doctor -v
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Clean previous builds
+        run: flutter clean
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Update Windows Project Files
+        run: |
+          flutter create --platforms windows --overwrite .
+          git checkout lib/ pubspec.yaml README.md
+
+      - name: Get dependencies (again after create)
+        run: flutter pub get
+
+      - name: Build Windows app
+        run: flutter build windows --release
+
+      - name: Bundle WireGuard inside data/
+        run: |
+          $ReleaseDir = "build\\windows\\x64\\runner\\Release"
+          New-Item -ItemType Directory -Force -Path "$ReleaseDir\\data"
+          Invoke-WebRequest -Uri "https://download.wireguard.com/windows-client/wireguard-amd64-0.5.3.msi" -OutFile "wg.msi"
+          Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD\\wg.msi`" /qb TARGETDIR=`"$PWD\\wg_extract`"" -Wait -NoNewWindow
+          if (Test-Path "wg_extract\\WireGuard\\wireguard.exe") {
+            Copy-Item -Path "wg_extract\\WireGuard\\wireguard.exe" -Destination "$ReleaseDir\\data\\wireguard.exe"
+            Copy-Item -Path "wg_extract\\WireGuard\\wg.exe" -Destination "$ReleaseDir\\data\\wg.exe"
+            Write-Host "WireGuard successfully bundled in data/ folder."
+          } else {
+            Write-Host "Failed to extract WireGuard."
+            exit 1
+          }
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: oryvexvpn-windows
+          path: build/windows/x64/runner/Release/
+"""
+        workflow_path.parent.mkdir(parents=True, exist_ok=True)
+        workflow_path.write_text(correct, encoding='utf-8')
+        self.fixed_files.append("build_windows.yml (Added WG MSI Extraction)")
         return True
 
     def remove_obsolete_files(self) -> bool:
@@ -591,15 +705,15 @@ flutter:
         missing = [r for r in required if r not in existing]
         if missing:
             with gi_path.open('a', encoding='utf-8') as f:
-                f.write("\n" + "\n".join(missing) + "\n")
+                f.write("\\n" + "\\n".join(missing) + "\\n")
             self.fixed_files.append(".gitignore")
         return True
 
     def run(self) -> bool:
-        print("\n" + "=" * 60)
-        print("🔧 Flutter Project Fixer - OryvexVPN (Automatic Generation)")
+        print("\\n" + "=" * 60)
+        print("🔧 Flutter Project Fixer - OryvexVPN (Automatic Generation + Bundled WG + Persian)")
         print("=" * 60)
-        print(f"\nProject Path: {self.root}\n")
+        print(f"\\nProject Path: {self.root}\\n")
 
         if not self.check_project():
             return False
@@ -609,21 +723,22 @@ flutter:
         self.fix_warp_service()
         self.fix_vpn_service()
         self.fix_home_screen()
+        self.fix_windows_main_cpp()
+        self.fix_workflow()
         self.remove_obsolete_files()
         self.scrub_tokens()
         self.update_gitignore()
 
-        print("\n" + "=" * 60)
+        print("\\n" + "=" * 60)
         print("📊 Final Report")
         print("=" * 60)
         if self.fixed_files:
-            print("\n📁 Modified/Added Files:")
+            print("\\n📁 Modified/Added Files:")
             for f in self.fixed_files:
                 print(f"  ✓ {f}")
 
-        print("\n✅ All issues resolved and parameters ported successfully. You can now execute push.py.")
+        print("\\n✅ All issues resolved. WireGuard will now be bundled automatically via GitHub Actions.")
         return True
-
 
 def main():
     try:
@@ -631,18 +746,15 @@ def main():
             root = sys.argv[1]
         else:
             root = os.getcwd()
-            
         fixer = FlutterProjectFixer(root)
         success = fixer.run()
         sys.exit(0 if success else 1)
-        
     except KeyboardInterrupt:
-        print("\n⏹️ Operation cancelled by user.")
+        print("\\n⏹️ Operation cancelled by user.")
         sys.exit(0)
     except Exception as e:
-        print(f"\n❌ Unexpected error: {e}")
+        print(f"\\n❌ Unexpected error: {e}")
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

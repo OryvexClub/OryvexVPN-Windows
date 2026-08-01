@@ -5,8 +5,7 @@ import 'package:cryptography/cryptography.dart';
 
 class WarpService {
   static const _tunnelName = 'oryvexvpn';
-
-  // Hand-picked reliable endpoints
+  
   static const List<String> _endpoints = [
     "162.159.192.1", "162.159.193.1", "162.159.195.1",
     "188.114.96.1", "188.114.97.1", "188.114.98.1",
@@ -14,8 +13,14 @@ class WarpService {
     "104.16.248.249", "103.21.244.0"
   ];
 
+  static String get _wireguardExe {
+    final exePath = Platform.resolvedExecutable;
+    final exeDir = File(exePath).parent.path;
+    return '$exeDir\\data\\wireguard.exe';
+  }
+
   static Future<String> _findBestEndpoint(Function(String) onProgress) async {
-    onProgress('Scanning endpoints for best latency...');
+    onProgress('در حال جستجوی سریع‌ترین سرور...');
     final futures = _endpoints.map((ip) async {
       try {
         final start = DateTime.now();
@@ -30,13 +35,13 @@ class WarpService {
 
     final results = await Future.wait(futures);
     results.sort((a, b) => (a['latency'] as int).compareTo(b['latency'] as int));
-
+    
     final bestIp = results.first['latency'] != 9999 ? results.first['ip'] as String : _endpoints.first;
     return '$bestIp:2408';
   }
 
   static Future<String> generateConfig(Function(String) onProgress) async {
-    onProgress('Generating X25519 keypair...');
+    onProgress('در حال ساخت کلید رمزنگاری...');
     final algorithm = X25519();
     final keyPair = await algorithm.newKeyPair();
     final publicKey = await keyPair.extractPublicKey();
@@ -45,7 +50,7 @@ class WarpService {
     final pubKeyBase64 = base64Encode(publicKey.bytes);
     final privKeyBase64 = base64Encode(privateKeyBytes);
 
-    onProgress('Registering with Cloudflare WARP...');
+    onProgress('در حال ثبت‌نام در شبکه...');
     final response = await http.post(
       Uri.parse('https://api.cloudflareclient.com/v0a737/reg'),
       headers: {'Content-Type': 'application/json'},
@@ -55,12 +60,12 @@ class WarpService {
         "warp_enabled": true,
         "tos": DateTime.now().toUtc().toIso8601String(),
         "type": "Windows",
-        "locale": "en_US"
+        "locale": "fa_IR"
       }),
     ).timeout(const Duration(seconds: 15));
 
     if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Failed to register device.');
+      throw Exception('ثبت‌نام دستگاه ناموفق بود.');
     }
 
     final data = jsonDecode(response.body);
@@ -70,7 +75,7 @@ class WarpService {
 
     final bestEndpoint = await _findBestEndpoint(onProgress);
 
-    onProgress('Building configuration...');
+    onProgress('در حال آماده‌سازی کانفیگ...');
     return '''[Interface]
 PrivateKey = $privKeyBase64
 Address = $address/32
@@ -86,38 +91,32 @@ PersistentKeepalive = 25''';
 
   static Future<File> _writeConfigFile(String config) async {
     final dir = Directory.systemTemp;
-    final file = File('${dir.path}\\_tunnelName.conf');
+    final file = File('${dir.path}\\$_tunnelName.conf');
     return file.writeAsString(config);
   }
 
   static Future<bool> isWireGuardInstalled() async {
-    try {
-      final result = await Process.run('where', ['wireguard.exe']);
-      return result.exitCode == 0 &&
-          result.stdout.toString().trim().isNotEmpty;
-    } catch (_) {
-      return false;
-    }
+    return File(_wireguardExe).exists();
   }
 
   static Future<void> connect(String config) async {
     if (!Platform.isWindows) {
-      throw Exception('Currently only supports Windows.');
+      throw Exception('این نسخه فقط مخصوص ویندوز است.');
     }
     if (!await isWireGuardInstalled()) {
-      throw Exception('WireGuard for Windows is not installed. Download from wireguard.com');
+      throw Exception('هسته وایرگارد در پوشه data یافت نشد. لطفاً برنامه را مجدد دانلود کنید.');
     }
 
     final file = await _writeConfigFile(config);
     final result = await Process.run(
-      'wireguard.exe',
+      _wireguardExe,
       ['/installtunnelservice', file.path],
       runInShell: true,
     );
 
     if (result.exitCode != 0) {
       throw Exception(
-        'Failed to install tunnel. Please run this app as Administrator.\n'
+        'نصب تونل ناموفق بود. برنامه باید با دسترسی Administrator (Run as admin) اجرا شود.\n'
         '${result.stderr}'
       );
     }
@@ -126,7 +125,7 @@ PersistentKeepalive = 25''';
   static Future<void> disconnect() async {
     if (!Platform.isWindows) return;
     await Process.run(
-      'wireguard.exe',
+      _wireguardExe,
       ['/uninstalltunnelservice', _tunnelName],
       runInShell: true,
     );
