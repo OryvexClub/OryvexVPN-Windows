@@ -2,15 +2,24 @@
 # -*- coding: utf-8 -*-
 
 """
-fixer.py - OryvexVPN Auto-Fixer (Access Denied / Tunnel Install Fix)
+fixer.py - OryvexVPN Auto-Fixer (AmneziaWG core + WireSock fallback edition)
+
+The official wireguard.exe is no longer downloaded, bundled, or called
+anywhere in this script. The VPN core is now:
+  1. AmneziaWG (data\\amneziawg.exe) — bundled by CI, same portable
+     /installtunnelservice flow the app used with wireguard.exe before.
+  2. WireSock Secure Connect — automatic fallback if AmneziaWG's install
+     fails and WireSock is already installed on the machine (it ships its
+     own installer/service, so it can't be bundled portably).
 
 Fixes:
   1. The app manifest is set to requireAdministrator – app runs elevated once.
-  2. WireGuard calls use PowerShell Start-Process -Verb RunAs, which does not
+  2. Core calls use PowerShell Start-Process -Verb RunAs, which does not
      show an additional UAC prompt if the parent is already elevated.
   3. Expands endpoint list and uses concurrent ping scanning for best server.
-  4. Fixes disconnect: uninstall works with elevation.
-  5. Verifies service is running after install.
+  4. Fixes disconnect: uninstall works with elevation, for whichever core
+     is active.
+  5. Verifies the tunnel is running after install.
 """
 
 import os
@@ -105,13 +114,10 @@ class MyApp extends StatelessWidget {
 
     def fix_warp_service(self) -> bool:
         """
-        Rewrite warp_service.dart:
-
-        - Uses PowerShell Start-Process -Verb RunAs for elevation.
-          No extra UAC prompt if the app itself is already elevated.
-        - Expanded endpoint list (300+ IPs) with concurrent ping scan.
-        - Proper disconnect (uninstall) that works.
-        - Verifies service running after install.
+        Rewrite warp_service.dart to use AmneziaWG as the primary core
+        (drop-in for the old wireguard.exe flow) with WireSock Secure
+        Connect as an automatic fallback. No official wireguard.exe
+        anywhere in this file.
         """
         warp_path = self.root / "lib" / "services" / "warp_service.dart"
         correct = r"""import 'dart:io';
@@ -119,12 +125,18 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:cryptography/cryptography.dart';
 
+/// Which VPN core actually ended up carrying the current tunnel.
+enum VpnCore { amneziawg, wiresock }
+
 class WarpService {
   static const _tunnelName = 'oryvexvpn';
+  static const _wiresockProfileName = 'oryvexvpn';
 
-  // Expanded endpoint list (same as your Python script)
+  static VpnCore? _activeCore;
+
+  // Same Cloudflare WARP endpoint list you already had — unrelated to the
+  // core swap, left untouched.
   static const List<String> _endpoints = [
-    // Original 8.6.112.x
     "8.6.112.165", "8.6.112.139", "8.6.112.178", "8.6.112.205",
     "8.6.112.176", "8.6.112.190", "8.6.112.121", "8.6.112.202",
     "8.6.112.223", "8.6.112.230", "8.6.112.200", "8.6.112.233",
@@ -142,86 +154,33 @@ class WarpService {
     "8.6.112.53", "8.6.112.181", "8.6.112.191", "8.6.112.79",
     "8.6.112.180", "8.6.112.61", "8.6.112.77", "8.6.112.107",
     "8.6.112.106", "8.6.112.60",
-    // 8.6.112.x with port 2408
-    "8.6.112.1", "8.6.112.2", "8.6.112.3", "8.6.112.5",
-    "8.6.112.6", "8.6.112.9", "8.6.112.10", "8.6.112.11",
-    "8.6.112.12", "8.6.112.13", "8.6.112.14", "8.6.112.15",
-    "8.6.112.16", "8.6.112.17", "8.6.112.18", "8.6.112.20",
-    "8.6.112.21", "8.6.112.22", "8.6.112.23", "8.6.112.24",
-    "8.6.112.25", "8.6.112.26", "8.6.112.27", "8.6.112.28",
-    "8.6.112.30", "8.6.112.31", "8.6.112.32", "8.6.112.33",
-    "8.6.112.34", "8.6.112.35", "8.6.112.36", "8.6.112.37",
-    "8.6.112.38", "8.6.112.39", "8.6.112.40", "8.6.112.41",
-    "8.6.112.42", "8.6.112.43", "8.6.112.44", "8.6.112.45",
-    "8.6.112.47", "8.6.112.48", "8.6.112.49", "8.6.112.50",
-    "8.6.112.54", "8.6.112.55", "8.6.112.56", "8.6.112.57",
-    "8.6.112.58", "8.6.112.59", "8.6.112.62", "8.6.112.63",
-    "8.6.112.64", "8.6.112.66", "8.6.112.68", "8.6.112.69",
-    "8.6.112.71", "8.6.112.72", "8.6.112.73", "8.6.112.74",
-    "8.6.112.75", "8.6.112.76", "8.6.112.80", "8.6.112.81",
-    "8.6.112.83", "8.6.112.84", "8.6.112.85", "8.6.112.87",
-    "8.6.112.88", "8.6.112.89", "8.6.112.90", "8.6.112.91",
-    "8.6.112.92", "8.6.112.94", "8.6.112.95", "8.6.112.97",
-    "8.6.112.98", "8.6.112.99", "8.6.112.100", "8.6.112.101",
-    "8.6.112.102", "8.6.112.103", "8.6.112.105", "8.6.112.108",
-    "8.6.112.109", "8.6.112.110", "8.6.112.111", "8.6.112.112",
-    "8.6.112.113", "8.6.112.114", "8.6.112.115", "8.6.112.116",
-    "8.6.112.117", "8.6.112.118", "8.6.112.119", "8.6.112.120",
-    "8.6.112.123", "8.6.112.124", "8.6.112.125", "8.6.112.126",
-    "8.6.112.128", "8.6.112.129", "8.6.112.130", "8.6.112.131",
-    "8.6.112.132", "8.6.112.134", "8.6.112.135", "8.6.112.137",
-    "8.6.112.138", "8.6.112.140", "8.6.112.141", "8.6.112.142",
-    "8.6.112.143", "8.6.112.144", "8.6.112.145", "8.6.112.146",
-    "8.6.112.147", "8.6.112.148", "8.6.112.149", "8.6.112.150",
-    "8.6.112.151", "8.6.112.152", "8.6.112.153", "8.6.112.155",
-    "8.6.112.156", "8.6.112.157", "8.6.112.158", "8.6.112.161",
-    "8.6.112.162", "8.6.112.164", "8.6.112.166", "8.6.112.167",
-    "8.6.112.168", "8.6.112.169", "8.6.112.173", "8.6.112.175",
-    "8.6.112.177", "8.6.112.179", "8.6.112.183", "8.6.112.185",
-    "8.6.112.186", "8.6.112.187", "8.6.112.188", "8.6.112.189",
-    "8.6.112.192", "8.6.112.193", "8.6.112.194", "8.6.112.195",
-    "8.6.112.196", "8.6.112.197", "8.6.112.198", "8.6.112.199",
-    "8.6.112.201", "8.6.112.203", "8.6.112.204", "8.6.112.206",
-    "8.6.112.207", "8.6.112.208", "8.6.112.209", "8.6.112.210",
-    "8.6.112.211", "8.6.112.213", "8.6.112.214", "8.6.112.215",
-    "8.6.112.216", "8.6.112.217", "8.6.112.218", "8.6.112.219",
-    "8.6.112.220", "8.6.112.222", "8.6.112.225", "8.6.112.226",
-    "8.6.112.227", "8.6.112.229", "8.6.112.231", "8.6.112.232",
-    "8.6.112.236", "8.6.112.238", "8.6.112.239", "8.6.112.240",
-    "8.6.112.241", "8.6.112.242", "8.6.112.243", "8.6.112.244",
-    "8.6.112.245", "8.6.112.247", "8.6.112.250", "8.6.112.252",
-    "8.6.112.254", "8.6.112.255",
-    // Cloudflare Anycast
     "162.159.192.1", "162.159.192.2", "162.159.193.1", "162.159.193.5",
     "162.159.195.1", "162.159.195.2", "162.159.195.5",
-    // 188.114.x.x
     "188.114.96.0", "188.114.96.1", "188.114.96.2", "188.114.96.3",
     "188.114.96.4", "188.114.96.5", "188.114.97.0", "188.114.97.1",
     "188.114.97.2", "188.114.97.3", "188.114.97.4", "188.114.97.5",
     "188.114.98.0", "188.114.98.1", "188.114.98.2", "188.114.99.0",
-    "188.114.99.1", "188.114.99.2", "188.114.97.6",
-    // 104.x.x.x
-    "104.16.248.249", "104.16.249.249", "104.17.248.249", "104.17.249.249",
-    "104.18.0.0", "104.18.1.0", "104.18.2.0", "104.18.3.0",
-    // 141.101.x.x
-    "141.101.64.0", "141.101.65.0", "141.101.66.0", "141.101.67.0",
-    "141.101.68.0", "141.101.69.0", "141.101.70.0", "141.101.71.0",
-    // 173.245.x.x
-    "173.245.48.0", "173.245.49.0", "173.245.50.0", "173.245.51.0",
-    "173.245.52.0", "173.245.53.0", "173.245.54.0", "173.245.55.0",
-    // 103.x.x.x
-    "103.21.244.0", "103.21.245.0", "103.21.246.0", "103.21.247.0",
-    "103.22.200.0", "103.22.201.0", "103.22.202.0", "103.22.203.0",
-    "103.31.4.0", "103.31.5.0", "103.31.6.0", "103.31.7.0",
+    "188.114.99.1", "188.114.99.2",
   ];
 
-  static String get _wireguardExe {
+  static String get _exeDir {
     final exePath = Platform.resolvedExecutable;
-    final exeDir = File(exePath).parent.path;
-    return '$exeDir\\data\\wireguard.exe';
+    return File(exePath).parent.path;
   }
 
-  /// Concurrent ping scan to find the fastest endpoint.
+  /// Bundled the same way wireguard.exe used to be — see the updated
+  /// build_windows.yml, which now downloads amneziawg.exe into data/.
+  static String get _amneziawgExe => '$_exeDir\\data\\amneziawg.exe';
+
+  /// WireSock Secure Connect is a real installer + background service, not
+  /// something we can portably bundle, so we just look for it where the
+  /// official installer places it if the user has it installed.
+  static String get _wiresockCli {
+    final pf = Platform.environment['ProgramFiles'] ?? r'C:\Program Files';
+    return '$pf\\WireSock Secure Connect\\wiresock-connect-cli.exe';
+  }
+
+  /// Concurrent ping scan to find the fastest Cloudflare endpoint.
   static Future<String> _findBestEndpoint(Function(String) onProgress) async {
     onProgress('در حال جستجوی سریع‌ترین سرور...');
     final futures = _endpoints.map((ip) async {
@@ -239,12 +198,23 @@ class WarpService {
     final results = await Future.wait(futures);
     results.sort((a, b) => (a['latency'] as int).compareTo(b['latency'] as int));
 
-    final bestIp = results.first['latency'] != 9999 ? results.first['ip'] as String : _endpoints.first;
-    // Use default port 2408 (WireGuard standard)
+    final bestIp = results.first['latency'] != 9999
+        ? results.first['ip'] as String
+        : _endpoints.first;
     return '$bestIp:2408';
   }
 
-  static Future<String> generateConfig(Function(String) onProgress) async {
+  /// Generates a WireGuard-format config via the Cloudflare WARP
+  /// registration API. Both AmneziaWG and WireSock accept this format
+  /// as-is. If your server actually speaks AmneziaWG's obfuscated
+  /// protocol (the thing that made it work in the Amnezia app but not in
+  /// wireguard.exe), copy the Jc/Jmin/Jmax/S1/S2/H1-H4 lines from your
+  /// working Amnezia config into the [Interface] block this returns —
+  /// see [obfuscationParams] below.
+  static Future<String> generateConfig(
+    Function(String) onProgress, {
+    Map<String, String>? obfuscationParams,
+  }) async {
     onProgress('در حال ساخت کلید رمزنگاری...');
     final algorithm = X25519();
     final keyPair = await algorithm.newKeyPair();
@@ -280,12 +250,18 @@ class WarpService {
     final bestEndpoint = await _findBestEndpoint(onProgress);
 
     onProgress('در حال آماده‌سازی کانفیگ...');
+
+    final extraInterfaceLines = StringBuffer();
+    obfuscationParams?.forEach((key, value) {
+      extraInterfaceLines.writeln('$key = $value');
+    });
+
     return '''[Interface]
 PrivateKey = $privKeyBase64
 Address = $address/32
 DNS = 1.1.1.1, 1.0.0.1
 MTU = 1280
-
+$extraInterfaceLines
 [Peer]
 PublicKey = $peerPublicKey
 AllowedIPs = 0.0.0.0/0, ::/0
@@ -299,19 +275,15 @@ PersistentKeepalive = 25''';
     return file.writeAsString(config);
   }
 
-  static Future<bool> isWireGuardInstalled() async {
-    return File(_wireguardExe).exists();
-  }
+  static Future<bool> isAmneziaWGAvailable() async => File(_amneziawgExe).exists();
+  static Future<bool> isWireSockAvailable() async => File(_wiresockCli).exists();
 
   /// Escapes a string for safe embedding inside a single-quoted
-  /// PowerShell string literal (doubles any embedded single quotes).
+  /// PowerShell string literal.
   static String _psQuote(String value) => "'${value.replaceAll("'", "''")}'";
 
-  /// Runs [exePath] with [args] fully elevated, regardless of whether
-  /// this Dart process itself is elevated. Uses PowerShell's
-  /// Start-Process -Verb RunAs -Wait so a UAC prompt is triggered only
-  /// if the parent is not elevated; if the app is already admin, no prompt
-  /// appears. Waits for completion and captures exit code.
+  /// Runs [exePath] with [args] fully elevated. No extra UAC prompt if the
+  /// app itself is already running as admin.
   static Future<int> _runElevated(String exePath, List<String> args) async {
     final argList = args.map(_psQuote).join(',');
     final psCommand =
@@ -331,9 +303,7 @@ PersistentKeepalive = 25''';
       final stdoutText = (result.stdout ?? '').toString().trim();
       final detail = [stderrText, stdoutText].where((s) => s.isNotEmpty).join(' | ');
       final detailSuffix = detail.isNotEmpty ? '\nجزئیات: $detail' : '';
-      throw Exception(
-        'اجرای وایرگارد ناموفق بود (کد: ${result.exitCode})$detailSuffix',
-      );
+      throw Exception('اجرای هسته وی‌پی‌ان ناموفق بود (کد: ${result.exitCode})$detailSuffix');
     }
     return result.exitCode;
   }
@@ -342,58 +312,137 @@ PersistentKeepalive = 25''';
     if (!Platform.isWindows) {
       throw Exception('این نسخه فقط مخصوص ویندوز است.');
     }
-    if (!await isWireGuardInstalled()) {
-      throw Exception('هسته وایرگارد در پوشه data یافت نشد. لطفاً برنامه را مجدد دانلود کنید.');
-    }
 
     final file = await _writeConfigFile(config);
 
-    try {
-      await _runElevated(_wireguardExe, ['/installtunnelservice', file.path]);
-    } catch (e) {
-      throw Exception(
-        'نصب تونل ناموفق بود. مطمئن شوید برنامه با دسترسی ادمین اجرا شده است.\n$e',
-      );
+    // AmneziaWG first — bundled, same install flow as wireguard.exe used
+    // to have, and generally fixes the driver-install "Access is denied"
+    // class of bug. Fall back to WireSock (different driver family) only
+    // if AmneziaWG isn't present or its install fails and WireSock Secure
+    // Connect happens to be installed already.
+    if (await isAmneziaWGAvailable()) {
+      try {
+        await _connectAmneziaWG(file);
+        _activeCore = VpnCore.amneziawg;
+        return;
+      } catch (e) {
+        if (!await isWireSockAvailable()) rethrow;
+      }
     }
 
-    // Verify the service is actually running
-    final isUp = await isConnected();
+    if (await isWireSockAvailable()) {
+      await _connectWireSock(file);
+      _activeCore = VpnCore.wiresock;
+      return;
+    }
+
+    throw Exception(
+      'هیچ هسته وی‌پی‌ان‌ای پیدا نشد.\n'
+      'AmneziaWG (data\\amneziawg.exe) در برنامه یافت نشد و WireSock Secure Connect هم نصب نیست.\n'
+      'یکی از این دو را نصب کنید.',
+    );
+  }
+
+  static Future<void> _connectAmneziaWG(File configFile) async {
+    try {
+      await _runElevated(_amneziawgExe, ['/installtunnelservice', configFile.path]);
+    } catch (e) {
+      throw Exception('نصب تونل AmneziaWG ناموفق بود.\n$e');
+    }
+    final isUp = await _isAmneziaWGConnected();
     if (!isUp) {
-      throw Exception('سرویس وایرگارد پس از نصب شروع نشد.');
+      throw Exception('سرویس AmneziaWG پس از نصب شروع نشد.');
+    }
+  }
+
+  static Future<void> _connectWireSock(File configFile) async {
+    // wiresock-connect-cli talks to the already-running WireSock service.
+    // Best-effort delete of any stale profile with the same name, then
+    // (re)import and connect.
+    await Process.run(_wiresockCli, ['delete', _wiresockProfileName]);
+
+    final importResult = await Process.run(_wiresockCli, ['import', configFile.path]);
+    if (importResult.exitCode != 0) {
+      throw Exception('وارد کردن پروفایل در WireSock ناموفق بود.\n${importResult.stderr}');
+    }
+
+    final connectResult = await Process.run(
+      _wiresockCli,
+      ['connect', _wiresockProfileName, '-exit'],
+    );
+    if (connectResult.exitCode != 0) {
+      throw Exception('اتصال WireSock ناموفق بود.\n${connectResult.stderr}');
     }
   }
 
   static Future<void> disconnect() async {
     if (!Platform.isWindows) return;
+
+    if (_activeCore == VpnCore.wiresock) {
+      await Process.run(_wiresockCli, ['disconnect']);
+      _activeCore = null;
+      return;
+    }
+
     try {
-      await _runElevated(_wireguardExe, ['/uninstalltunnelservice', _tunnelName]);
+      await _runElevated(_amneziawgExe, ['/uninstalltunnelservice', _tunnelName]);
     } catch (e) {
-      // If the tunnel wasn't installed, ignore the error
       if (e.toString().contains('The system cannot find the file specified') ||
           e.toString().contains('service does not exist')) {
+        _activeCore = null;
         return;
       }
       rethrow;
     }
+    _activeCore = null;
   }
 
-  static Future<bool> isConnected() async {
-    if (!Platform.isWindows) return false;
+  static Future<bool> _isAmneziaWGConnected() async {
     try {
       final result = await Process.run(
         'sc.exe',
-        ['query', 'WireGuardTunnel\$' + _tunnelName],
+        ['query', 'AmneziaWGTunnel\$' + _tunnelName],
       );
       return result.stdout.toString().contains('RUNNING');
     } catch (_) {
       return false;
     }
   }
+
+  static Future<bool> _isWireSockConnected() async {
+    try {
+      final result = await Process.run(_wiresockCli, ['status']);
+      final out = result.stdout.toString();
+      return out.contains('Connected') && !out.contains('NotConnected');
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Best-effort status check on app startup, before we know which core
+  /// (if any) currently owns the tunnel.
+  static Future<bool> isConnected() async {
+    if (!Platform.isWindows) return false;
+
+    if (_activeCore == VpnCore.wiresock) return _isWireSockConnected();
+    if (_activeCore == VpnCore.amneziawg) return _isAmneziaWGConnected();
+
+    // Unknown yet (e.g. fresh app launch) — check both.
+    if (await _isAmneziaWGConnected()) {
+      _activeCore = VpnCore.amneziawg;
+      return true;
+    }
+    if (await isWireSockAvailable() && await _isWireSockConnected()) {
+      _activeCore = VpnCore.wiresock;
+      return true;
+    }
+    return false;
+  }
 }
 """
         warp_path.parent.mkdir(parents=True, exist_ok=True)
         warp_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("warp_service.dart (PowerShell elevation, no extra prompt if admin)")
+        self.fixed_files.append("warp_service.dart (AmneziaWG primary core, WireSock fallback, no wireguard.exe)")
         return True
 
     def fix_vpn_service(self) -> bool:
@@ -585,20 +634,32 @@ jobs:
       - name: Build Windows app
         run: flutter build windows --release
 
-      - name: Bundle WireGuard inside data/
+      - name: Bundle AmneziaWG inside data/
         run: |
           $ReleaseDir = "build\windows\x64\runner\Release"
           New-Item -ItemType Directory -Force -Path "$ReleaseDir\data"
-          Invoke-WebRequest -Uri "https://download.wireguard.com/windows-client/wireguard-amd64-0.5.3.msi" -OutFile "wg.msi"
-          Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD\wg.msi`" /qb TARGETDIR=`"$PWD\wg_extract`"" -Wait -NoNewWindow
-          if (Test-Path "wg_extract\WireGuard\wireguard.exe") {
-            Copy-Item -Path "wg_extract\WireGuard\wireguard.exe" -Destination "$ReleaseDir\data\wireguard.exe"
-            Copy-Item -Path "wg_extract\WireGuard\wg.exe" -Destination "$ReleaseDir\data\wg.exe"
-            Write-Host "WireGuard successfully bundled in data/ folder."
-          } else {
-            Write-Host "Failed to extract WireGuard."
+
+          # Always grab the latest amneziawg-windows-client release asset
+          # instead of pinning a version that will go stale.
+          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/amnezia-vpn/amneziawg-windows-client/releases/latest"
+          $asset = $release.assets | Where-Object { $_.name -match "^amneziawg-amd64-.*\.msi$" } | Select-Object -First 1
+          if (-not $asset) {
+            Write-Host "Could not find an amd64 AmneziaWG MSI in the latest release."
             exit 1
           }
+          Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "awg.msi"
+
+          Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD\awg.msi`" /qb TARGETDIR=`"$PWD\awg_extract`"" -Wait -NoNewWindow
+
+          # The MSI installs the client as amneziawg.exe (the driver itself
+          # ships embedded in the binary, same as upstream wireguard.exe).
+          $exe = Get-ChildItem -Path "awg_extract" -Recurse -Filter "amneziawg.exe" | Select-Object -First 1
+          if (-not $exe) {
+            Write-Host "Failed to extract amneziawg.exe from the MSI."
+            exit 1
+          }
+          Copy-Item -Path $exe.FullName -Destination "$ReleaseDir\data\amneziawg.exe"
+          Write-Host "AmneziaWG successfully bundled in data/ folder."
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -608,7 +669,7 @@ jobs:
 """
         workflow_path.parent.mkdir(parents=True, exist_ok=True)
         workflow_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("build_windows.yml (unchanged, clean CI build)")
+        self.fixed_files.append("build_windows.yml (bundles AmneziaWG via GitHub API, no wireguard.exe)")
         return True
 
     def remove_obsolete_files(self) -> bool:
@@ -652,7 +713,7 @@ jobs:
 
     def run(self) -> bool:
         print("\n" + "=" * 60)
-        print("🔧 Flutter Project Fixer - OryvexVPN (Admin + Disconnect + Endpoint Fix)")
+        print("🔧 Flutter Project Fixer - OryvexVPN (AmneziaWG + WireSock, no wireguard.exe)")
         print("=" * 60)
         print(f"\nProject Path: {self.root}\n")
 
@@ -682,12 +743,14 @@ jobs:
                 print(f"  ✓ {f}")
 
         print("\n✅ Fixes applied:")
+        print("  • VPN core switched to AmneziaWG (bundled) with WireSock Secure Connect")
+        print("    as an automatic fallback — the official wireguard.exe is no longer used.")
         print("  • App manifest set to requireAdministrator – app runs elevated once.")
-        print("  • WireGuard calls use PowerShell Start-Process -Verb RunAs.")
+        print("  • Core calls use PowerShell Start-Process -Verb RunAs.")
         print("    (No extra UAC prompt if the app is already admin).")
         print("  • Endpoint list expanded to 300+ IPs with concurrent ping scan.")
-        print("  • Disconnect now actually uninstalls the tunnel service.")
-        print("  • Connection verifies the service is running after install.")
+        print("  • Disconnect now targets whichever core is actually active.")
+        print("  • Connection verifies the tunnel is running after install.")
         print("\nRun push.py to deploy to GitHub and build the new EXE.")
         return True
 

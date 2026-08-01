@@ -28,20 +28,32 @@ jobs:
       - name: Build Windows app
         run: flutter build windows --release
 
-      - name: Bundle WireGuard inside data/
+      - name: Bundle AmneziaWG inside data/
         run: |
           $ReleaseDir = "build\windows\x64\runner\Release"
           New-Item -ItemType Directory -Force -Path "$ReleaseDir\data"
-          Invoke-WebRequest -Uri "https://download.wireguard.com/windows-client/wireguard-amd64-0.5.3.msi" -OutFile "wg.msi"
-          Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD\wg.msi`" /qb TARGETDIR=`"$PWD\wg_extract`"" -Wait -NoNewWindow
-          if (Test-Path "wg_extract\WireGuard\wireguard.exe") {
-            Copy-Item -Path "wg_extract\WireGuard\wireguard.exe" -Destination "$ReleaseDir\data\wireguard.exe"
-            Copy-Item -Path "wg_extract\WireGuard\wg.exe" -Destination "$ReleaseDir\data\wg.exe"
-            Write-Host "WireGuard successfully bundled in data/ folder."
-          } else {
-            Write-Host "Failed to extract WireGuard."
+
+          # Always grab the latest amneziawg-windows-client release asset
+          # instead of pinning a version that will go stale.
+          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/amnezia-vpn/amneziawg-windows-client/releases/latest"
+          $asset = $release.assets | Where-Object { $_.name -match "^amneziawg-amd64-.*\.msi$" } | Select-Object -First 1
+          if (-not $asset) {
+            Write-Host "Could not find an amd64 AmneziaWG MSI in the latest release."
             exit 1
           }
+          Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "awg.msi"
+
+          Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD\awg.msi`" /qb TARGETDIR=`"$PWD\awg_extract`"" -Wait -NoNewWindow
+
+          # The MSI installs the client as amneziawg.exe (the driver itself
+          # ships embedded in the binary, same as upstream wireguard.exe).
+          $exe = Get-ChildItem -Path "awg_extract" -Recurse -Filter "amneziawg.exe" | Select-Object -First 1
+          if (-not $exe) {
+            Write-Host "Failed to extract amneziawg.exe from the MSI."
+            exit 1
+          }
+          Copy-Item -Path $exe.FullName -Destination "$ReleaseDir\data\amneziawg.exe"
+          Write-Host "AmneziaWG successfully bundled in data/ folder."
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
