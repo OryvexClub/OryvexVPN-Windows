@@ -32,7 +32,9 @@ class WarpService {
       try {
         final start = DateTime.now();
         final res = await Process.run('ping', ['-n', '1', '-w', '1000', ip]);
-        if (res.exitCode == 0) return {'ip': ip, 'latency': DateTime.now().difference(start).inMilliseconds};
+        if (res.exitCode == 0) {
+          return {'ip': ip, 'latency': DateTime.now().difference(start).inMilliseconds};
+        }
       } catch (_) {}
       return {'ip': ip, 'latency': 9999};
     });
@@ -65,7 +67,9 @@ class WarpService {
       }),
     ).timeout(const Duration(seconds: 15));
 
-    if (response.statusCode != 200 && response.statusCode != 201) throw Exception('ثبت‌نام ناموفق بود.');
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('ثبت‌نام دستگاه ناموفق بود.');
+    }
 
     final data = jsonDecode(response.body);
     final peer = data['config']['peers'][0];
@@ -105,15 +109,17 @@ class WarpService {
     final confFile = File('$confDir\\$_tunnelName.conf');
     await confFile.writeAsString(_buildConf(reg));
 
-    // از آنجا که برنامه دسترسی ادمین دارد، مستقیما بدون PowerShell فراخوانی می‌کنیم
+    // از آنجا که فایل EXE مستقیماً با دسترسی ادمین باز شده است، نیازی به PowerShell و تأخیر آن نیست
     if (await _serviceExists()) {
       await Process.run(_vpnExe, ['/uninstalltunnelservice', _tunnelName]);
       await Future.delayed(const Duration(milliseconds: 300));
     }
 
     final result = await Process.run(_vpnExe, ['/installtunnelservice', confFile.path]);
-    if (result.exitCode != 0) throw Exception('خطا در اجرای سرویس هسته.');
-    
+
+    if (result.exitCode != 0) {
+      throw Exception('خطا در اجرای سرویس هسته.');
+    }
     await Future.delayed(const Duration(milliseconds: 500));
   }
 
@@ -138,7 +144,8 @@ class WarpService {
   }
 
   static Future<bool> isConnected() async {
-    if (!Platform.isWindows || !_connected) return false;
+    if (!Platform.isWindows) return false;
+    // حتی در صورتی که _connected در مموری False باشد، وضعیت واقعی سرویس بررسی شود
     return await _serviceExists();
   }
 }

@@ -9,6 +9,7 @@ import 'services/network_manager.dart';
 import 'services/tray_service.dart';
 import 'services/window_manager_service.dart';
 import 'services/vpn_service.dart';
+import 'services/warp_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,13 +51,12 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
     super.dispose();
   }
 
-  // جلوگیری از هنگ کردن با متوقف کردن تمیز تونل پیش از بسته شدن پنجره
+  // جلوگیری از خطای Not Responding با متوقف کردن فوری سرویس به صورت Static
   @override
   void onWindowClose() async {
-    final vpn = context.read<VPNService>();
-    if (vpn.isConnected || vpn.isConnecting) {
-      await vpn.disconnect();
-    }
+    try {
+      await WarpService.disconnect();
+    } catch (_) {}
     await windowManager.destroy(); // خروج قطعی
   }
 
@@ -67,13 +67,13 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
         return Directionality(
-          textDirection: TextDirection.rtl, // چینش راست‌چین مانند تصویر
+          textDirection: TextDirection.rtl,
           child: child!,
         );
       },
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0F0F0F), // پس‌زمینه دارک مینیمال
+        scaffoldBackgroundColor: const Color(0xFF0A0A0A),
         fontFamily: GoogleFonts.vazirmatn().fontFamily,
         textTheme: GoogleFonts.vazirmatnTextTheme(ThemeData.dark().textTheme),
       ),

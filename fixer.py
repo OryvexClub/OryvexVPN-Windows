@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-fixer.py - OryvexVPN Ultimate Core & UI Fixer
+fixer.py - OryvexVPN Ultimate Fixer (AmneziaWG + UAC Manifest + Hang Fix)
 
-- رفع مشکل UAC (درخواست ادمین در شروع خود برنامه به جای زمان اتصال)
-- رفع خطای Not Responding هنگام خروج (بستن تمیز تونل قبل از خروج)
-- اجرای مستقیم و سریع هسته AmneziaWG بدون PowerShell
-- طراحی UI/UX نئون فیروزه‌ای منطبق بر تصویر درخواستی
+- تزریق مستقیم RequireAdministrator به Manifest ویندوز در سرور گیت‌هاب.
+- حل قطعی مشکل Not Responding هنگام خروج از برنامه.
+- اجرای مستقیم و سریع AmneziaWG بدون تأخیر PowerShell.
+- طراحی UI نئون فیروزه‌ای.
 """
 
 import os
@@ -54,21 +54,83 @@ class FlutterProjectFixer:
             return False
         return True
 
-    # 1. تغییر فایل Manifest ویندوز برای درخواست UAC در زمان اجرای اپلیکیشن
-    def fix_windows_manifest(self) -> bool:
-        path = self.root / "windows" / "runner" / "app.manifest"
-        if not path.exists(): return False
+    # 1. گیت‌هاب اکشن: اضافه کردن مرحله تبدیل اجباری فایل exe به حالت Run as Administrator
+    def fix_ci_workflow(self) -> bool:
+        path = self.root / ".github" / "workflows" / "build_windows.yml"
+        if not path.parent.exists(): path.parent.mkdir(parents=True, exist_ok=True)
 
-        content = path.read_text(encoding='utf-8')
-        new_content = re.sub(r'level="asInvoker"', r'level="requireAdministrator"', content)
+        content = r'''name: Build Windows App (AmneziaWG + UAC)
 
-        if new_content != content:
-            path.write_text(new_content, encoding='utf-8')
-            self.fixed_files.append("windows/runner/app.manifest (ارتقا سطح دسترسی به Administrator در اجرای اولیه برنامه)")
-            return True
-        return False
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
 
-    # 2. مدیریت رویداد بسته شدن پنجره در Main برای جلوگیری از Not Responding
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.2'
+          channel: 'stable'
+          cache: true
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Force UAC Administrator (Manifest Injection)
+        run: |
+          $manifest = "windows\runner\app.manifest"
+          if (Test-Path $manifest) {
+            (Get-Content $manifest) -replace 'level="asInvoker"', 'level="requireAdministrator"' | Set-Content $manifest
+            Write-Host "Manifest updated to requireAdministrator."
+          }
+
+      - name: Build Windows app
+        run: flutter build windows --release
+
+      - name: Download and extract AmneziaWG
+        run: |
+          $wgVersion = "2.0.2"
+          $msiUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/$wgVersion/amneziawg-amd64-$wgVersion.msi"
+          Invoke-WebRequest -Uri $msiUrl -OutFile "amneziawg.msi"
+          
+          $extractDir = "$PWD\amneziawg_extracted"
+          New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
+          
+          $msiExecArgs = @("/a", "`"$PWD\amneziawg.msi`"", "/qn", "TARGETDIR=`"$extractDir`"")
+          Start-Process msiexec.exe -ArgumentList $msiExecArgs -Wait -NoNewWindow
+          
+          $wgExe = Get-ChildItem -Path $extractDir -Filter "amneziawg.exe" -Recurse | Select-Object -First 1
+          if (-not $wgExe) {
+            Write-Host "Failed to extract amneziawg.exe from MSI."
+            exit 1
+          }
+          Copy-Item $wgExe.FullName "$PWD\amneziawg.exe"
+
+      - name: Bundle AmneziaWG binary inside data/
+        run: |
+          $ReleaseDir = "build\windows\x64\runner\Release"
+          New-Item -ItemType Directory -Force -Path "$ReleaseDir\data" | Out-Null
+          Copy-Item "$PWD\amneziawg.exe" "$ReleaseDir\data\amneziawg.exe"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: oryvexvpn-windows
+          path: build/windows/x64/runner/Release/
+'''
+        return self._write_if_needed(path, content, "تزریق حالت Run as Administrator در سرور و دریافت AmneziaWG", force=True)
+
+    # 2. Main Entrypoint & خروج تمیز (بدون هنگ کردن)
     def fix_main_dart(self) -> bool:
         path = self.root / "lib" / "main.dart"
         content = r'''import 'package:flutter/material.dart';
@@ -82,6 +144,7 @@ import 'services/network_manager.dart';
 import 'services/tray_service.dart';
 import 'services/window_manager_service.dart';
 import 'services/vpn_service.dart';
+import 'services/warp_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -123,13 +186,12 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
     super.dispose();
   }
 
-  // جلوگیری از هنگ کردن با متوقف کردن تمیز تونل پیش از بسته شدن پنجره
+  // جلوگیری از خطای Not Responding با متوقف کردن فوری سرویس به صورت Static
   @override
   void onWindowClose() async {
-    final vpn = context.read<VPNService>();
-    if (vpn.isConnected || vpn.isConnecting) {
-      await vpn.disconnect();
-    }
+    try {
+      await WarpService.disconnect();
+    } catch (_) {}
     await windowManager.destroy(); // خروج قطعی
   }
 
@@ -140,13 +202,13 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
         return Directionality(
-          textDirection: TextDirection.rtl, // چینش راست‌چین مانند تصویر
+          textDirection: TextDirection.rtl,
           child: child!,
         );
       },
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0F0F0F), // پس‌زمینه دارک مینیمال
+        scaffoldBackgroundColor: const Color(0xFF0A0A0A),
         fontFamily: GoogleFonts.vazirmatn().fontFamily,
         textTheme: GoogleFonts.vazirmatnTextTheme(ThemeData.dark().textTheme),
       ),
@@ -155,15 +217,16 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
   }
 }
 '''
-        return self._write_if_needed(path, content, "مدیریت WindowListener برای جلوگیری از هنگ کردن هنگام خروج", force=True)
+        return self._write_if_needed(path, content, "مدیریت بسته شدن پنجره (WindowListener) جهت رفع قطعی Not Responding", force=True)
 
-    # 3. طراحی UI نئون فیروزه‌ای مطابق با تصویر شما
+    # 3. UI Layout (Fix Missing Close Buttons)
     def fix_home_screen(self) -> bool:
         path = self.root / "lib" / "screens" / "home_screen.dart"
         content = r'''import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import '../services/vpn_service.dart';
+import '../services/window_manager_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -185,66 +248,59 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final vpn = context.watch<VPNService>();
 
-    // رنگ فیروزه‌ای (Neon Cyan) مشابه تصویر
     Color getStatusColor() {
       if (vpn.isConnected) return const Color(0xFF00E5FF); 
-      if (vpn.isConnecting) return const Color(0xFF00E5FF).withOpacity(0.7); 
+      if (vpn.isConnecting) return const Color(0xFF00FFCC); 
       if (vpn.stage == VpnStage.error) return const Color(0xFFFF3366); 
-      return const Color(0xFF333333); // رنگ حالت خاموش
+      return const Color(0xFF555555);
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F), 
+      backgroundColor: const Color(0xFF0A0A0A), 
       body: Column(
         children: [
-          // Header (Title & Controls)
-          GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onPanStart: (details) => windowManager.startDragging(),
-            child: Container(
-              height: 60,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // سمت راست (چون RTL است، اولین آیتم‌ها سمت راست قرار می‌گیرند)
-                  Row(
-                    children: [
-                      const Text(
-                        'اورایوکس',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(
-                        vpn.isConnected ? Icons.shield_rounded : Icons.shield_outlined,
-                        color: const Color(0xFF00E5FF),
-                        size: 24,
-                      ),
-                    ],
+          // Header Draggable + Window Controls
+          Container(
+            height: 50,
+            color: Colors.transparent,
+            child: Row(
+              children: [
+                const SizedBox(width: 16),
+                Icon(
+                  vpn.isConnected ? Icons.shield_rounded : Icons.shield_outlined,
+                  color: getStatusColor(),
+                  size: 22,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'اورایوکس',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                  // سمت چپ (دکمه‌های کنترل)
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.minimize, color: Colors.white54, size: 20),
-                        onPressed: () => windowManager.minimize(),
-                        hoverColor: Colors.white10,
-                        splashRadius: 20,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white54, size: 20),
-                        onPressed: () => windowManager.close(), // ارسال تریگر به onWindowClose
-                        hoverColor: Colors.redAccent.withOpacity(0.5),
-                        splashRadius: 20,
-                      ),
-                    ],
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onPanStart: (details) => windowManager.startDragging(),
+                    child: const SizedBox(height: double.infinity),
                   ),
-                ],
-              ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.minimize, color: Colors.white54, size: 20),
+                  onPressed: () => windowManager.minimize(),
+                  hoverColor: Colors.white10,
+                  splashRadius: 20,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white54, size: 20),
+                  onPressed: () => WindowManagerService.quit(),
+                  hoverColor: Colors.redAccent.withOpacity(0.5),
+                  splashRadius: 20,
+                ),
+                const SizedBox(width: 8),
+              ],
             ),
           ),
           
@@ -255,36 +311,59 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text(
                     vpn.statusMessage,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       color: getStatusColor(),
                     ),
                   ),
-                  const SizedBox(height: 40),
+                  if (vpn.lastError != null) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 32),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF3366).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFFF3366).withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        vpn.lastError!,
+                        textAlign: TextAlign.left,
+                        textDirection: TextDirection.ltr,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFFF3366),
+                          fontFamily: 'Consolas',
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 50),
                   
-                  // Main Connect Button (Neon Outline)
+                  // Neon Cyan Connect Button
                   GestureDetector(
                     onTap: vpn.isConnecting
                         ? null
                         : () => vpn.isConnected ? vpn.disconnect() : vpn.connect(),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
-                      width: 170,
-                      height: 170,
+                      width: 160,
+                      height: 160,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: const Color(0xFF141414),
                         boxShadow: [
                           BoxShadow(
-                            color: getStatusColor().withOpacity(vpn.isConnected || vpn.isConnecting ? 0.15 : 0.0),
-                            blurRadius: 50,
-                            spreadRadius: 10,
+                            color: getStatusColor().withOpacity(vpn.isConnected || vpn.isConnecting ? 0.2 : 0.0),
+                            blurRadius: 40,
+                            spreadRadius: vpn.isConnected || vpn.isConnecting ? 5 : 0,
                           ),
                         ],
                         border: Border.all(
-                          color: getStatusColor().withOpacity(vpn.isConnected ? 1.0 : 0.4),
-                          width: vpn.isConnected ? 3 : 2,
+                          color: getStatusColor().withOpacity(vpn.isConnected ? 0.8 : 0.3),
+                          width: vpn.isConnected ? 3 : 1.5,
                         ),
                       ),
                       child: Center(
@@ -299,7 +378,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               )
                             : Icon(
                                 Icons.power_settings_new_rounded,
-                                size: 65,
+                                size: 60,
                                 color: getStatusColor(),
                               ),
                       ),
@@ -315,9 +394,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 '''
-        return self._write_if_needed(path, content, "طراحی استایل Neon Cyan و چیدمان دکمه‌ها مشابه تصویر", force=True)
+        return self._write_if_needed(path, content, "اصلاح دکمه‌های کنترل پنجره و اعمال استایل نئونی", force=True)
 
-    # 4. اجرای مستقیم هسته AmneziaWG (بدون PowerShell چون خود اپلیکیشن دسترسی ادمین دارد)
+    # 4. Warp Service (Direct Execution without PowerShell - No UAC Prompt at connection time)
     def fix_warp_service(self) -> bool:
         path = self.root / "lib" / "services" / "warp_service.dart"
         content = r'''import 'dart:io';
@@ -354,7 +433,9 @@ class WarpService {
       try {
         final start = DateTime.now();
         final res = await Process.run('ping', ['-n', '1', '-w', '1000', ip]);
-        if (res.exitCode == 0) return {'ip': ip, 'latency': DateTime.now().difference(start).inMilliseconds};
+        if (res.exitCode == 0) {
+          return {'ip': ip, 'latency': DateTime.now().difference(start).inMilliseconds};
+        }
       } catch (_) {}
       return {'ip': ip, 'latency': 9999};
     });
@@ -387,7 +468,9 @@ class WarpService {
       }),
     ).timeout(const Duration(seconds: 15));
 
-    if (response.statusCode != 200 && response.statusCode != 201) throw Exception('ثبت‌نام ناموفق بود.');
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('ثبت‌نام دستگاه ناموفق بود.');
+    }
 
     final data = jsonDecode(response.body);
     final peer = data['config']['peers'][0];
@@ -427,15 +510,17 @@ class WarpService {
     final confFile = File('$confDir\\$_tunnelName.conf');
     await confFile.writeAsString(_buildConf(reg));
 
-    // از آنجا که برنامه دسترسی ادمین دارد، مستقیما بدون PowerShell فراخوانی می‌کنیم
+    // از آنجا که فایل EXE مستقیماً با دسترسی ادمین باز شده است، نیازی به PowerShell و تأخیر آن نیست
     if (await _serviceExists()) {
       await Process.run(_vpnExe, ['/uninstalltunnelservice', _tunnelName]);
       await Future.delayed(const Duration(milliseconds: 300));
     }
 
     final result = await Process.run(_vpnExe, ['/installtunnelservice', confFile.path]);
-    if (result.exitCode != 0) throw Exception('خطا در اجرای سرویس هسته.');
-    
+
+    if (result.exitCode != 0) {
+      throw Exception('خطا در اجرای سرویس هسته.');
+    }
     await Future.delayed(const Duration(milliseconds: 500));
   }
 
@@ -460,7 +545,8 @@ class WarpService {
   }
 
   static Future<bool> isConnected() async {
-    if (!Platform.isWindows || !_connected) return false;
+    if (!Platform.isWindows) return false;
+    // حتی در صورتی که _connected در مموری False باشد، وضعیت واقعی سرویس بررسی شود
     return await _serviceExists();
   }
 }
@@ -473,7 +559,7 @@ class _WarpRegistration {
   });
 }
 '''
-        return self._write_if_needed(path, content, "اجرای مستقیم AmneziaWG (بدون PowerShell و تأخیر)", force=True)
+        return self._write_if_needed(path, content, "اجرای مستقیم AmneziaWG (بدون PowerShell)", force=True)
 
     def fix_window_manager_service(self) -> bool:
         path = self.root / "lib" / "services" / "window_manager_service.dart"
@@ -506,7 +592,7 @@ class WindowManagerService {
     await windowManager.waitUntilReadyToShow(windowOptions, () async {
       await windowManager.show();
       await windowManager.focus();
-      // جلوگیری از بسته شدن فوری پنجره تا بتوانیم در رویداد onWindowClose فرآیند VPN را متوقف کنیم
+      // جلوگیری از بسته شدن پنجره درجا، تا Listener بتواند تونل را ببندد
       await windowManager.setPreventClose(true); 
     });
   }
@@ -526,94 +612,81 @@ class WindowManagerService {
     if (!Platform.isWindows) {
       exit(0);
     }
-    await windowManager.close(); // ارجاع به Listener خروج تمیز
+    await windowManager.close(); // ارجاع به Listener برای خروج تمیز
   }
 }
 '''
-        return self._write_if_needed(path, content, "اعمال PreventClose برای خروج تمیز (جلوگیری از Not Responding)", force=True)
+        return self._write_if_needed(path, content, "اعمال PreventClose جهت مدیریت خروج امن", force=True)
 
-    def fix_ci_workflow(self) -> bool:
-        path = self.root / ".github" / "workflows" / "build_windows.yml"
-        if not path.parent.exists(): path.parent.mkdir(parents=True, exist_ok=True)
-        content = r'''name: Build Windows App (AmneziaWG Core)
+    def fix_pubspec_dependencies(self) -> bool:
+        path = self.root / "pubspec.yaml"
+        if not path.exists(): return False
 
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
+        text = path.read_text(encoding='utf-8')
+        required_deps = {
+            "window_manager": "^0.4.3",
+            "settings_ui": "^2.0.2",
+            "shared_preferences": "^2.3.2",
+            "tray_manager": "^0.3.1",
+            "provider": "^6.1.2",
+            "connectivity_plus": "^6.1.0",
+            "http": "^1.2.2",
+            "cryptography": "^2.7.0",
+            "path_provider": "^2.1.1",
+            "google_fonts": "^6.1.0",
+        }
 
-jobs:
-  build:
-    runs-on: windows-2022
+        lines = text.splitlines()
+        try:
+            dep_idx = next(i for i, l in enumerate(lines) if l.strip() == "dependencies:")
+        except StopIteration:
+            return False
 
-    steps:
-      - uses: actions/checkout@v4
+        end_idx = len(lines)
+        for i in range(dep_idx + 1, len(lines)):
+            line = lines[i]
+            if line and not line.startswith(' ') and not line.startswith('\t') and line.strip():
+                end_idx = i
+                break
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.44.2'
-          channel: 'stable'
-          cache: true
+        block = "\n".join(lines[dep_idx:end_idx])
+        missing = {name: ver for name, ver in required_deps.items() if re.search(rf'^\s*{re.escape(name)}\s*:', block, re.MULTILINE) is None}
 
-      - name: Enable Windows desktop
-        run: flutter config --enable-windows-desktop
+        if not missing: return False
 
-      - name: Get dependencies
-        run: flutter pub get
+        insertion = "\n".join(f"  {name}: {ver}" for name, ver in missing.items())
+        new_lines = lines[:end_idx] + [insertion] + lines[end_idx:]
+        path.write_text("\n".join(new_lines) + "\n", encoding='utf-8')
+        self.fixed_files.append(f"pubspec.yaml (افزودن پکیج‌های جا افتاده)")
+        return True
 
-      - name: Build Windows app
-        run: flutter build windows --release
-
-      - name: Download and extract AmneziaWG
-        run: |
-          $wgVersion = "2.0.2"
-          $msiUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/$wgVersion/amneziawg-amd64-$wgVersion.msi"
-          Invoke-WebRequest -Uri $msiUrl -OutFile "amneziawg.msi"
-          
-          $extractDir = "$PWD\amneziawg_extracted"
-          New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
-          
-          $msiExecArgs = @("/a", "`"$PWD\amneziawg.msi`"", "/qn", "TARGETDIR=`"$extractDir`"")
-          Start-Process msiexec.exe -ArgumentList $msiExecArgs -Wait -NoNewWindow
-          
-          $wgExe = Get-ChildItem -Path $extractDir -Filter "amneziawg.exe" -Recurse | Select-Object -First 1
-          if (-not $wgExe) {
-            Write-Host "Failed to extract amneziawg.exe from MSI."
-            exit 1
-          }
-          Write-Host "Found amneziawg.exe at: $($wgExe.FullName)"
-          Copy-Item $wgExe.FullName "$PWD\amneziawg.exe"
-
-      - name: Bundle AmneziaWG binary inside data/
-        run: |
-          $ReleaseDir = "build\windows\x64\runner\Release"
-          New-Item -ItemType Directory -Force -Path "$ReleaseDir\data" | Out-Null
-          Copy-Item "$PWD\amneziawg.exe" "$ReleaseDir\data\amneziawg.exe"
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: oryvexvpn-windows
-          path: build/windows/x64/runner/Release/
-'''
-        return self._write_if_needed(path, content, "اطمینان از دریافت هسته AmneziaWG در گیت‌هاب اکشنز", force=True)
+    def fix_sdk_constraint(self) -> bool:
+        pubspec = self.root / "pubspec.yaml"
+        if pubspec.exists():
+            text = pubspec.read_text(encoding='utf-8')
+            new_text, count = re.subn(r"sdk:\s*['\"][^'\"]*['\"]", "sdk: '>=3.0.0 <4.0.0'", text, count=1)
+            if count > 0 and new_text != text:
+                pubspec.write_text(new_text, encoding='utf-8')
+                return True
+        return False
 
     def run(self) -> bool:
         print("\n" + "=" * 64)
-        print("OryvexVPN - Ultimate System Integrator (UI + Core + Hang Fix)")
+        print("OryvexVPN - Ultimate Core & Hang Fixer")
         print("=" * 64)
         
         if not self.check_project(): return False
 
-        self.fix_windows_manifest()
+        # انجام تمام فرآیندها
         self.fix_ci_workflow()
         self.fix_main_dart()
         self.fix_home_screen()
         self.fix_warp_service()
         self.fix_window_manager_service()
+        self.fix_pubspec_dependencies()
+        self.fix_sdk_constraint()
 
-        print("\nکار تمام است! کدها را در گیت‌هاب Push کنید.")
+        print("\nکار تمام است! پایتون با موفقیت اجرا شد. کدها را در گیت‌هاب Push کنید.")
         return True
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-name: Build Windows App (AmneziaWG Core)
+name: Build Windows App (AmneziaWG + UAC)
 
 on:
   push:
@@ -25,6 +25,14 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Force UAC Administrator (Manifest Injection)
+        run: |
+          $manifest = "windows\runner\app.manifest"
+          if (Test-Path $manifest) {
+            (Get-Content $manifest) -replace 'level="asInvoker"', 'level="requireAdministrator"' | Set-Content $manifest
+            Write-Host "Manifest updated to requireAdministrator."
+          }
+
       - name: Build Windows app
         run: flutter build windows --release
 
@@ -45,7 +53,6 @@ jobs:
             Write-Host "Failed to extract amneziawg.exe from MSI."
             exit 1
           }
-          Write-Host "Found amneziawg.exe at: $($wgExe.FullName)"
           Copy-Item $wgExe.FullName "$PWD\amneziawg.exe"
 
       - name: Bundle AmneziaWG binary inside data/
