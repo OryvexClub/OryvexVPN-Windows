@@ -7,7 +7,10 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
       "permissions": {
         "allow": [
           "Bash(git *)",
-          "WebFetch(domain:github.com)"
+          "WebFetch(domain:github.com)",
+          "Bash(dart pub *)",
+          "Bash(flutter pub *)",
+          "Bash(flutter build *)"
         ]
       }
     }
@@ -1734,6 +1737,12 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
       2a2f5db5106eb215c806a8b157495452e1f502c0 91d34c273d946df2b17f062fb66a3a223c6a4693 OryvexVPN <oryvex@demo.com> 1785598802 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
       91d34c273d946df2b17f062fb66a3a223c6a4693 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785598802 +0330	Branch: renamed refs/heads/main to refs/heads/main
       91d34c273d946df2b17f062fb66a3a223c6a4693 91d34c273d946df2b17f062fb66a3a223c6a4693 OryvexVPN <oryvex@demo.com> 1785598802 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      91d34c273d946df2b17f062fb66a3a223c6a4693 35cb0e9b39b417e4c7d37803a7e87c950845ef76 OryvexVPN <oryvex@demo.com> 1785599630 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
+      35cb0e9b39b417e4c7d37803a7e87c950845ef76 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785599630 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      35cb0e9b39b417e4c7d37803a7e87c950845ef76 35cb0e9b39b417e4c7d37803a7e87c950845ef76 OryvexVPN <oryvex@demo.com> 1785599630 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      35cb0e9b39b417e4c7d37803a7e87c950845ef76 26319760773de12cef5fcc880fde92e5dd235f47 OryvexVPN <oryvex@demo.com> 1785599880 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
+      26319760773de12cef5fcc880fde92e5dd235f47 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785599880 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      26319760773de12cef5fcc880fde92e5dd235f47 26319760773de12cef5fcc880fde92e5dd235f47 OryvexVPN <oryvex@demo.com> 1785599880 +0330	Branch: renamed refs/heads/main to refs/heads/main
 
 
 
@@ -1834,6 +1843,10 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
           2a2f5db5106eb215c806a8b157495452e1f502c0 2a2f5db5106eb215c806a8b157495452e1f502c0 OryvexVPN <oryvex@demo.com> 1785597351 +0330	Branch: renamed refs/heads/main to refs/heads/main
           2a2f5db5106eb215c806a8b157495452e1f502c0 91d34c273d946df2b17f062fb66a3a223c6a4693 OryvexVPN <oryvex@demo.com> 1785598802 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
           91d34c273d946df2b17f062fb66a3a223c6a4693 91d34c273d946df2b17f062fb66a3a223c6a4693 OryvexVPN <oryvex@demo.com> 1785598802 +0330	Branch: renamed refs/heads/main to refs/heads/main
+          91d34c273d946df2b17f062fb66a3a223c6a4693 35cb0e9b39b417e4c7d37803a7e87c950845ef76 OryvexVPN <oryvex@demo.com> 1785599630 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
+          35cb0e9b39b417e4c7d37803a7e87c950845ef76 35cb0e9b39b417e4c7d37803a7e87c950845ef76 OryvexVPN <oryvex@demo.com> 1785599630 +0330	Branch: renamed refs/heads/main to refs/heads/main
+          35cb0e9b39b417e4c7d37803a7e87c950845ef76 26319760773de12cef5fcc880fde92e5dd235f47 OryvexVPN <oryvex@demo.com> 1785599880 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
+          26319760773de12cef5fcc880fde92e5dd235f47 26319760773de12cef5fcc880fde92e5dd235f47 OryvexVPN <oryvex@demo.com> 1785599880 +0330	Branch: renamed refs/heads/main to refs/heads/main
 
 
 
@@ -1847,6 +1860,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
   objects
     00
+      75adae2474b2b8abbe5f6bf2875566b8c8de25
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       e134119bca26b84cb1502643ac71a74bf90c08
         [Binary or unreadable file]
 
@@ -2669,6 +2695,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+      319760773de12cef5fcc880fde92e5dd235f47
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       c28b5deb699d57ccb30b559bfd7447a93379db
         [Binary or unreadable file]
 
@@ -3165,6 +3204,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     35
       56ef64c9a38e1bca97868cad1fac58d278531c
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      cb0e9b39b417e4c7d37803a7e87c950845ef76
         [Binary or unreadable file]
 
 
@@ -3860,6 +3912,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+      c9327c449e0a890fa4ee9f45ff341a93abfbec
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     4c
       70f76697b461fcc7760adf05b39ba07ee25343
         [Binary or unreadable file]
@@ -4146,6 +4211,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     58
       2d01a211d092ab6d314168610739adba859554
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      cb5501e7a80b41a733617f6d6b79125113383d
         [Binary or unreadable file]
 
 
@@ -4508,6 +4586,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    69
+      fc74ab95cf55e266390e7c9153a687def66905
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     6a
       65f59f148bb28bd9e959e6fccd8a852a6b418d
         [Binary or unreadable file]
@@ -4766,6 +4858,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     75
       43ed9222b98bc52d581c4343d21daf325bd831
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    76
+      dd3447452fd63e615bc9bd1e437494556c203e
         [Binary or unreadable file]
 
 
@@ -5223,6 +5329,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     8a
+      1a15be021d699e8767913d5f01a1b36137cb27
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       530c73e8d96fc45b4120999aa1fc5a5290c32a
         [Binary or unreadable file]
 
@@ -6238,6 +6357,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     b8
+      5d362231505beb1060dc52c9651620038bde51
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       f7088561b26e990861f80ceeff209115db2881
         [Binary or unreadable file]
 
@@ -6482,6 +6614,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    c7
+      37b0f078ed51a048e91a8c22b1977b14653105
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     c8
       f9743192976c34cac2c40e578e85eef941362c
         [Binary or unreadable file]
@@ -6688,6 +6834,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+      4d0b0f30db21731e15b06e95ed0005431995c4
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       92d0d98c8fdc9f93ad2543bb4f531803e9df72
         [Binary or unreadable file]
 
@@ -6716,6 +6875,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     d6
+      1b2bed938bb4fa082559896650922e3fe43080
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       87fb98f20c4e290cbb5ca184ae9759333f5e88
         [Binary or unreadable file]
 
@@ -7590,6 +7762,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+      88dd823500a8d683e51a9902b98b3af517d5ba
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       bdbdd09642d075216b1b444fed0048bae72859
         [Binary or unreadable file]
 
@@ -7750,7 +7935,7 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
   refs
     heads
       main
-        91d34c273d946df2b17f062fb66a3a223c6a4693
+        26319760773de12cef5fcc880fde92e5dd235f47
 
 
 
@@ -8265,13 +8450,11 @@ fixer.py
   """
   fixer.py - OryvexVPN Auto‑Fixer (BoringTun edition)
   
-  Switches the VPN core from wireguard‑go to Cloudflare BoringTun:
-    - Builds BoringTun from source in CI (Rust toolchain required).
-    - Bundles BoringTun + official wintun.dll inside the app's data/ folder.
-    - Drives BoringTun via its command‑line parameters, not UAPI.
-    - Tunnel restart is used for endpoint changes (simpler, more reliable).
-  
-  All other features (WARP registration, endpoint scanning, UI) are preserved.
+  Switches the VPN core to Cloudflare BoringTun:
+    - Builds BoringTun from source in CI.
+    - Bundles BoringTun + official wintun.dll.
+    - Drives BoringTun via command‑line arguments.
+    - Includes correct process‑liveness checks using dart:async.
   """
   
   import os
@@ -8366,10 +8549,14 @@ fixer.py
   
       def fix_warp_service(self) -> bool:
           """
-          Rewrite warp_service.dart to use BoringTun CLI instead of wireguard‑go UAPI.
+          Rewrite warp_service.dart to use BoringTun CLI.
+          Fixes the previous errors:
+            - import 'dart:async' for TimeoutException.
+            - onTimeout callback returns an int (0) instead of null.
           """
           warp_path = self.root / "lib" / "services" / "warp_service.dart"
           correct = r"""import 'dart:io';
+  import 'dart:async';
   import 'dart:convert';
   import 'package:http/http.dart' as http;
   import 'package:cryptography/cryptography.dart';
@@ -8500,8 +8687,7 @@ fixer.py
     }
   
     /// Start BoringTun with the given parameters.
-    /// BoringTun CLI: boringtun <iface> --private-key <key> --peer-public-key <key>
-    /// --endpoint <ip:port> --allowed-ips <ips> --address <ip> --dns <dns> --mtu <mtu>
+    /// Checks that the process stays alive after startup.
     static Future<void> _startBoringTun(_WarpRegistration reg) async {
       final args = [
         _tunnelName,
@@ -8509,7 +8695,7 @@ fixer.py
         '--peer-public-key', reg.peerPublicKeyBase64,
         '--endpoint', '${reg.endpointIp}:${reg.endpointPort}',
         '--allowed-ips', '0.0.0.0/0',
-        '--address', reg.address,         // e.g. 172.16.0.2/32? BoringTun accepts CIDR
+        '--address', reg.address,
         '--dns', '1.1.1.1',
         '--mtu', '1280',
         '--persistent-keepalive', '25',
@@ -8522,15 +8708,14 @@ fixer.py
         mode: ProcessStartMode.detachedWithStdio,
       );
   
-      // Give it a moment to set up the adapter.
-      await Future.delayed(const Duration(seconds: 2));
-  
-      // Check if the process is still alive; if not, something went wrong.
-      if (_tunnelProcess == null || !(await _tunnelProcess!.exitCode.timeout(
-          const Duration(milliseconds: 100), onTimeout: () => null))?.isCompleted == false) {
-        // Process seems to be running.
-      } else {
-        throw Exception('BoringTun exited unexpectedly.');
+      // Wait a moment, then verify the process is still running.
+      await Future.delayed(const Duration(milliseconds: 500));
+      try {
+        await _tunnelProcess!.exitCode.timeout(const Duration(milliseconds: 100));
+        // If we get here, the process has already exited.
+        throw Exception('BoringTun exited immediately after start.');
+      } on TimeoutException {
+        // Process is still alive – good.
       }
     }
   
@@ -8565,12 +8750,17 @@ fixer.py
       if (proc == null) return;
       try {
         proc.kill(ProcessSignal.sigterm);
-        await proc.exitCode.timeout(const Duration(seconds: 2), onTimeout: () {
+        // Wait a bit for graceful exit, then force kill if needed.
+        await Future.delayed(const Duration(seconds: 2));
+        // Try to get exit code, but don't block forever.
+        await proc.exitCode.timeout(const Duration(seconds: 1), onTimeout: () {
           proc.kill(ProcessSignal.sigkill);
-          return null;
+          return 0; // dummy return, will be ignored
         });
-      } catch (_) {}
-      // Clean up any remaining processes.
+      } catch (_) {
+        // Ignore errors during cleanup.
+      }
+      // Ensure no leftover process.
       await Process.run('taskkill', ['/F', '/IM', 'boringtun.exe']);
     }
   
@@ -8607,7 +8797,7 @@ fixer.py
   """
           warp_path.parent.mkdir(parents=True, exist_ok=True)
           warp_path.write_text(correct, encoding='utf-8')
-          self.fixed_files.append("warp_service.dart (BoringTun CLI version)")
+          self.fixed_files.append("warp_service.dart (BoringTun, fixed process checks)")
           return True
   
       def fix_vpn_service(self) -> bool:
@@ -8922,7 +9112,7 @@ fixer.py
           print("  - BoringTun driven via command‑line (no UAPI named pipe issues)")
           print("  - App manifest set to requireAdministrator.")
           print("  - Endpoint list: 300+ IPs, concurrent ping scan for best server.")
-          print("  - _coreFilesPresent() awaits both File.exists() checks.")
+          print("  - Process liveness checks now use correct imports and non‑null returns.")
           print("\nRun push.py to deploy to GitHub and build the new EXE.")
           return True
   
@@ -8967,7 +9157,10 @@ folder_structure.txt
         "permissions": {
           "allow": [
             "Bash(git *)",
-            "WebFetch(domain:github.com)"
+            "WebFetch(domain:github.com)",
+            "Bash(dart pub *)",
+            "Bash(flutter pub *)",
+            "Bash(flutter build *)"
           ]
         }
       }
@@ -10694,6 +10887,12 @@ folder_structure.txt
         2a2f5db5106eb215c806a8b157495452e1f502c0 91d34c273d946df2b17f062fb66a3a223c6a4693 OryvexVPN <oryvex@demo.com> 1785598802 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced...
         91d34c273d946df2b17f062fb66a3a223c6a4693 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785598802 +0330	Branch: renamed refs/heads/main to refs/heads/main
         91d34c273d946df2b17f062fb66a3a223c6a4693 91d34c273d946df2b17f062fb66a3a223c6a4693 OryvexVPN <oryvex@demo.com> 1785598802 +0330	Branch: renamed refs/heads/main to refs/heads/main
+        91d34c273d946df2b17f062fb66a3a223c6a4693 35cb0e9b39b417e4c7d37803a7e87c950845ef76 OryvexVPN <oryvex@demo.com> 1785599630 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced...
+        35cb0e9b39b417e4c7d37803a7e87c950845ef76 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785599630 +0330	Branch: renamed refs/heads/main to refs/heads/main
+        35cb0e9b39b417e4c7d37803a7e87c950845ef76 35cb0e9b39b417e4c7d37803a7e87c950845ef76 OryvexVPN <oryvex@demo.com> 1785599630 +0330	Branch: renamed refs/heads/main to refs/heads/main
+        35cb0e9b39b417e4c7d37803a7e87c950845ef76 26319760773de12cef5fcc880fde92e5dd235f47 OryvexVPN <oryvex@demo.com> 1785599880 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced...
+        26319760773de12cef5fcc880fde92e5dd235f47 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785599880 +0330	Branch: renamed refs/heads/main to refs/heads/main
+        26319760773de12cef5fcc880fde92e5dd235f47 26319760773de12cef5fcc880fde92e5dd235f47 OryvexVPN <oryvex@demo.com> 1785599880 +0330	Branch: renamed refs/heads/main to refs/heads/main
   
   
   
@@ -10794,6 +10993,10 @@ folder_structure.txt
             2a2f5db5106eb215c806a8b157495452e1f502c0 2a2f5db5106eb215c806a8b157495452e1f502c0 OryvexVPN <oryvex@demo.com> 1785597351 +0330	Branch: renamed refs/heads/main to refs/heads/main
             2a2f5db5106eb215c806a8b157495452e1f502c0 91d34c273d946df2b17f062fb66a3a223c6a4693 OryvexVPN <oryvex@demo.com> 1785598802 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via fo...
             91d34c273d946df2b17f062fb66a3a223c6a4693 91d34c273d946df2b17f062fb66a3a223c6a4693 OryvexVPN <oryvex@demo.com> 1785598802 +0330	Branch: renamed refs/heads/main to refs/heads/main
+            91d34c273d946df2b17f062fb66a3a223c6a4693 35cb0e9b39b417e4c7d37803a7e87c950845ef76 OryvexVPN <oryvex@demo.com> 1785599630 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via fo...
+            35cb0e9b39b417e4c7d37803a7e87c950845ef76 35cb0e9b39b417e4c7d37803a7e87c950845ef76 OryvexVPN <oryvex@demo.com> 1785599630 +0330	Branch: renamed refs/heads/main to refs/heads/main
+            35cb0e9b39b417e4c7d37803a7e87c950845ef76 26319760773de12cef5fcc880fde92e5dd235f47 OryvexVPN <oryvex@demo.com> 1785599880 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via fo...
+            26319760773de12cef5fcc880fde92e5dd235f47 26319760773de12cef5fcc880fde92e5dd235f47 OryvexVPN <oryvex@demo.com> 1785599880 +0330	Branch: renamed refs/heads/main to refs/heads/main
   
   
   
@@ -10807,6 +11010,19 @@ folder_structure.txt
   
     objects
       00
+        75adae2474b2b8abbe5f6bf2875566b8c8de25
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         e134119bca26b84cb1502643ac71a74bf90c08
           [Binary or unreadable file]
   
@@ -11629,6 +11845,19 @@ folder_structure.txt
   
   
   
+        319760773de12cef5fcc880fde92e5dd235f47
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         c28b5deb699d57ccb30b559bfd7447a93379db
           [Binary or unreadable file]
   
@@ -12125,6 +12354,19 @@ folder_structure.txt
   
       35
         56ef64c9a38e1bca97868cad1fac58d278531c
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        cb0e9b39b417e4c7d37803a7e87c950845ef76
           [Binary or unreadable file]
   
   
@@ -12820,6 +13062,19 @@ folder_structure.txt
   
   
   
+        c9327c449e0a890fa4ee9f45ff341a93abfbec
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
       4c
         70f76697b461fcc7760adf05b39ba07ee25343
           [Binary or unreadable file]
@@ -13106,6 +13361,19 @@ folder_structure.txt
   
       58
         2d01a211d092ab6d314168610739adba859554
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        cb5501e7a80b41a733617f6d6b79125113383d
           [Binary or unreadable file]
   
   
@@ -13468,6 +13736,20 @@ folder_structure.txt
   
   
   
+      69
+        fc74ab95cf55e266390e7c9153a687def66905
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
       6a
         65f59f148bb28bd9e959e6fccd8a852a6b418d
           [Binary or unreadable file]
@@ -13726,6 +14008,20 @@ folder_structure.txt
   
       75
         43ed9222b98bc52d581c4343d21daf325bd831
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      76
+        dd3447452fd63e615bc9bd1e437494556c203e
           [Binary or unreadable file]
   
   
@@ -14183,6 +14479,19 @@ folder_structure.txt
   
   
       8a
+        1a15be021d699e8767913d5f01a1b36137cb27
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         530c73e8d96fc45b4120999aa1fc5a5290c32a
           [Binary or unreadable file]
   
@@ -14900,388 +15209,6 @@ folder_structure.txt
   
       aa
         998e258cae24d6ddd41d3f23b415905644c4e3
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-        b7b5cd8325696835286f195527e16ffb1f675a
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-        ddd8e15688fc4b0118bfc3be445a446a9451d0
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      ac
-        c2dc49774e7e5dffae78b6586ac681ac314c96
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      ad
-        61eb6f3d7a94a5491572c52263cbc7284b299f
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      ae
-        71344c1273838afdff2d852491ca9b79845dbd
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      af
-        ee9e69f8b0edd432cbf81a644deb61d020ea25
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      b0
-        420000bac632e0e2c612b28fb3c531b70abe2b
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      b1
-        76657cd2e704a167d38e78f407a80fe6734f2c
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-        83ddff7f4b2f18e63c1a38c65cc75ca3df189c
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      b2
-        c35a2093ce6f78a32bd4b1088b0d328c8ad638
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      b3
-        380c0aa7ab5132e56aec4332f49215d2964ea4
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-        3ee1d76c4681bc74b7e8453d92f8f99f4ca65f
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-        45d3650670a7c892854c308925f2f0d39c278f
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-        f518e0e08f9c2e00f0c54b118731d0f20a51e3
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      b4
-        2b39e2e1a4e01b7d4abc0567ee512169fa5b0d
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-        3d2fa2d26b26153486271dbbcfc80cc53ef204
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      b5
-        075f488f144e311df1b88ab9029cdc0d59b2d2
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-        3d6fab64ca5bd87618d204fcaac93cd70d37c5
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      b6
-        b89236f55ef8e5e06d9b7d90fadbf27b35fe29
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-        e3a2793ab769cd15ac0b8908a11aea2a2be94e
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      b7
-        b70e56b6bd768d0b6a870d01eeaffc8d69472f
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      b8
-        f7088561b26e990861f80ceeff209115db2881
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      b9
-        3c4c30c16703f640bc38523e56204ade09399e
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-        9fe738f74e39cd65f5c6ba85a5023ac734a798
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      ba
-        fba484740a282fcbfb0c6f82e2e33f8d70a624
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      bc
-        6b2b7b32ee5a423859ce2bea97d8b5a4282f2c
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-        a77435c8da22e25624989663687bd1c6fdf125
-          [Binary or unreadable file]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-      bf
-        9b46d386d714cfb5705f46b70fbe2b140d4524
-          [Binary or unreadable file]
 
 
 
@@ -15334,24 +15261,70 @@ lib
 
 
 
+  core
+    config.dart
+
+
+
+
+
+
+
+
+
+
+
   main.dart
     import 'package:flutter/material.dart';
     import 'package:provider/provider.dart';
     import 'package:flutter_localizations/flutter_localizations.dart';
+    import 'package:window_manager/window_manager.dart';
     import 'package:warp_vpn_app/screens/home_screen.dart';
     import 'package:warp_vpn_app/services/vpn_service.dart';
+    import 'package:warp_vpn_app/theme/app_theme.dart';
+    import 'dart:io';
+    import 'dart:async';
     
-    void main() => runApp(const MyApp());
+    void main() async {
+      WidgetsFlutterBinding.ensureInitialized();
+      
+      if (Platform.isWindows) {
+        await windowManager.ensureInitialized();
+        WindowOptions windowOptions = const WindowOptions(
+          size: Size(400, 700),
+          center: true,
+          backgroundColor: Colors.transparent,
+          skipTaskbar: false,
+          titleBarStyle: TitleBarStyle.hidden,
+        );
+        windowManager.waitUntilReadyToShow(windowOptions, () async {
+          await windowManager.show();
+          await windowManager.focus();
+        });
+      }
+    
+      // Ensure unhandled exceptions don't crash
+      FlutterError.onError = (FlutterErrorDetails details) {
+        FlutterError.presentError(details);
+        debugPrint(details.toString());
+      };
+    
+      runZonedGuarded(() {
+        runApp(const MyApp());
+      }, (error, stack) {
+        debugPrint(error.toString());
+      });
+    }
     
     class MyApp extends StatelessWidget {
-      const MyApp({Key? key}) : super(key: key);
+      const MyApp({super.key});
     
       @override
       Widget build(BuildContext context) => ChangeNotifierProvider(
         create: (_) => VPNService(),
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'اورایوکس وی‌پی‌ان',
+          title: 'Oryvex VPN',
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
@@ -15361,16 +15334,7 @@ lib
             Locale('fa', 'IR'),
           ],
           locale: const Locale('fa', 'IR'),
-          theme: ThemeData(
-            brightness: Brightness.dark,
-            scaffoldBackgroundColor: const Color(0xFF09090B),
-            primaryColor: const Color(0xFF00E5FF),
-            fontFamily: 'Vazirmatn',
-            colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF00E5FF),
-              surface: Color(0xFF18181B),
-            ),
-          ),
+          theme: AppTheme.darkTheme,
           home: const Directionality(
             textDirection: TextDirection.rtl,
             child: HomeScreen(),
@@ -15769,9 +15733,218 @@ lib
 
 
   services
+    dns_service.dart
+      import 'dart:io';
+      
+      class DnsService {
+        static Future<void> clearDns() async {
+          if (!Platform.isWindows) return;
+          try {
+            final interfaces = await _getInterfaces();
+            for (var interface in interfaces) {
+              await Process.run('netsh', [
+                'interface',
+                'ipv4',
+                'set',
+                'dns',
+                'name="$interface"',
+                'source=dhcp'
+              ]);
+            }
+            await Process.run('ipconfig', ['/flushdns']);
+          } catch (e) {
+            print('Failed to clear DNS: $e');
+          }
+        }
+      
+        static Future<void> setDns(String primary, [String? secondary]) async {
+          if (!Platform.isWindows) return;
+          try {
+            final interfaces = await _getInterfaces();
+            for (var interface in interfaces) {
+              // Set primary
+              await Process.run('netsh', [
+                'interface',
+                'ipv4',
+                'set',
+                'dns',
+                'name="$interface"',
+                'static',
+                primary,
+                'primary'
+              ]);
+              
+              // Set secondary if provided
+              if (secondary != null) {
+                await Process.run('netsh', [
+                  'interface',
+                  'ipv4',
+                  'add',
+                  'dns',
+                  'name="$interface"',
+                  secondary,
+                  'index=2'
+                ]);
+              }
+            }
+            await Process.run('ipconfig', ['/flushdns']);
+          } catch (e) {
+            print('Failed to set DNS: $e');
+          }
+        }
+      
+        static Future<List<String>> _getInterfaces() async {
+          try {
+            final result = await Process.run('netsh', ['interface', 'show', 'interface']);
+            final lines = result.stdout.toString().split('\n');
+            final interfaces = <String>[];
+            
+            bool skipHeaders = true;
+            for (var line in lines) {
+              if (line.contains('---')) {
+                skipHeaders = false;
+                continue;
+              }
+              if (skipHeaders || line.trim().isEmpty) continue;
+              
+              // netsh output format: Admin State | State | Type | Interface Name
+              // We want the connected interfaces
+              if (line.contains('Connected')) {
+                // The last column is the name
+                final parts = line.trim().split(RegExp(r'\s{2,}'));
+                if (parts.length >= 4) {
+                  interfaces.add(parts.last);
+                }
+              }
+            }
+            
+            // Fallbacks if detection fails
+            if (interfaces.isEmpty) {
+              interfaces.addAll(['Wi-Fi', 'Ethernet']);
+            }
+            
+            return interfaces;
+          } catch (e) {
+            return ['Wi-Fi', 'Ethernet']; // Default fallbacks
+          }
+        }
+      }
+
+
+
+
+
+
+
+
+
+
+
+    network_manager.dart
+
+
+
+
+
+
+
+
+
+
+
+    proxy_service.dart
+
+
+
+
+
+
+
+
+
+
+
+    proxy_settings_manager.dart
+      import 'dart:io';
+      
+      class ProxySettingsManager {
+        static Future<void> disableProxy() async {
+          if (!Platform.isWindows) return;
+          try {
+            await Process.run('reg', [
+              'add',
+              'HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings',
+              '/v',
+              'ProxyEnable',
+              '/t',
+              'REG_DWORD',
+              '/d',
+              '0',
+              '/f'
+            ]);
+          } catch (e) {
+            print('Failed to disable proxy: $e');
+          }
+        }
+      
+        static Future<void> enableProxy(String server, String port) async {
+          if (!Platform.isWindows) return;
+          try {
+            await Process.run('reg', [
+              'add',
+              'HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings',
+              '/v',
+              'ProxyServer',
+              '/t',
+              'REG_SZ',
+              '/d',
+              '$server:$port',
+              '/f'
+            ]);
+            await Process.run('reg', [
+              'add',
+              'HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings',
+              '/v',
+              'ProxyEnable',
+              '/t',
+              'REG_DWORD',
+              '/d',
+              '1',
+              '/f'
+            ]);
+          } catch (e) {
+            print('Failed to enable proxy: $e');
+          }
+        }
+      }
+
+
+
+
+
+
+
+
+
+
+
+    tray_service.dart
+
+
+
+
+
+
+
+
+
+
+
     vpn_service.dart
       import 'package:flutter/foundation.dart';
       import 'warp_service.dart';
+      import 'proxy_settings_manager.dart';
+      import 'dns_service.dart';
       
       enum VpnStage {
         idle,
@@ -15804,6 +15977,27 @@ lib
             _stage = VpnStage.connected;
             _statusMessage = 'متصل شد';
             notifyListeners();
+          } else {
+            // Ensure system is clean on startup if not connected
+            await _cleanupSystemNetworkState();
+          }
+        }
+      
+        Future<void> _cleanupSystemNetworkState() async {
+          try {
+            await ProxySettingsManager.disableProxy();
+            await DnsService.clearDns();
+          } catch (e) {
+            debugPrint('Cleanup failed: $e');
+          }
+        }
+      
+        Future<void> _setupSystemNetworkState() async {
+          try {
+            // Warp sets its own proxy typically, but let's just make sure DNS is 1.1.1.1
+            await DnsService.setDns('1.1.1.1', '1.0.0.1');
+          } catch (e) {
+            debugPrint('Setup network state failed: $e');
           }
         }
       
@@ -15825,12 +16019,15 @@ lib
               throw Exception('تونل پس از پیکربندی فعال دیده نشد.');
             }
       
+            await _setupSystemNetworkState();
+      
             _stage = VpnStage.connected;
             _updateStatus('متصل شد');
           } catch (e) {
             _stage = VpnStage.error;
             _lastError = e.toString().replaceFirst('Exception: ', '');
             _updateStatus('اتصال ناموفق بود');
+            await _cleanupSystemNetworkState();
           }
           notifyListeners();
         }
@@ -15841,12 +16038,15 @@ lib
       
           try {
             await WarpService.disconnect();
+            await _cleanupSystemNetworkState();
+      
             _stage = VpnStage.idle;
             _updateStatus('قطع شد');
           } catch (e) {
             _stage = VpnStage.error;
             _lastError = e.toString().replaceFirst('Exception: ', '');
             _updateStatus('قطع اتصال ناموفق بود');
+            await _cleanupSystemNetworkState();
           }
           notifyListeners();
         }
@@ -15864,6 +16064,7 @@ lib
 
     warp_service.dart
       import 'dart:io';
+      import 'dart:async';
       import 'dart:convert';
       import 'package:http/http.dart' as http;
       import 'package:cryptography/cryptography.dart';
@@ -15994,8 +16195,7 @@ lib
         }
       
         /// Start BoringTun with the given parameters.
-        /// BoringTun CLI: boringtun <iface> --private-key <key> --peer-public-key <key>
-        /// --endpoint <ip:port> --allowed-ips <ips> --address <ip> --dns <dns> --mtu <mtu>
+        /// Checks that the process stays alive after startup.
         static Future<void> _startBoringTun(_WarpRegistration reg) async {
           final args = [
             _tunnelName,
@@ -16003,7 +16203,7 @@ lib
             '--peer-public-key', reg.peerPublicKeyBase64,
             '--endpoint', '${reg.endpointIp}:${reg.endpointPort}',
             '--allowed-ips', '0.0.0.0/0',
-            '--address', reg.address,         // e.g. 172.16.0.2/32? BoringTun accepts CIDR
+            '--address', reg.address,
             '--dns', '1.1.1.1',
             '--mtu', '1280',
             '--persistent-keepalive', '25',
@@ -16016,15 +16216,17 @@ lib
             mode: ProcessStartMode.detachedWithStdio,
           );
       
-          // Give it a moment to set up the adapter.
-          await Future.delayed(const Duration(seconds: 2));
-      
-          // Check if the process is still alive; if not, something went wrong.
-          if (_tunnelProcess == null || !(await _tunnelProcess!.exitCode.timeout(
-              const Duration(milliseconds: 100), onTimeout: () => null))?.isCompleted == false) {
-            // Process seems to be running.
-          } else {
-            throw Exception('BoringTun exited unexpectedly.');
+          // Wait a moment, then verify the process is still running.
+          await Future.delayed(const Duration(milliseconds: 500));
+          try {
+            await _tunnelProcess!.exitCode.timeout(const Duration(milliseconds: 100));
+            // If we get here, the process has already exited.
+            throw Exception('BoringTun exited immediately after start.');
+          } catch (e) {
+            if (e is Exception && e.toString().contains('BoringTun exited')) {
+              rethrow;
+            }
+            // Process is still alive – good.
           }
         }
       
@@ -16059,12 +16261,17 @@ lib
           if (proc == null) return;
           try {
             proc.kill(ProcessSignal.sigterm);
-            await proc.exitCode.timeout(const Duration(seconds: 2), onTimeout: () {
+            // Wait a bit for graceful exit, then force kill if needed.
+            await Future.delayed(const Duration(seconds: 2));
+            // Try to get exit code, but don't block forever.
+            await proc.exitCode.timeout(const Duration(seconds: 1), onTimeout: () {
               proc.kill(ProcessSignal.sigkill);
-              return null;
+              return Future.value(0); // dummy return, will be ignored
             });
-          } catch (_) {}
-          // Clean up any remaining processes.
+          } catch (_) {
+            // Ignore errors during cleanup.
+          }
+          // Ensure no leftover process.
           await Process.run('taskkill', ['/F', '/IM', 'boringtun.exe']);
         }
       
@@ -16109,7 +16316,227 @@ lib
 
 
 
+    window_manager_service.dart
+
+
+
+
+
+
+
+
+
+
+
+  theme
+    app_theme.dart
+      import 'package:flutter/material.dart';
+      
+      class AppTheme {
+        static const primary = Color(0xFF00E5FF);
+        static const background = Color(0xFF09090B);
+        static const surface = Color(0xFF18181B);
+        static const error = Color(0xFFFF3B30);
+        static const warning = Color(0xFFFF9800);
+        static const success = Color(0xFF34C759);
+      
+        static ThemeData get darkTheme => ThemeData(
+              useMaterial3: true,
+              brightness: Brightness.dark,
+              scaffoldBackgroundColor: background,
+              primaryColor: primary,
+              fontFamily: 'Vazirmatn',
+              colorScheme: const ColorScheme.dark(
+                primary: primary,
+                surface: surface,
+                error: error,
+              ),
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                centerTitle: true,
+              ),
+              cardTheme: CardTheme(
+                color: surface,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: BorderSide(color: Colors.white.withOpacity(0.05)),
+                ),
+              ),
+            );
+      }
+
+
+
+
+
+
+
+
+
+
+
+  ui
+    settings_screen.dart
+      import 'package:flutter/material.dart';
+      import 'package:settings_ui/settings_ui.dart';
+      import 'package:shared_preferences/shared_preferences.dart';
+      import '../theme/app_theme.dart';
+      import '../services/vpn_service.dart';
+      import 'package:provider/provider.dart';
+      
+      class SettingsScreen extends StatefulWidget {
+        const SettingsScreen({super.key});
+      
+        @override
+        State<SettingsScreen> createState() => _SettingsScreenState();
+      }
+      
+      class _SettingsScreenState extends State<SettingsScreen> {
+        bool _autoConnect = false;
+        bool _startMinimized = false;
+      
+        @override
+        void initState() {
+          super.initState();
+          _loadSettings();
+        }
+      
+        Future<void> _loadSettings() async {
+          final prefs = await SharedPreferences.getInstance();
+          setState(() {
+            _autoConnect = prefs.getBool('auto_connect') ?? false;
+            _startMinimized = prefs.getBool('start_minimized') ?? false;
+          });
+        }
+      
+        Future<void> _saveSetting(String key, bool value) async {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool(key, value);
+        }
+      
+        @override
+        Widget build(BuildContext context) {
+          return Scaffold(
+            backgroundColor: AppTheme.background,
+            appBar: AppBar(
+              title: const Text(
+                'تنظیمات',
+                style: TextStyle(fontFamily: 'Vazirmatn', fontWeight: FontWeight.bold),
+              ),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+            body: SettingsList(
+              lightTheme: const SettingsThemeData(
+                settingsListBackground: AppTheme.background,
+                settingsSectionBackground: AppTheme.surface,
+                titleTextColor: AppTheme.primary,
+              ),
+              darkTheme: const SettingsThemeData(
+                settingsListBackground: AppTheme.background,
+                settingsSectionBackground: AppTheme.surface,
+                titleTextColor: AppTheme.primary,
+              ),
+              sections: [
+                SettingsSection(
+                  title: const Text('عمومی', style: TextStyle(fontFamily: 'Vazirmatn')),
+                  tiles: <SettingsTile>[
+                    SettingsTile.switchTile(
+                      onToggle: (value) {
+                        setState(() => _autoConnect = value);
+                        _saveSetting('auto_connect', value);
+                      },
+                      initialValue: _autoConnect,
+                      leading: const Icon(Icons.autorenew),
+                      title: const Text('اتصال خودکار', style: TextStyle(fontFamily: 'Vazirmatn')),
+                      description: const Text('وصل شدن خودکار در هنگام باز شدن برنامه', style: TextStyle(fontFamily: 'Vazirmatn', fontSize: 12)),
+                    ),
+                    SettingsTile.switchTile(
+                      onToggle: (value) {
+                        setState(() => _startMinimized = value);
+                        _saveSetting('start_minimized', value);
+                      },
+                      initialValue: _startMinimized,
+                      leading: const Icon(Icons.minimize),
+                      title: const Text('شروع کمینه شده', style: TextStyle(fontFamily: 'Vazirmatn')),
+                      description: const Text('اجرای برنامه در System Tray', style: TextStyle(fontFamily: 'Vazirmatn', fontSize: 12)),
+                    ),
+                  ],
+                ),
+                SettingsSection(
+                  title: const Text('وضعیت شبکه', style: TextStyle(fontFamily: 'Vazirmatn')),
+                  tiles: <SettingsTile>[
+                    SettingsTile(
+                      leading: const Icon(Icons.network_check),
+                      title: const Text('وضعیت پروکسی سیستم', style: TextStyle(fontFamily: 'Vazirmatn')),
+                      value: Consumer<VPNService>(
+                        builder: (context, vpn, child) => Text(
+                          vpn.isConnected ? 'تنظیم شده توسط اورایوکس' : 'پیش‌فرض سیستم',
+                          style: TextStyle(
+                            fontFamily: 'Vazirmatn',
+                            color: vpn.isConnected ? AppTheme.success : Colors.white54,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SettingsTile(
+                      leading: const Icon(Icons.dns),
+                      title: const Text('وضعیت DNS', style: TextStyle(fontFamily: 'Vazirmatn')),
+                      value: Consumer<VPNService>(
+                        builder: (context, vpn, child) => Text(
+                          vpn.isConnected ? 'Cloudflare DNS (1.1.1.1)' : 'پیش‌فرض شبکه',
+                          style: TextStyle(
+                            fontFamily: 'Vazirmatn',
+                            color: vpn.isConnected ? AppTheme.success : Colors.white54,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SettingsSection(
+                  title: const Text('درباره', style: TextStyle(fontFamily: 'Vazirmatn')),
+                  tiles: <SettingsTile>[
+                    SettingsTile(
+                      leading: const Icon(Icons.info_outline),
+                      title: const Text('نسخه', style: TextStyle(fontFamily: 'Vazirmatn')),
+                      value: const Text('1.0.0', style: TextStyle(fontFamily: 'Vazirmatn')),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        }
+      }
+
+
+
+
+
+
+
+
+
+
+
   utils
+    constants.dart
+
+
+
+
+
+
+
+
+
+
+
     device_utils.dart
       import 'dart:io';
       class DeviceUtils {
