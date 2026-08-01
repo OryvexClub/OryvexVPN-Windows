@@ -46,7 +46,7 @@ class VPNService extends ChangeNotifier {
       final config = await WarpService.generateConfig(_updateStatus);
 
       _stage = VpnStage.installingTunnel;
-      _updateStatus('در حال اجرای تونل وایرگارد...');
+      _updateStatus('در حال درخواست مجوز ادمین برای نصب تونل...');
 
       await WarpService.connect(config);
 
@@ -68,7 +68,7 @@ class VPNService extends ChangeNotifier {
   Future<void> disconnect() async {
     _stage = VpnStage.disconnecting;
     _updateStatus('در حال قطع اتصال...');
-    
+
     await WarpService.disconnect();
 
     _stage = VpnStage.idle;

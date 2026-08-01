@@ -15,6 +15,9 @@ if sys.platform == 'win32':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
+COMMIT_MESSAGE = "OryvexVPN: Fix 'Access is denied' tunnel install via forced elevation"
+
+
 class GitHubPusher:
     def __init__(self, project_root=None):
         self.root = Path(project_root or os.getcwd())
@@ -210,7 +213,7 @@ class GitHubPusher:
             return False
 
         self.log("Committing...", "STEP")
-        success, output = self.run_command('git commit -m "OryvexVPN: Clean CMake build architecture and manifest patched"')
+        success, output = self.run_command(f'git commit -m "{COMMIT_MESSAGE}"')
         if not success and "nothing to commit" not in output:
             self.log(f"Commit warning: {output}", "WARNING")
 
@@ -282,6 +285,8 @@ class GitHubPusher:
         print("   2. Click on the latest workflow run")
         print("   3. Scroll down to Artifacts section")
         print("   4. Download the Windows EXE")
+        print("\nAfter downloading and running the new EXE, you should see a UAC")
+        print("prompt appear at the moment you press Connect — click 'Yes' on it.")
         try:
             print("\nOpening GitHub Actions in browser...")
             webbrowser.open(actions_url)
@@ -292,7 +297,8 @@ class GitHubPusher:
         print("\n" + "=" * 60)
         print("OryvexVPN - Push & Build")
         print("=" * 60)
-        print("\nWill build: Windows EXE (real WireGuard connection with automatic UAC Admin prompt)")
+        print("\nWill build: Windows EXE (real WireGuard connection with forced")
+        print("elevation for the tunnel install step)")
 
         if not self.check_git():
             sys.exit(1)
@@ -321,6 +327,7 @@ class GitHubPusher:
             print("   (Enter your GitHub username and a Personal Access Token as the password)")
             sys.exit(1)
 
+
 def main():
     try:
         pusher = GitHubPusher()
@@ -331,6 +338,7 @@ def main():
     except Exception as e:
         print(f"\nUnexpected error: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

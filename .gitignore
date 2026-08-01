@@ -43,4 +43,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-\n.env\n*.token\n*.secret\nkey.properties\n*.keystore\n*.jks\n
+
+.env
+*.token
+*.secret
+key.properties
+*.keystore
+*.jks

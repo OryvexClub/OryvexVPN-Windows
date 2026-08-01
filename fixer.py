@@ -2,10 +2,22 @@
 # -*- coding: utf-8 -*-
 
 """
-fixer.py - OryvexVPN Auto-Fixer
-Implements automatic Cloudflare WARP key generation, endpoint sweeping, 
-real WireGuard connection via bundled data/wireguard.exe, Persian UI, 
-forced Administrator privileges, and perfectly clean GitHub Actions CI.
+fixer.py - OryvexVPN Auto-Fixer (Access Denied / Tunnel Install Fix)
+
+Fixes the "نصب تونل ناموفق بود ... Access is denied" error by:
+  1. Forcing REAL elevation for the wireguard.exe tunnel install/uninstall
+     via PowerShell Start-Process -Verb RunAs -Wait, instead of relying on
+     the parent process's own elevation state (which can silently fail to
+     propagate, especially for dev/debug builds that skip the manifest).
+  2. Removing runInShell:true from the direct wireguard.exe invocation,
+     which was routing the call through cmd.exe and risking bad quoting
+     on paths that contain spaces (e.g. "C:\\Users\\nasle javan\\...").
+  3. Capturing and surfacing the PowerShell/wireguard exit code + stderr
+     so future failures show the real Windows error instead of a vague
+     message.
+  4. Keeping the app manifest as requireAdministrator so the whole app
+     still gets a UAC prompt on launch (defense in depth), while the
+     tunnel install no longer depends on that alone.
 """
 
 import os
@@ -14,6 +26,7 @@ import sys
 import subprocess
 from pathlib import Path
 from typing import Optional
+
 
 class FlutterProjectFixer:
     def __init__(self, project_root: Optional[str] = None):
@@ -98,6 +111,33 @@ class MyApp extends StatelessWidget {
         return True
 
     def fix_warp_service(self) -> bool:
+        """
+        THE ACTUAL BUG FIX.
+
+        Previous version called:
+            Process.run(_wireguardExe, ['/installtunnelservice', path], runInShell: true)
+
+        Problems:
+          - runInShell routes the call through cmd.exe, which can mangle a
+            path containing spaces (the user's profile path has one) and
+            does NOT guarantee the child inherits an elevated token in all
+            environments.
+          - If the parent Flutter process wasn't actually elevated for any
+            reason (dev run, manifest not re-embedded, etc.), the tunnel
+            service install fails with exactly "Access is denied" (Win32
+            error 5), because installing a Windows service always requires
+            an elevated token.
+
+        Fix:
+          - Always force a *fresh* elevation for the specific wireguard.exe
+            call via `powershell Start-Process -Verb RunAs -Wait`, which
+            triggers its own UAC prompt if needed and does not depend on
+            the caller's elevation state at all.
+          - Never use runInShell for the actual binary call; quoting is
+            handled explicitly and safely for the PowerShell -ArgumentList.
+          - Capture real exit codes/stderr from PowerShell so failures are
+            diagnosable instead of a generic message.
+        """
         warp_path = self.root / "lib" / "services" / "warp_service.dart"
         correct = """import 'dart:io';
 import 'dart:convert';
@@ -106,7 +146,7 @@ import 'package:cryptography/cryptography.dart';
 
 class WarpService {
   static const _tunnelName = 'oryvexvpn';
-  
+
   static const List<String> _endpoints = [
     "162.159.192.1", "162.159.193.1", "162.159.195.1",
     "188.114.96.1", "188.114.97.1", "188.114.98.1",
@@ -117,7 +157,7 @@ class WarpService {
   static String get _wireguardExe {
     final exePath = Platform.resolvedExecutable;
     final exeDir = File(exePath).parent.path;
-    return '$exeDir\\\\data\\\\wireguard.exe';
+    return '\$exeDir\\\\data\\\\wireguard.exe';
   }
 
   static Future<String> _findBestEndpoint(Function(String) onProgress) async {
@@ -136,9 +176,9 @@ class WarpService {
 
     final results = await Future.wait(futures);
     results.sort((a, b) => (a['latency'] as int).compareTo(b['latency'] as int));
-    
+
     final bestIp = results.first['latency'] != 9999 ? results.first['ip'] as String : _endpoints.first;
-    return '$bestIp:2408';
+    return '\$bestIp:2408';
   }
 
   static Future<String> generateConfig(Function(String) onProgress) async {
@@ -178,26 +218,61 @@ class WarpService {
 
     onProgress('در حال آماده‌سازی کانفیگ...');
     return '''[Interface]
-PrivateKey = $privKeyBase64
-Address = $address/32
+PrivateKey = \$privKeyBase64
+Address = \$address/32
 DNS = 1.1.1.1, 1.0.0.1
 MTU = 1280
 
 [Peer]
-PublicKey = $peerPublicKey
+PublicKey = \$peerPublicKey
 AllowedIPs = 0.0.0.0/0, ::/0
-Endpoint = $bestEndpoint
+Endpoint = \$bestEndpoint
 PersistentKeepalive = 25''';
   }
 
   static Future<File> _writeConfigFile(String config) async {
     final dir = Directory.systemTemp;
-    final file = File('${dir.path}\\\\$_tunnelName.conf');
+    final file = File('\${dir.path}\\\\\$_tunnelName.conf');
     return file.writeAsString(config);
   }
 
   static Future<bool> isWireGuardInstalled() async {
     return File(_wireguardExe).exists();
+  }
+
+  /// Escapes a string for safe embedding inside a single-quoted
+  /// PowerShell string literal (doubles any embedded single quotes).
+  static String _psQuote(String value) => "'${value.replaceAll("'", "''")}'";
+
+  /// Runs [exePath] with [args] fully elevated, regardless of whether
+  /// this Dart process itself is elevated. Uses PowerShell's
+  /// Start-Process -Verb RunAs -Wait so a UAC prompt is triggered if
+  /// needed, and waits for the launched process to actually finish
+  /// before returning its exit code.
+  static Future<int> _runElevated(String exePath, List<String> args) async {
+    final argList = args.map(_psQuote).join(',');
+    final psCommand =
+        "\$p = Start-Process -FilePath ${_psQuote(exePath)} "
+        "-ArgumentList $argList "
+        "-Verb RunAs -Wait -PassThru -WindowStyle Hidden; "
+        "exit \$p.ExitCode";
+
+    final result = await Process.run(
+      'powershell.exe',
+      ['-NoProfile', '-NonInteractive', '-Command', psCommand],
+      runInShell: false,
+    );
+
+    if (result.exitCode != 0) {
+      final stderrText = (result.stderr ?? '').toString().trim();
+      final stdoutText = (result.stdout ?? '').toString().trim();
+      final detail = [stderrText, stdoutText].where((s) => s.isNotEmpty).join(' | ');
+      throw Exception(
+        'اجرای مجوز-بالا (Elevated) ناموفق بود. کد خطا: \${result.exitCode}'
+        '${detail.isNotEmpty ? '\\nجزئیات: $detail' : ''}',
+      );
+    }
+    return result.exitCode;
   }
 
   static Future<void> connect(String config) async {
@@ -209,36 +284,33 @@ PersistentKeepalive = 25''';
     }
 
     final file = await _writeConfigFile(config);
-    final result = await Process.run(
-      _wireguardExe,
-      ['/installtunnelservice', file.path],
-      runInShell: true,
-    );
 
-    if (result.exitCode != 0) {
+    try {
+      await _runElevated(_wireguardExe, ['/installtunnelservice', file.path]);
+    } catch (e) {
       throw Exception(
-        'نصب تونل ناموفق بود. خطای سیستمی ویندوز:\\n'
-        '${result.stderr}'
+        'نصب تونل ناموفق بود. اطمینان حاصل کنید که در پنجره UAC روی "بله" کلیک کرده‌اید.\\n'
+        '\$e',
       );
     }
   }
 
   static Future<void> disconnect() async {
     if (!Platform.isWindows) return;
-    await Process.run(
-      _wireguardExe,
-      ['/uninstalltunnelservice', _tunnelName],
-      runInShell: true,
-    );
+    try {
+      await _runElevated(_wireguardExe, ['/uninstalltunnelservice', _tunnelName]);
+    } catch (_) {
+      // Best-effort: if the tunnel was already gone/never installed,
+      // don't block the UI from returning to idle state.
+    }
   }
 
   static Future<bool> isConnected() async {
     if (!Platform.isWindows) return false;
     try {
       final result = await Process.run(
-        'sc',
-        ['query', 'WireGuardTunnel\\$$_tunnelName'],
-        runInShell: true,
+        'sc.exe',
+        ['query', 'WireGuardTunnel\\\$\$_tunnelName'],
       );
       return result.stdout.toString().contains('RUNNING');
     } catch (_) {
@@ -249,7 +321,7 @@ PersistentKeepalive = 25''';
 """
         warp_path.parent.mkdir(parents=True, exist_ok=True)
         warp_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("warp_service.dart")
+        self.fixed_files.append("warp_service.dart (real elevation fix for 'Access is denied')")
         return True
 
     def fix_vpn_service(self) -> bool:
@@ -302,7 +374,7 @@ class VPNService extends ChangeNotifier {
       final config = await WarpService.generateConfig(_updateStatus);
 
       _stage = VpnStage.installingTunnel;
-      _updateStatus('در حال اجرای تونل وایرگارد...');
+      _updateStatus('در حال درخواست مجوز ادمین برای نصب تونل...');
 
       await WarpService.connect(config);
 
@@ -324,7 +396,7 @@ class VPNService extends ChangeNotifier {
   Future<void> disconnect() async {
     _stage = VpnStage.disconnecting;
     _updateStatus('در حال قطع اتصال...');
-    
+
     await WarpService.disconnect();
 
     _stage = VpnStage.idle;
@@ -335,212 +407,6 @@ class VPNService extends ChangeNotifier {
         vpn_path.parent.mkdir(parents=True, exist_ok=True)
         vpn_path.write_text(correct, encoding='utf-8')
         self.fixed_files.append("vpn_service.dart")
-        return True
-
-    def fix_home_screen(self) -> bool:
-        home_path = self.root / "lib" / "screens" / "home_screen.dart"
-        correct = """import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../services/vpn_service.dart';
-
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<VPNService>().initStatus();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final vpn = context.watch<VPNService>();
-
-    Color getStatusColor() {
-      if (vpn.isConnected) return const Color(0xFF00E5FF);
-      if (vpn.isConnecting) return const Color(0xFFFF9800);
-      if (vpn.stage == VpnStage.error) return const Color(0xFFFF3B30);
-      return Colors.white54;
-    }
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF09090B), Color(0xFF18181B)],
-                ),
-              ),
-            ),
-          ),
-          SafeArea(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                  child: Row(
-                    children: [
-                      Icon(
-                        vpn.isConnected ? Icons.shield_rounded : Icons.shield_outlined,
-                        color: getStatusColor(),
-                        size: 32,
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'اورایوکس',
-                        style: TextStyle(
-                          fontFamily: 'Vazirmatn',
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                const Spacer(flex: 1),
-                
-                // Status Text
-                Text(
-                  vpn.statusMessage,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Vazirmatn',
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: getStatusColor(),
-                  ),
-                ),
-                if (vpn.lastError != null) ...[
-                  const SizedBox(height: 12),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFF3B30).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFFF3B30).withOpacity(0.3)),
-                      ),
-                      child: Text(
-                        vpn.lastError!,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontFamily: 'Vazirmatn',
-                          fontSize: 13,
-                          height: 1.5,
-                          color: Color(0xFFFF3B30),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-                
-                const SizedBox(height: 50),
-
-                // Main Connect Button
-                GestureDetector(
-                  onTap: vpn.isConnecting
-                      ? null
-                      : () => vpn.isConnected ? vpn.disconnect() : vpn.connect(),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 400),
-                    width: 220,
-                    height: 220,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFF18181B),
-                      boxShadow: [
-                        BoxShadow(
-                          color: getStatusColor().withOpacity(vpn.isConnected || vpn.isConnecting ? 0.4 : 0.0),
-                          blurRadius: vpn.isConnected || vpn.isConnecting ? 60 : 20,
-                          spreadRadius: vpn.isConnected || vpn.isConnecting ? 10 : 0,
-                        ),
-                      ],
-                      border: Border.all(
-                        color: getStatusColor().withOpacity(vpn.isConnected ? 1.0 : (vpn.isConnecting ? 0.8 : 0.1)),
-                        width: vpn.isConnected ? 6 : 2,
-                      ),
-                    ),
-                    child: Center(
-                      child: vpn.isConnecting
-                          ? const SizedBox(
-                              width: 60,
-                              height: 60,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 4,
-                                color: Color(0xFFFF9800),
-                              ),
-                            )
-                          : Icon(
-                              Icons.power_settings_new_rounded,
-                              size: 90,
-                              color: getStatusColor(),
-                            ),
-                    ),
-                  ),
-                ),
-
-                const Spacer(flex: 2),
-
-                // Bottom Status Card
-                AnimatedOpacity(
-                  duration: const Duration(milliseconds: 400),
-                  opacity: vpn.isConnected ? 1.0 : 0.0,
-                  child: vpn.isConnected
-                      ? Padding(
-                          padding: const EdgeInsets.only(bottom: 40, left: 24, right: 24),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF18181B),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.3)),
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.security_rounded, color: Color(0xFF00E5FF), size: 22),
-                                SizedBox(width: 12),
-                                Text(
-                                  'تونل وایرگارد فعال و ایمن است',
-                                  style: TextStyle(
-                                    fontFamily: 'Vazirmatn',
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      : const SizedBox(height: 98),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-"""
-        home_path.parent.mkdir(parents=True, exist_ok=True)
-        home_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("home_screen.dart")
         return True
 
     def fix_pubspec(self) -> bool:
@@ -584,40 +450,44 @@ flutter:
         pubspec_path.write_text(correct, encoding='utf-8')
         self.fixed_files.append("pubspec.yaml")
         return True
-        
+
     def fix_windows_main_cpp(self) -> bool:
         main_cpp_path = self.root / "windows" / "runner" / "main.cpp"
         if not main_cpp_path.exists():
             return False
         content = main_cpp_path.read_text(encoding='utf-8')
-        
+
         content = content.replace("Win32Window::Size(1280, 720)", "Win32Window::Size(400, 700)")
         content = content.replace("Win32Window::Point(10, 10)", "Win32Window::Point(100, 100)")
-        
+
         main_cpp_path.write_text(content, encoding='utf-8')
         self.fixed_files.append("windows/runner/main.cpp (Resized to 400x700)")
         return True
 
     def fix_windows_manifest(self) -> bool:
+        """
+        Keep requireAdministrator on the manifest as defense-in-depth (the
+        whole app still gets a UAC prompt on launch), but the actual tunnel
+        install no longer depends on this alone — see fix_warp_service().
+        """
         manifest_path = self.root / "windows" / "runner" / "runner.exe.manifest"
         if not manifest_path.exists():
             self.log("Manifest not found! Ensure initialization worked.", "ERROR")
             return False
-        
+
         content = manifest_path.read_text(encoding='utf-8')
-        # This regex securely replaces asInvoker without breaking the rest of the XML formatting
         new_content = re.sub(r'level="asInvoker"', 'level="requireAdministrator"', content)
-        
+
         if content != new_content:
             manifest_path.write_text(new_content, encoding='utf-8')
-            self.fixed_files.append("windows/runner/runner.exe.manifest (Forced UAC Shield Icon & Admin Privileges)")
+            self.fixed_files.append("windows/runner/runner.exe.manifest (requireAdministrator)")
             return True
-            
+
         return False
 
     def fix_workflow(self) -> bool:
         workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
-        
+
         correct = r"""name: Build Windows App
 
 on:
@@ -671,7 +541,7 @@ jobs:
 """
         workflow_path.parent.mkdir(parents=True, exist_ok=True)
         workflow_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("build_windows.yml (Clean CI Build - No C++ modifications in server)")
+        self.fixed_files.append("build_windows.yml (unchanged, clean CI build)")
         return True
 
     def remove_obsolete_files(self) -> bool:
@@ -709,47 +579,47 @@ jobs:
         missing = [r for r in required if r not in existing]
         if missing:
             with gi_path.open('a', encoding='utf-8') as f:
-                f.write("\\n" + "\\n".join(missing) + "\\n")
+                f.write("\n" + "\n".join(missing) + "\n")
             self.fixed_files.append(".gitignore")
         return True
 
     def run(self) -> bool:
-        print("\\n" + "=" * 60)
-        print("🔧 Flutter Project Fixer - OryvexVPN (Admin Shield Icon & Build Fix)")
+        print("\n" + "=" * 60)
+        print("🔧 Flutter Project Fixer - OryvexVPN ('Access is denied' Tunnel Fix)")
         print("=" * 60)
-        print(f"\\nProject Path: {self.root}\\n")
+        print(f"\nProject Path: {self.root}\n")
 
         if not self.check_project():
             return False
 
-        # First initialize the full windows architecture LOCALLY
         self.initialize_windows()
-        
-        # Then patch them dynamically to ensure the Admin shield and sizing are applied without breaking XML
+
         self.fix_windows_main_cpp()
         self.fix_windows_manifest()
 
-        # Update the Dart code and workflow
         self.fix_main_dart()
         self.fix_pubspec()
         self.fix_warp_service()
         self.fix_vpn_service()
-        self.fix_home_screen()
         self.fix_workflow()
         self.remove_obsolete_files()
         self.scrub_tokens()
         self.update_gitignore()
 
-        print("\\n" + "=" * 60)
+        print("\n" + "=" * 60)
         print("📊 Final Report")
         print("=" * 60)
         if self.fixed_files:
-            print("\\n📁 Modified/Added Files:")
+            print("\n📁 Modified/Added Files:")
             for f in self.fixed_files:
                 print(f"  ✓ {f}")
 
-        print("\\n✅ Local files perfectly initialized and patched. You can now execute push.py.")
+        print("\n✅ Fix applied: WireGuard tunnel install/uninstall now runs via a")
+        print("   forced elevated PowerShell Start-Process call, independent of the")
+        print("   app's own elevation state. You should now see a UAC prompt at the")
+        print("   moment of connecting — click 'Yes' on it. Run push.py to deploy.")
         return True
+
 
 def main():
     try:
@@ -761,11 +631,12 @@ def main():
         success = fixer.run()
         sys.exit(0 if success else 1)
     except KeyboardInterrupt:
-        print("\\n⏹️ Operation cancelled by user.")
+        print("\n⏹️ Operation cancelled by user.")
         sys.exit(0)
     except Exception as e:
-        print(f"\\n❌ Unexpected error: {e}")
+        print(f"\n❌ Unexpected error: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

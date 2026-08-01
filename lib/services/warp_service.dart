@@ -5,7 +5,7 @@ import 'package:cryptography/cryptography.dart';
 
 class WarpService {
   static const _tunnelName = 'oryvexvpn';
-  
+
   static const List<String> _endpoints = [
     "162.159.192.1", "162.159.193.1", "162.159.195.1",
     "188.114.96.1", "188.114.97.1", "188.114.98.1",
@@ -16,7 +16,7 @@ class WarpService {
   static String get _wireguardExe {
     final exePath = Platform.resolvedExecutable;
     final exeDir = File(exePath).parent.path;
-    return '$exeDir\\data\\wireguard.exe';
+    return '\$exeDir\\data\\wireguard.exe';
   }
 
   static Future<String> _findBestEndpoint(Function(String) onProgress) async {
@@ -35,9 +35,9 @@ class WarpService {
 
     final results = await Future.wait(futures);
     results.sort((a, b) => (a['latency'] as int).compareTo(b['latency'] as int));
-    
+
     final bestIp = results.first['latency'] != 9999 ? results.first['ip'] as String : _endpoints.first;
-    return '$bestIp:2408';
+    return '\$bestIp:2408';
   }
 
   static Future<String> generateConfig(Function(String) onProgress) async {
@@ -77,26 +77,61 @@ class WarpService {
 
     onProgress('در حال آماده‌سازی کانفیگ...');
     return '''[Interface]
-PrivateKey = $privKeyBase64
-Address = $address/32
+PrivateKey = \$privKeyBase64
+Address = \$address/32
 DNS = 1.1.1.1, 1.0.0.1
 MTU = 1280
 
 [Peer]
-PublicKey = $peerPublicKey
+PublicKey = \$peerPublicKey
 AllowedIPs = 0.0.0.0/0, ::/0
-Endpoint = $bestEndpoint
+Endpoint = \$bestEndpoint
 PersistentKeepalive = 25''';
   }
 
   static Future<File> _writeConfigFile(String config) async {
     final dir = Directory.systemTemp;
-    final file = File('${dir.path}\\$_tunnelName.conf');
+    final file = File('\${dir.path}\\\$_tunnelName.conf');
     return file.writeAsString(config);
   }
 
   static Future<bool> isWireGuardInstalled() async {
     return File(_wireguardExe).exists();
+  }
+
+  /// Escapes a string for safe embedding inside a single-quoted
+  /// PowerShell string literal (doubles any embedded single quotes).
+  static String _psQuote(String value) => "'${value.replaceAll("'", "''")}'";
+
+  /// Runs [exePath] with [args] fully elevated, regardless of whether
+  /// this Dart process itself is elevated. Uses PowerShell's
+  /// Start-Process -Verb RunAs -Wait so a UAC prompt is triggered if
+  /// needed, and waits for the launched process to actually finish
+  /// before returning its exit code.
+  static Future<int> _runElevated(String exePath, List<String> args) async {
+    final argList = args.map(_psQuote).join(',');
+    final psCommand =
+        "\$p = Start-Process -FilePath ${_psQuote(exePath)} "
+        "-ArgumentList $argList "
+        "-Verb RunAs -Wait -PassThru -WindowStyle Hidden; "
+        "exit \$p.ExitCode";
+
+    final result = await Process.run(
+      'powershell.exe',
+      ['-NoProfile', '-NonInteractive', '-Command', psCommand],
+      runInShell: false,
+    );
+
+    if (result.exitCode != 0) {
+      final stderrText = (result.stderr ?? '').toString().trim();
+      final stdoutText = (result.stdout ?? '').toString().trim();
+      final detail = [stderrText, stdoutText].where((s) => s.isNotEmpty).join(' | ');
+      throw Exception(
+        'اجرای مجوز-بالا (Elevated) ناموفق بود. کد خطا: \${result.exitCode}'
+        '${detail.isNotEmpty ? '\nجزئیات: $detail' : ''}',
+      );
+    }
+    return result.exitCode;
   }
 
   static Future<void> connect(String config) async {
@@ -108,36 +143,33 @@ PersistentKeepalive = 25''';
     }
 
     final file = await _writeConfigFile(config);
-    final result = await Process.run(
-      _wireguardExe,
-      ['/installtunnelservice', file.path],
-      runInShell: true,
-    );
 
-    if (result.exitCode != 0) {
+    try {
+      await _runElevated(_wireguardExe, ['/installtunnelservice', file.path]);
+    } catch (e) {
       throw Exception(
-        'نصب تونل ناموفق بود. خطای سیستمی ویندوز:\n'
-        '${result.stderr}'
+        'نصب تونل ناموفق بود. اطمینان حاصل کنید که در پنجره UAC روی "بله" کلیک کرده‌اید.\n'
+        '\$e',
       );
     }
   }
 
   static Future<void> disconnect() async {
     if (!Platform.isWindows) return;
-    await Process.run(
-      _wireguardExe,
-      ['/uninstalltunnelservice', _tunnelName],
-      runInShell: true,
-    );
+    try {
+      await _runElevated(_wireguardExe, ['/uninstalltunnelservice', _tunnelName]);
+    } catch (_) {
+      // Best-effort: if the tunnel was already gone/never installed,
+      // don't block the UI from returning to idle state.
+    }
   }
 
   static Future<bool> isConnected() async {
     if (!Platform.isWindows) return false;
     try {
       final result = await Process.run(
-        'sc',
-        ['query', 'WireGuardTunnel\$$_tunnelName'],
-        runInShell: true,
+        'sc.exe',
+        ['query', 'WireGuardTunnel\\$\$_tunnelName'],
       );
       return result.stdout.toString().contains('RUNNING');
     } catch (_) {
