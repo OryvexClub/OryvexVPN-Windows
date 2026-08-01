@@ -16,12 +16,12 @@ class MyApp extends StatelessWidget {
       title: 'Oryvex Dashboard',
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0F0F13),
+        scaffoldBackgroundColor: const Color(0xFF111111),
         primaryColor: const Color(0xFF00E5FF),
         fontFamily: 'Vazirmatn',
         colorScheme: const ColorScheme.dark(
           primary: Color(0xFF00E5FF),
-          surface: Color(0xFF1C1C22),
+          surface: Color(0xFF1A1A1A),
         ),
       ),
       home: const HomeScreen(),

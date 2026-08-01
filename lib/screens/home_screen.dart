@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../services/vpn_service.dart';
 
@@ -12,29 +13,26 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // Background UI
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Color(0xFF0F0F13), Color(0xFF13131A)],
+                  colors: [Color(0xFF111111), Color(0xFF0A0A0A)],
                 ),
               ),
             ),
           ),
-          
           SafeArea(
             child: Column(
               children: [
-                // Top Bar
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Icon(Icons.menu_rounded, color: Colors.white70, size: 28),
+                      const Icon(Icons.dashboard_rounded, color: Colors.white70),
                       Row(
                         children: [
                           Icon(
@@ -43,8 +41,9 @@ class HomeScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Oryvex',
+                            'Oryvex VPS',
                             style: TextStyle(
+                              fontFamily: 'Vazirmatn',
                               fontSize: 20, 
                               fontWeight: FontWeight.bold,
                               color: vpn.isConnected ? const Color(0xFF00E5FF) : Colors.white,
@@ -52,42 +51,39 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const Icon(Icons.settings_rounded, color: Colors.white70, size: 28),
+                      const Icon(Icons.settings_rounded, color: Colors.white70),
                     ],
                   ),
                 ),
-
-                const Spacer(),
-
-                // Status Text
+                
+                const SizedBox(height: 20),
                 Text(
-                  vpn.statusMessage.toUpperCase(),
+                  vpn.statusMessage,
                   style: TextStyle(
-                    fontSize: 18,
-                    letterSpacing: 2,
-                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Vazirmatn',
+                    fontSize: 16,
                     color: vpn.isConnected ? const Color(0xFF00E5FF) : Colors.white54,
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 30),
 
-                // Main Connect Button
+                // Connect Button
                 GestureDetector(
                   onTap: () => vpn.isConnecting ? null : (vpn.isConnected ? vpn.disconnect() : vpn.connect()),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
-                    width: 200,
-                    height: 200,
+                    width: 180,
+                    height: 180,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFF1C1C22),
+                      color: const Color(0xFF1A1A1A),
                       boxShadow: [
                         BoxShadow(
                           color: vpn.isConnected 
                               ? const Color(0xFF00E5FF).withOpacity(0.3)
                               : (vpn.isConnecting ? Colors.orange.withOpacity(0.3) : Colors.black26),
-                          blurRadius: vpn.isConnected || vpn.isConnecting ? 60 : 20,
-                          spreadRadius: vpn.isConnected || vpn.isConnecting ? 10 : 0,
+                          blurRadius: vpn.isConnected || vpn.isConnecting ? 50 : 15,
+                          spreadRadius: vpn.isConnected || vpn.isConnecting ? 5 : 0,
                         ),
                       ],
                       border: Border.all(
@@ -102,57 +98,103 @@ class HomeScreen extends StatelessWidget {
                           ? const CircularProgressIndicator(color: Colors.orange)
                           : Icon(
                               Icons.power_settings_new_rounded,
-                              size: 80,
+                              size: 70,
                               color: vpn.isConnected ? const Color(0xFF00E5FF) : Colors.white30,
                             ),
                     ),
                   ),
                 ),
 
-                const Spacer(),
+                const SizedBox(height: 40),
 
-                // Server Data Card (Slides up when connected)
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.fastOutSlowIn,
-                  height: vpn.isConnected ? 260 : 0,
-                  margin: const EdgeInsets.symmetric(horizontal: 24),
-                  child: SingleChildScrollView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    child: Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1C1C22),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: Colors.white10),
-                      ),
+                // Info Panel
+                Expanded(
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 400),
+                    opacity: vpn.isConnected ? 1.0 : 0.0,
+                    child: vpn.isConnected ? SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.dns_rounded, color: Color(0xFF00E5FF), size: 20),
-                              SizedBox(width: 10),
-                              Text("اطلاعات سرور (VPS)", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            child: Divider(color: Colors.white10, height: 1),
-                          ),
-                          if (vpn.serverInfo != null) ...[
-                            _infoRow('آی‌پی سرور', vpn.serverInfo!['ip'] ?? '162.159.192.1', isHighlight: true),
-                            const SizedBox(height: 16),
-                            _infoRow('موقعیت مکانی', vpn.serverInfo!['city'] ?? 'نامشخص'),
-                            const SizedBox(height: 16),
-                            _infoRow('شبکه / دیتاسنتر', vpn.serverInfo!['org'] ?? 'WARP Network'),
-                          ]
+                          if (vpn.serverInfo != null)
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1A1A1A),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: Colors.white10),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Row(
+                                    children: [
+                                      Icon(Icons.dns_rounded, color: Color(0xFF00E5FF), size: 18),
+                                      SizedBox(width: 8),
+                                      Text("اطلاعات سرور", style: TextStyle(fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                  const Divider(color: Colors.white10, height: 24),
+                                  _infoRow('آی‌پی', vpn.serverInfo!['ip'] ?? '-'),
+                                  const SizedBox(height: 12),
+                                  _infoRow('موقعیت', '${vpn.serverInfo!['city'] ?? ''} - ${vpn.serverInfo!['country_name'] ?? ''}'),
+                                  const SizedBox(height: 12),
+                                  _infoRow('شبکه', vpn.serverInfo!['org'] ?? '-'),
+                                ],
+                              ),
+                            ),
+                          const SizedBox(height: 20),
+                          if (vpn.generatedConfig != null)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1A1A1A),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: Colors.white10),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Row(
+                                        children: [
+                                          Icon(Icons.code_rounded, color: Color(0xFF00E5FF), size: 18),
+                                          SizedBox(width: 8),
+                                          Text("کانفیگ وایرگارد", style: TextStyle(fontWeight: FontWeight.bold)),
+                                        ],
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.copy_rounded, size: 20, color: Colors.white54),
+                                        onPressed: () {
+                                          Clipboard.setData(ClipboardData(text: vpn.generatedConfig!));
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(content: Text('کانفیگ کپی شد', fontFamily: 'Vazirmatn')),
+                                          );
+                                        },
+                                      )
+                                    ],
+                                  ),
+                                  const Divider(color: Colors.white10, height: 16),
+                                  Text(
+                                    vpn.generatedConfig!,
+                                    style: const TextStyle(
+                                      fontFamily: 'monospace',
+                                      fontSize: 12,
+                                      color: Color(0xFF00E5FF),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
                         ],
                       ),
-                    ),
+                    ) : const SizedBox(),
                   ),
                 ),
-                const SizedBox(height: 30),
               ],
             ),
           ),
@@ -161,18 +203,17 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _infoRow(String label, String value, {bool isHighlight = false}) {
+  Widget _infoRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white54, fontSize: 13, fontWeight: FontWeight.w600)),
+        Text(label, style: const TextStyle(color: Colors.white54, fontSize: 14)),
         Text(
           value, 
-          style: TextStyle(
-            color: isHighlight ? const Color(0xFF00E5FF) : Colors.white, 
+          style: const TextStyle(
+            color: Colors.white, 
             fontSize: 14, 
             fontWeight: FontWeight.bold,
-            fontFamily: 'monospace'
           )
         ),
       ],
