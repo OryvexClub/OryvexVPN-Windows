@@ -43,7 +43,6 @@ class FlutterProjectFixer:
 
     def initialize_windows(self) -> bool:
         self.log("Ensuring Windows platform is initialized...", "STEP")
-        # Added shell=True to fix [WinError 2] on Windows
         subprocess.run("flutter create --platforms windows .", shell=True, cwd=self.root, capture_output=True)
         return True
 
@@ -603,7 +602,6 @@ flutter:
         manifest_path = self.root / "windows" / "runner" / "runner.exe.manifest"
         manifest_path.parent.mkdir(parents=True, exist_ok=True)
         
-        # Hardcoding the manifest to guarantee requireAdministrator is injected
         correct = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
   <assemblyIdentity version="1.0.0.0" name="oryvex_vpn_demo" type="win32"/>
@@ -636,7 +634,9 @@ flutter:
 
     def fix_workflow(self) -> bool:
         workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
-        correct = """name: Build Windows App
+        
+        # We use a raw string (r"...") so the backslashes in PowerShell aren't mangled by Python
+        correct = r"""name: Build Windows App
 
 on:
   push:
@@ -657,6 +657,9 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
       - name: Get dependencies
         run: flutter pub get
 
@@ -665,13 +668,13 @@ jobs:
 
       - name: Bundle WireGuard inside data/
         run: |
-          $ReleaseDir = "build\\windows\\x64\\runner\\Release"
-          New-Item -ItemType Directory -Force -Path "$ReleaseDir\\data"
+          $ReleaseDir = "build\windows\x64\runner\Release"
+          New-Item -ItemType Directory -Force -Path "$ReleaseDir\data"
           Invoke-WebRequest -Uri "https://download.wireguard.com/windows-client/wireguard-amd64-0.5.3.msi" -OutFile "wg.msi"
-          Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD\\wg.msi`" /qb TARGETDIR=`"$PWD\\wg_extract`"" -Wait -NoNewWindow
-          if (Test-Path "wg_extract\\WireGuard\\wireguard.exe") {
-            Copy-Item -Path "wg_extract\\WireGuard\\wireguard.exe" -Destination "$ReleaseDir\\data\\wireguard.exe"
-            Copy-Item -Path "wg_extract\\WireGuard\\wg.exe" -Destination "$ReleaseDir\\data\\wg.exe"
+          Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD\wg.msi`" /qb TARGETDIR=`"$PWD\wg_extract`"" -Wait -NoNewWindow
+          if (Test-Path "wg_extract\WireGuard\wireguard.exe") {
+            Copy-Item -Path "wg_extract\WireGuard\wireguard.exe" -Destination "$ReleaseDir\data\wireguard.exe"
+            Copy-Item -Path "wg_extract\WireGuard\wg.exe" -Destination "$ReleaseDir\data\wg.exe"
             Write-Host "WireGuard successfully bundled in data/ folder."
           } else {
             Write-Host "Failed to extract WireGuard."
@@ -686,7 +689,7 @@ jobs:
 """
         workflow_path.parent.mkdir(parents=True, exist_ok=True)
         workflow_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("build_windows.yml (Removed destructive flutter create command)")
+        self.fixed_files.append("build_windows.yml (Cleaned up workflow to avoid LNK1327)")
         return True
 
     def remove_obsolete_files(self) -> bool:
@@ -730,7 +733,7 @@ jobs:
 
     def run(self) -> bool:
         print("\\n" + "=" * 60)
-        print("🔧 Flutter Project Fixer - OryvexVPN (Admin Shield Icon Fix)")
+        print("🔧 Flutter Project Fixer - OryvexVPN (Admin Shield Icon & Build Fix)")
         print("=" * 60)
         print(f"\\nProject Path: {self.root}\\n")
 
@@ -758,7 +761,7 @@ jobs:
             for f in self.fixed_files:
                 print(f"  ✓ {f}")
 
-        print("\\n✅ Shield Icon enabled. The app will now demand Administrator privileges immediately upon launch.")
+        print("\\n✅ Shield Icon enabled and build action corrected. You can now execute push.py.")
         return True
 
 def main():
