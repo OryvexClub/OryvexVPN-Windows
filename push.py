@@ -209,7 +209,7 @@ class GitHubPusher:
             return False
 
         self.log("Committing...", "STEP")
-        success, output = self.run_command('git commit -m "OryvexVPN: RTL UI updates + Bundled WireGuard MSI extraction"')
+        success, output = self.run_command('git commit -m "OryvexVPN: Fix UAC Admin privileges & LNK1327 build error"')
         if not success and "nothing to commit" not in output:
             self.log(f"Commit warning: {output}", "WARNING")
 

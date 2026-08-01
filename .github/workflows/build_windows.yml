@@ -40,7 +40,15 @@ jobs:
       - name: Update Windows Project Files
         run: |
           flutter create --platforms windows --overwrite .
-          git checkout lib/ pubspec.yaml README.md windows/runner/runner.exe.manifest windows/runner/main.cpp
+          git checkout lib/ pubspec.yaml README.md windows/runner/main.cpp
+
+      - name: Force Administrator Privileges (UAC)
+        run: |
+          $manifest = "windows/runner/runner.exe.manifest"
+          if (Test-Path $manifest) {
+            (Get-Content $manifest) -replace 'level="asInvoker"', 'level="requireAdministrator"' | Set-Content $manifest
+            Write-Host "Manifest patched for Administrator privileges."
+          }
 
       - name: Get dependencies (again after create)
         run: flutter pub get

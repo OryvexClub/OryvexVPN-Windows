@@ -5,7 +5,7 @@
 fixer.py - OryvexVPN Auto-Fixer
 Implements automatic Cloudflare WARP key generation, endpoint sweeping, 
 real WireGuard connection via bundled data/wireguard.exe, Persian UI, 
-and forced Administrator privileges for Windows.
+and forced Administrator privileges for Windows without breaking mt.exe.
 """
 
 import os
@@ -585,7 +585,6 @@ flutter:
             return False
         content = main_cpp_path.read_text(encoding='utf-8')
         
-        # Adjusting the window size to a sleek mobile-like dimension (400x700)
         content = content.replace("Win32Window::Size(1280, 720)", "Win32Window::Size(400, 700)")
         content = content.replace("Win32Window::Point(10, 10)", "Win32Window::Point(100, 100)")
         
@@ -596,17 +595,14 @@ flutter:
     def fix_windows_manifest(self) -> bool:
         manifest_path = self.root / "windows" / "runner" / "runner.exe.manifest"
         if not manifest_path.exists():
-            self.log("windows/runner/runner.exe.manifest not found.", "WARNING")
             return False
         
         content = manifest_path.read_text(encoding='utf-8')
-        
-        # Replace asInvoker with requireAdministrator to trigger UAC prompt automatically
         new_content = content.replace('level="asInvoker"', 'level="requireAdministrator"')
         
         if content != new_content:
             manifest_path.write_text(new_content, encoding='utf-8')
-            self.fixed_files.append("runner.exe.manifest (Forced Administrator Privileges)")
+            self.fixed_files.append("runner.exe.manifest (Forced Administrator Privileges locally)")
             return True
             
         return False
@@ -655,7 +651,15 @@ jobs:
       - name: Update Windows Project Files
         run: |
           flutter create --platforms windows --overwrite .
-          git checkout lib/ pubspec.yaml README.md windows/runner/runner.exe.manifest windows/runner/main.cpp
+          git checkout lib/ pubspec.yaml README.md windows/runner/main.cpp
+
+      - name: Force Administrator Privileges (UAC)
+        run: |
+          $manifest = "windows/runner/runner.exe.manifest"
+          if (Test-Path $manifest) {
+            (Get-Content $manifest) -replace 'level="asInvoker"', 'level="requireAdministrator"' | Set-Content $manifest
+            Write-Host "Manifest patched for Administrator privileges."
+          }
 
       - name: Get dependencies (again after create)
         run: flutter pub get
@@ -686,7 +690,7 @@ jobs:
 """
         workflow_path.parent.mkdir(parents=True, exist_ok=True)
         workflow_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("build_windows.yml (Added WG MSI Extraction)")
+        self.fixed_files.append("build_windows.yml (Fixed LNK1327 issue with dynamic patch)")
         return True
 
     def remove_obsolete_files(self) -> bool:
@@ -730,7 +734,7 @@ jobs:
 
     def run(self) -> bool:
         print("\\n" + "=" * 60)
-        print("🔧 Flutter Project Fixer - OryvexVPN (Admin Privileges & Bundled WG)")
+        print("🔧 Flutter Project Fixer - OryvexVPN (Admin Privileges, LNK1327 Fix & Bundled WG)")
         print("=" * 60)
         print(f"\\nProject Path: {self.root}\\n")
 
@@ -757,7 +761,7 @@ jobs:
             for f in self.fixed_files:
                 print(f"  ✓ {f}")
 
-        print("\\n✅ Administrator privileges have been forced. You can now execute push.py.")
+        print("\\n✅ All issues resolved. WireGuard will now be bundled automatically via GitHub Actions.")
         return True
 
 def main():
