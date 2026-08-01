@@ -697,12 +697,22 @@ class _EndpointSelectorState extends State<EndpointSelector> {
   }
 }
 '''
-        # This one is genuinely broken (dangling import + truncated code),
-        # so we force-overwrite it even though it's not "empty".
+        # This one is genuinely broken (dangling import + truncated code) in
+        # its original form, so we force-overwrite it - but ONLY while it
+        # still shows the specific broken markers (dangling import to the
+        # deleted warp_generator.dart, or a truncated dropdown line). Once
+        # fixed, re-running must be a no-op, so we don't force blindly on
+        # every run - that would silently clobber any manual edits made
+        # after the first fix.
+        existing_text = path.read_text(encoding='utf-8') if path.exists() else ""
+        is_broken = (not path.exists()) or (
+            'warp_generator.dart' in existing_text
+            or 'WARPGenerator' in existing_text
+        )
         return self._write_if_needed(
             path, content,
             "referenced deleted warp_generator.dart and was truncated - rewritten standalone",
-            force=True,
+            force=is_broken,
         )
 
     # ------------------------------------------------------------------ #
@@ -808,6 +818,479 @@ class _EndpointSelectorState extends State<EndpointSelector> {
             return result.returncode == 0, (result.stdout.strip() or result.stderr.strip())
         except Exception as e:
             return False, str(e)
+
+    # ------------------------------------------------------------------ #
+    # 1c. BoringTun-on-Windows is a dead end - switch to official WireGuard
+    # ------------------------------------------------------------------ #
+    def fix_boringtun_to_official_wireguard(self) -> bool:
+        """
+        Root-cause fix for CI failures like:
+          "error: could not compile `boringtun` (lib) due to 14 previous
+           errors ... error[E0433]: cannot find `unix` in `os` ...
+           error: could not compile `daemonize` (lib) due to 51 previous
+           errors"
+
+        boringtun-cli (the crates.io `boringtun` binary target) is
+        documented upstream as Linux/macOS only. It transitively depends
+        on `daemonize`, which uses std::os::unix, libc::fork/setuid/
+        chroot/flock/etc - none of which exist on the MSVC/Windows target.
+        No amount of flag-tweaking fixes this: it is not written for
+        Windows and never was.
+
+        The correct, permanent fix is to stop trying to compile BoringTun
+        for Windows at all, and instead bundle the OFFICIAL, pre-built
+        WireGuard for Windows client binary (wireguard.exe), downloaded
+        directly from download.wireguard.com. It is driven via:
+            wireguard.exe /installtunnelservice <path-to-conf>
+            wireguard.exe /uninstalltunnelservice <tunnel-name>
+        which installs/removes a real Windows service per tunnel - the
+        same mechanism the official WireGuard Windows client itself uses.
+        No Rust/Cargo/compilation step is needed in CI anymore.
+
+        This rewrites:
+          - lib/services/warp_service.dart (generates a real .conf file,
+            drives wireguard.exe instead of a nonexistent boringtun.exe)
+          - .github/workflows/build_windows.yml (drops the whole Rust/
+            Cargo/boringtun build stage; downloads+extracts the official
+            WireGuard MSI instead)
+        """
+        changed = False
+
+        # ---- warp_service.dart -------------------------------------------------
+        warp_path = self.root / "lib" / "services" / "warp_service.dart"
+        warp_content = r'''import 'dart:io';
+import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:cryptography/cryptography.dart';
+import 'package:path_provider/path_provider.dart';
+
+/// Drives the OFFICIAL, pre-built WireGuard for Windows client
+/// (https://www.wireguard.com/install/) instead of compiling a
+/// third-party userspace implementation from source.
+///
+/// boringtun-cli (Cloudflare's Rust implementation) is documented
+/// upstream as Linux/macOS only and cannot be compiled for Windows -
+/// it depends on Unix-only APIs (fork, setuid, chroot, flock, unix
+/// sockets) that simply don't exist on MSVC. wireguard.exe is the real
+/// Windows implementation (WireGuardNT kernel driver + userspace
+/// manager), bundled with the app and driven via its documented
+/// service-install command line interface:
+///
+///   wireguard.exe /installtunnelservice <path-to-conf>
+///   wireguard.exe /uninstalltunnelservice <tunnel-name>
+///
+/// Each call installs/removes a real Windows service named
+/// "WireGuardTunnel$<tunnel-name>", exactly like the official GUI client.
+class WarpService {
+  static const _tunnelName = 'oryvexvpn';
+  static bool _connected = false;
+
+  // Cloudflare WARP endpoint list.
+  static const List<String> _endpoints = [
+    "8.6.112.165", "8.6.112.139", "8.6.112.178", "8.6.112.205",
+    "8.6.112.176", "8.6.112.190", "8.6.112.121", "8.6.112.202",
+    "8.6.112.223", "8.6.112.230", "8.6.112.200", "8.6.112.233",
+    "8.6.112.4", "8.6.112.159", "8.6.112.93", "8.6.112.182",
+    "8.6.112.133", "8.6.112.52", "8.6.112.78", "8.6.112.248",
+    "8.6.112.246", "8.6.112.172", "8.6.112.104", "8.6.112.249",
+    "8.6.112.46", "8.6.112.234", "8.6.112.136", "8.6.112.224",
+    "8.6.112.251", "8.6.112.127", "8.6.112.237", "8.6.112.82",
+    "8.6.112.170", "8.6.112.29", "8.6.112.7", "8.6.112.67",
+    "188.114.97.6", "8.6.112.235", "8.6.112.228", "8.6.112.19",
+    "8.6.112.184", "8.6.112.51", "8.6.112.8", "8.6.112.253",
+    "8.6.112.221", "8.6.112.96", "8.6.112.174", "8.6.112.212",
+    "8.6.112.154", "8.6.112.65", "8.6.112.171", "8.6.112.160",
+    "8.6.112.86", "8.6.112.163", "8.6.112.122", "8.6.112.70",
+    "8.6.112.53", "8.6.112.181", "8.6.112.191", "8.6.112.79",
+    "8.6.112.180", "8.6.112.61", "8.6.112.77", "8.6.112.107",
+    "8.6.112.106", "8.6.112.60",
+    "162.159.192.1", "162.159.192.2", "162.159.193.1", "162.159.193.5",
+    "162.159.195.1", "162.159.195.2", "162.159.195.5",
+    "188.114.96.0", "188.114.96.1", "188.114.96.2", "188.114.96.3",
+    "188.114.96.4", "188.114.96.5", "188.114.97.0", "188.114.97.1",
+    "188.114.97.2", "188.114.97.3", "188.114.97.4", "188.114.97.5",
+    "188.114.98.0", "188.114.98.1", "188.114.98.2", "188.114.99.0",
+    "188.114.99.1", "188.114.99.2",
+  ];
+
+  static String get _exeDir {
+    final exePath = Platform.resolvedExecutable;
+    return File(exePath).parent.path;
+  }
+
+  static String get _wireguardExe => '$_exeDir\\data\\wireguard.exe';
+
+  static Future<bool> _coreFilesPresent() async {
+    return File(_wireguardExe).exists();
+  }
+
+  static Future<String> _confDir() async {
+    final dir = await getApplicationSupportDirectory();
+    final confDir = Directory('${dir.path}\\wireguard');
+    if (!await confDir.exists()) {
+      await confDir.create(recursive: true);
+    }
+    return confDir.path;
+  }
+
+  static String get _confPath => '_confDirCache\\$_tunnelName.conf';
+
+  /// Concurrent ping scan for the fastest endpoint.
+  static Future<String> _findBestEndpoint(Function(String) onProgress) async {
+    onProgress('در حال جستجوی سریع‌ترین سرور...');
+    final futures = _endpoints.map((ip) async {
+      try {
+        final start = DateTime.now();
+        final res = await Process.run('ping', ['-n', '1', '-w', '1000', ip]);
+        if (res.exitCode == 0) {
+          final latency = DateTime.now().difference(start).inMilliseconds;
+          return {'ip': ip, 'latency': latency};
+        }
+      } catch (_) {}
+      return {'ip': ip, 'latency': 9999};
+    });
+
+    final results = await Future.wait(futures);
+    results.sort((a, b) => (a['latency'] as int).compareTo(b['latency'] as int));
+
+    final bestIp = results.first['latency'] != 9999
+        ? results.first['ip'] as String
+        : _endpoints.first;
+    return bestIp;
+  }
+
+  /// Register with Cloudflare WARP API and return the needed parameters.
+  static Future<_WarpRegistration> _register(Function(String) onProgress) async {
+    onProgress('در حال ساخت کلید رمزنگاری...');
+    final algorithm = X25519();
+    final keyPair = await algorithm.newKeyPair();
+    final publicKey = await keyPair.extractPublicKey();
+    final privateKeyBytes = await keyPair.extractPrivateKeyBytes();
+
+    final pubKeyBase64 = base64Encode(publicKey.bytes);
+    final privKeyBase64 = base64Encode(privateKeyBytes);
+
+    onProgress('در حال ثبت‌نام در شبکه...');
+    final response = await http.post(
+      Uri.parse('https://api.cloudflareclient.com/v0a737/reg'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        "key": pubKeyBase64,
+        "install_id": "",
+        "warp_enabled": true,
+        "tos": DateTime.now().toUtc().toIso8601String(),
+        "type": "Windows",
+        "locale": "fa_IR"
+      }),
+    ).timeout(const Duration(seconds: 15));
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('ثبت‌نام دستگاه ناموفق بود.');
+    }
+
+    final data = jsonDecode(response.body);
+    final peer = data['config']['peers'][0];
+    final address = (data['config']['interface']['addresses']['v4'] as String);
+    final peerPublicKeyBase64 = peer['public_key'] as String;
+
+    final bestIp = await _findBestEndpoint(onProgress);
+
+    return _WarpRegistration(
+      privateKeyBase64: privKeyBase64,
+      address: address,
+      peerPublicKeyBase64: peerPublicKeyBase64,
+      endpointIp: bestIp,
+      endpointPort: '2408',
+    );
+  }
+
+  static String _buildConf(_WarpRegistration reg) {
+    final b = StringBuffer();
+    b.writeln('[Interface]');
+    b.writeln('PrivateKey = ${reg.privateKeyBase64}');
+    b.writeln('Address = ${reg.address}');
+    b.writeln('DNS = 1.1.1.1');
+    b.writeln('');
+    b.writeln('[Peer]');
+    b.writeln('PublicKey = ${reg.peerPublicKeyBase64}');
+    b.writeln('Endpoint = ${reg.endpointIp}:${reg.endpointPort}');
+    b.writeln('AllowedIPs = 0.0.0.0/0');
+    b.writeln('PersistentKeepalive = 25');
+    return b.toString();
+  }
+
+  /// Writes the .conf file and installs it as a Windows tunnel service
+  /// via the official wireguard.exe CLI.
+  static Future<void> _installTunnelService(_WarpRegistration reg) async {
+    final confDir = await _confDir();
+    final confFile = File('$confDir\\$_tunnelName.conf');
+    await confFile.writeAsString(_buildConf(reg));
+
+    // Remove any stale service from a previous run first (ignore errors -
+    // it may simply not exist yet).
+    await Process.run(_wireguardExe, ['/uninstalltunnelservice', _tunnelName]);
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    final result = await Process.run(
+      _wireguardExe,
+      ['/installtunnelservice', confFile.path],
+    );
+
+    if (result.exitCode != 0) {
+      final err = (result.stderr ?? '').toString().trim();
+      throw Exception(
+        err.isNotEmpty ? err : 'نصب سرویس WireGuard ناموفق بود.',
+      );
+    }
+
+    // Give the service a moment to actually come up before we check it.
+    await Future.delayed(const Duration(seconds: 1));
+  }
+
+  static Future<void> connect() async {
+    if (!Platform.isWindows) {
+      throw Exception('این نسخه فقط مخصوص ویندوز است.');
+    }
+    await connectWithProgress((_) {});
+  }
+
+  static Future<void> connectWithProgress(Function(String) onProgress) async {
+    if (!Platform.isWindows) {
+      throw Exception('این نسخه فقط مخصوص ویندوز است.');
+    }
+    if (!await _coreFilesPresent()) {
+      throw Exception(
+        'فایل هسته (data\\wireguard.exe) در برنامه یافت نشد.',
+      );
+    }
+
+    final reg = await _register(onProgress);
+
+    onProgress('در حال نصب سرویس WireGuard...');
+    await _installTunnelService(reg);
+
+    _connected = true;
+  }
+
+  static Future<void> disconnect() async {
+    if (!Platform.isWindows) return;
+    try {
+      await Process.run(_wireguardExe, ['/uninstalltunnelservice', _tunnelName]);
+    } catch (_) {
+      // Non-fatal: service may already be gone.
+    }
+    _connected = false;
+  }
+
+  static Future<bool> isConnected() async {
+    if (!Platform.isWindows) return false;
+    if (!_connected) return false;
+    // WireGuard installs the tunnel as a service named
+    // "WireGuardTunnel$<name>". Query the service manager directly
+    // rather than netsh, since the interface name WireGuard chooses
+    // internally isn't guaranteed to match our tunnel name exactly.
+    final result = await Process.run(
+      'sc', ['query', 'WireGuardTunnel\$$_tunnelName'],
+    );
+    return result.exitCode == 0 &&
+        result.stdout.toString().contains('RUNNING');
+  }
+}
+
+class _WarpRegistration {
+  final String privateKeyBase64;
+  final String address;
+  final String peerPublicKeyBase64;
+  final String endpointIp;
+  final String endpointPort;
+
+  const _WarpRegistration({
+    required this.privateKeyBase64,
+    required this.address,
+    required this.peerPublicKeyBase64,
+    required this.endpointIp,
+    required this.endpointPort,
+  });
+}
+'''
+        # NOTE: `_confPath` above (`_confDirCache\\...`) is a placeholder
+        # that is never actually referenced anywhere in the class - it's
+        # dead code. Remove it to avoid confusion / lints.
+        warp_content = warp_content.replace(
+            "  static String get _confPath => '_confDirCache\\\\$_tunnelName.conf';\n\n",
+            "",
+        )
+
+        old_warp_existed = warp_path.exists()
+        old_warp_text = warp_path.read_text(encoding='utf-8') if old_warp_existed else ""
+        # Detect the OLD, broken implementation specifically - it referenced
+        # a `boringtun.exe` binary path/process call. The NEW file (this
+        # function's own output) only mentions "boringtun" once, inside an
+        # explanatory doc comment, so match on the exe/process usage instead
+        # of the bare word to stay idempotent across repeated runs.
+        needs_rewrite = (not old_warp_existed) or (
+            'boringtun.exe' in old_warp_text.lower()
+            or '_boringtunexe' in old_warp_text.lower()
+            or 'boringtun-src' in old_warp_text.lower()
+        )
+
+        if needs_rewrite:
+            warp_path.parent.mkdir(parents=True, exist_ok=True)
+            warp_path.write_text(warp_content, encoding='utf-8')
+            self.fixed_files.append(
+                "lib/services/warp_service.dart (boringtun.exe cannot be built for "
+                "Windows - rewritten to drive the official wireguard.exe tunnel-service "
+                "CLI instead)"
+            )
+            self.log("Rewrote warp_service.dart to use official WireGuard.exe", "FIX")
+            changed = True
+        else:
+            self.skipped_files.append(
+                "lib/services/warp_service.dart (does not reference boringtun, left untouched)"
+            )
+
+        # path_provider is required by the new warp_service.dart (to find a
+        # writable per-user directory for the .conf file).
+        pubspec = self.root / "pubspec.yaml"
+        if pubspec.exists():
+            ptext = pubspec.read_text(encoding='utf-8')
+            if re.search(r'^\s*path_provider\s*:', ptext, re.MULTILINE) is None:
+                lines = ptext.splitlines()
+                try:
+                    dep_idx = next(i for i, l in enumerate(lines) if l.strip() == "dependencies:")
+                    end_idx = len(lines)
+                    for i in range(dep_idx + 1, len(lines)):
+                        line = lines[i]
+                        if line and not line.startswith(' ') and not line.startswith('\t') and line.strip():
+                            end_idx = i
+                            break
+                    lines.insert(end_idx, "  path_provider: ^2.1.1")
+                    pubspec.write_text("\n".join(lines) + "\n", encoding='utf-8')
+                    self.fixed_files.append(
+                        "pubspec.yaml (added path_provider dependency - required by "
+                        "the rewritten warp_service.dart)"
+                    )
+                    changed = True
+                except StopIteration:
+                    self.warnings.append(
+                        "Could not auto-add path_provider to pubspec.yaml - add manually: "
+                        "path_provider: ^2.1.1"
+                    )
+
+        # ---- .github/workflows/build_windows.yml -------------------------------
+        workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
+        old_workflow_text = workflow_path.read_text(encoding='utf-8') if workflow_path.exists() else ""
+        # Same idempotency concern as above: the NEW workflow's own comments
+        # mention "boringtun" once (explaining why it's gone). Match on the
+        # actual broken build step instead (a real `cargo build` invocation
+        # or a clone of the boringtun source repo) so re-runs don't loop.
+        needs_workflow_rewrite = (
+            'cargo build' in old_workflow_text.lower()
+            or 'boringtun.git' in old_workflow_text.lower()
+            or 'boringtun-src' in old_workflow_text.lower()
+        )
+        if needs_workflow_rewrite:
+            new_workflow = '''name: Build Windows App (Official WireGuard)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.2'
+          channel: 'stable'
+          cache: true
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build Windows app
+        run: flutter build windows --release
+
+      # No Rust/Cargo build step needed anymore. boringtun-cli only ever
+      # targeted Linux/macOS and cannot compile for MSVC (it pulls in
+      # `daemonize` and std::os::unix APIs that don't exist on Windows).
+      # Instead we bundle the OFFICIAL, pre-built WireGuard for Windows
+      # binary (wireguard.exe), which already includes the Wintun driver
+      # and is what the real WireGuard Windows client uses.
+      - name: Download and extract official WireGuard for Windows
+        run: |
+          $wgVersion = "1.0.1"
+          $msiUrl = "https://download.wireguard.com/windows-client/wireguard-amd64-$wgVersion.msi"
+          Invoke-WebRequest -Uri $msiUrl -OutFile "wireguard.msi"
+
+          $extractDir = "$PWD\\wireguard_extracted"
+          New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
+
+          $msiExecArgs = @(
+            "/a", "`"$PWD\\wireguard.msi`"",
+            "/qn",
+            "TARGETDIR=`"$extractDir`""
+          )
+          Start-Process msiexec.exe -ArgumentList $msiExecArgs -Wait -NoNewWindow
+
+          $wgExe = Get-ChildItem -Path $extractDir -Filter "wireguard.exe" -Recurse | Select-Object -First 1
+          if (-not $wgExe) {
+            Write-Host "Failed to extract wireguard.exe from MSI."
+            Get-ChildItem -Path $extractDir -Recurse | ForEach-Object { Write-Host $_.FullName }
+            exit 1
+          }
+          Write-Host "Found wireguard.exe at: $($wgExe.FullName)"
+          Copy-Item $wgExe.FullName "$PWD\\wireguard.exe"
+
+      - name: Bundle WireGuard binary inside data/
+        run: |
+          $ReleaseDir = "build\\windows\\x64\\runner\\Release"
+          New-Item -ItemType Directory -Force -Path "$ReleaseDir\\data" | Out-Null
+
+          Copy-Item "$PWD\\wireguard.exe" "$ReleaseDir\\data\\wireguard.exe"
+
+          if (-not (Test-Path "$ReleaseDir\\data\\wireguard.exe")) {
+            Write-Host "wireguard.exe bundling failed."
+            exit 1
+          }
+
+          Write-Host "Official WireGuard for Windows bundled successfully."
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: oryvexvpn-windows
+          path: build/windows/x64/runner/Release/
+'''
+            workflow_path.parent.mkdir(parents=True, exist_ok=True)
+            workflow_path.write_text(new_workflow, encoding='utf-8')
+            self.fixed_files.append(
+                ".github/workflows/build_windows.yml (removed the Rust/Cargo/boringtun "
+                "compile stage that cannot succeed on Windows; now downloads and bundles "
+                "the official pre-built wireguard.exe instead)"
+            )
+            self.log("Replaced boringtun CI build stage with official WireGuard download", "FIX")
+            changed = True
+        else:
+            self.skipped_files.append(
+                ".github/workflows/build_windows.yml (no boringtun/cargo references found)"
+            )
+
+        if not changed:
+            self.skipped_files.append(
+                "boringtun-to-wireguard migration (nothing referenced boringtun)"
+            )
+        return changed
 
     # ------------------------------------------------------------------ #
     # 2. pubspec.yaml - add missing deps without nuking existing ones
@@ -939,7 +1422,6 @@ class _EndpointSelectorState extends State<EndpointSelector> {
         expected_good = [
             "lib/main.dart",
             "lib/services/vpn_service.dart",
-            "lib/services/warp_service.dart",
             "lib/services/dns_service.dart",
             "lib/services/proxy_settings_manager.dart",
             "lib/screens/home_screen.dart",
@@ -989,6 +1471,7 @@ class _EndpointSelectorState extends State<EndpointSelector> {
         self.fix_tray_service()
         self.fix_window_manager_service()
         self.fix_endpoint_selector()
+        self.fix_boringtun_to_official_wireguard()
 
         # pubspec.yaml: add only what's missing, and fix SDK/CI mismatch.
         self.fix_pubspec_dependencies()

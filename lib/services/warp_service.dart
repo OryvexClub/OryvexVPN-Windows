@@ -3,18 +3,30 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:cryptography/cryptography.dart';
+import 'package:path_provider/path_provider.dart';
 
-/// Drives a self‑built copy of Cloudflare BoringTun
-/// (https://github.com/cloudflare/boringtun) plus the official Wintun driver.
+/// Drives the OFFICIAL, pre-built WireGuard for Windows client
+/// (https://www.wireguard.com/install/) instead of compiling a
+/// third-party userspace implementation from source.
 ///
-/// BoringTun is started with all necessary parameters on the command line.
-/// For endpoint changes we simply kill and restart the process.
+/// boringtun-cli (Cloudflare's Rust implementation) is documented
+/// upstream as Linux/macOS only and cannot be compiled for Windows -
+/// it depends on Unix-only APIs (fork, setuid, chroot, flock, unix
+/// sockets) that simply don't exist on MSVC. wireguard.exe is the real
+/// Windows implementation (WireGuardNT kernel driver + userspace
+/// manager), bundled with the app and driven via its documented
+/// service-install command line interface:
+///
+///   wireguard.exe /installtunnelservice <path-to-conf>
+///   wireguard.exe /uninstalltunnelservice <tunnel-name>
+///
+/// Each call installs/removes a real Windows service named
+/// "WireGuardTunnel$<tunnel-name>", exactly like the official GUI client.
 class WarpService {
   static const _tunnelName = 'oryvexvpn';
-  static Process? _tunnelProcess;
   static bool _connected = false;
 
-  // Cloudflare WARP endpoint list (unchanged).
+  // Cloudflare WARP endpoint list.
   static const List<String> _endpoints = [
     "8.6.112.165", "8.6.112.139", "8.6.112.178", "8.6.112.205",
     "8.6.112.176", "8.6.112.190", "8.6.112.121", "8.6.112.202",
@@ -47,14 +59,19 @@ class WarpService {
     return File(exePath).parent.path;
   }
 
-  static String get _boringTunExe => '$_exeDir\\data\\boringtun.exe';
-  static String get _wintunDll => '$_exeDir\\data\\wintun.dll';
+  static String get _wireguardExe => '$_exeDir\\data\\wireguard.exe';
 
-  /// Check that both core files exist.
   static Future<bool> _coreFilesPresent() async {
-    final goExists = await File(_boringTunExe).exists();
-    final wintunExists = await File(_wintunDll).exists();
-    return goExists && wintunExists;
+    return File(_wireguardExe).exists();
+  }
+
+  static Future<String> _confDir() async {
+    final dir = await getApplicationSupportDirectory();
+    final confDir = Directory('${dir.path}\\wireguard');
+    if (!await confDir.exists()) {
+      await confDir.create(recursive: true);
+    }
+    return confDir.path;
   }
 
   /// Concurrent ping scan for the fastest endpoint.
@@ -81,9 +98,6 @@ class WarpService {
     return bestIp;
   }
 
-  static String _bytesToHex(List<int> bytes) =>
-      bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
-
   /// Register with Cloudflare WARP API and return the needed parameters.
   static Future<_WarpRegistration> _register(Function(String) onProgress) async {
     onProgress('در حال ساخت کلید رمزنگاری...');
@@ -93,7 +107,7 @@ class WarpService {
     final privateKeyBytes = await keyPair.extractPrivateKeyBytes();
 
     final pubKeyBase64 = base64Encode(publicKey.bytes);
-    final privKeyBase64 = base64Encode(privateKeyBytes);  // BoringTun expects base64
+    final privKeyBase64 = base64Encode(privateKeyBytes);
 
     onProgress('در حال ثبت‌نام در شبکه...');
     final response = await http.post(
@@ -129,37 +143,47 @@ class WarpService {
     );
   }
 
-  /// Start BoringTun with the given parameters.
-  /// Checks that the process stays alive after startup.
-  static Future<void> _startBoringTun(_WarpRegistration reg) async {
-    final args = [
-      _tunnelName,
-      '--private-key', reg.privateKeyBase64,
-      '--peer-public-key', reg.peerPublicKeyBase64,
-      '--endpoint', '${reg.endpointIp}:${reg.endpointPort}',
-      '--allowed-ips', '0.0.0.0/0',
-      '--address', reg.address,
-      '--dns', '1.1.1.1',
-      '--mtu', '1280',
-      '--persistent-keepalive', '25',
-    ];
+  static String _buildConf(_WarpRegistration reg) {
+    final b = StringBuffer();
+    b.writeln('[Interface]');
+    b.writeln('PrivateKey = ${reg.privateKeyBase64}');
+    b.writeln('Address = ${reg.address}');
+    b.writeln('DNS = 1.1.1.1');
+    b.writeln('');
+    b.writeln('[Peer]');
+    b.writeln('PublicKey = ${reg.peerPublicKeyBase64}');
+    b.writeln('Endpoint = ${reg.endpointIp}:${reg.endpointPort}');
+    b.writeln('AllowedIPs = 0.0.0.0/0');
+    b.writeln('PersistentKeepalive = 25');
+    return b.toString();
+  }
 
-    _tunnelProcess = await Process.start(
-      _boringTunExe,
-      args,
-      workingDirectory: '$_exeDir\\data',
-      mode: ProcessStartMode.detachedWithStdio,
+  /// Writes the .conf file and installs it as a Windows tunnel service
+  /// via the official wireguard.exe CLI.
+  static Future<void> _installTunnelService(_WarpRegistration reg) async {
+    final confDir = await _confDir();
+    final confFile = File('$confDir\\$_tunnelName.conf');
+    await confFile.writeAsString(_buildConf(reg));
+
+    // Remove any stale service from a previous run first (ignore errors -
+    // it may simply not exist yet).
+    await Process.run(_wireguardExe, ['/uninstalltunnelservice', _tunnelName]);
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    final result = await Process.run(
+      _wireguardExe,
+      ['/installtunnelservice', confFile.path],
     );
 
-    // Wait a moment, then verify the process is still running.
-    await Future.delayed(const Duration(milliseconds: 500));
-    try {
-      await _tunnelProcess!.exitCode.timeout(const Duration(milliseconds: 100));
-      // If we get here, the process has already exited.
-      throw Exception('BoringTun exited immediately after start.');
-    } on TimeoutException {
-      // Process is still alive – good.
+    if (result.exitCode != 0) {
+      final err = (result.stderr ?? '').toString().trim();
+      throw Exception(
+        err.isNotEmpty ? err : 'نصب سرویس WireGuard ناموفق بود.',
+      );
     }
+
+    // Give the service a moment to actually come up before we check it.
+    await Future.delayed(const Duration(seconds: 1));
   }
 
   static Future<void> connect() async {
@@ -175,50 +199,40 @@ class WarpService {
     }
     if (!await _coreFilesPresent()) {
       throw Exception(
-        'فایل‌های هسته (data\\boringtun.exe و data\\wintun.dll) در برنامه یافت نشد.',
+        'فایل هسته (data\\wireguard.exe) در برنامه یافت نشد.',
       );
     }
 
     final reg = await _register(onProgress);
 
-    onProgress('در حال راه‌اندازی تونل BoringTun...');
-    await _startBoringTun(reg);
+    onProgress('در حال نصب سرویس WireGuard...');
+    await _installTunnelService(reg);
 
     _connected = true;
   }
 
-  static Future<void> _killTunnelProcess() async {
-    final proc = _tunnelProcess;
-    _tunnelProcess = null;
-    if (proc == null) return;
-    try {
-      proc.kill(ProcessSignal.sigterm);
-      // Wait a bit for graceful exit, then force kill if needed.
-      await Future.delayed(const Duration(seconds: 2));
-      // Try to get exit code, but don't block forever.
-      await proc.exitCode.timeout(const Duration(seconds: 1), onTimeout: () {
-        proc.kill(ProcessSignal.sigkill);
-        return 0; // dummy return, will be ignored
-      });
-    } catch (_) {
-      // Ignore errors during cleanup.
-    }
-    // Ensure no leftover process.
-    await Process.run('taskkill', ['/F', '/IM', 'boringtun.exe']);
-  }
-
   static Future<void> disconnect() async {
     if (!Platform.isWindows) return;
-    await _killTunnelProcess();
+    try {
+      await Process.run(_wireguardExe, ['/uninstalltunnelservice', _tunnelName]);
+    } catch (_) {
+      // Non-fatal: service may already be gone.
+    }
     _connected = false;
   }
 
   static Future<bool> isConnected() async {
     if (!Platform.isWindows) return false;
     if (!_connected) return false;
-    // Check if the adapter still exists.
-    final result = await Process.run('netsh', ['interface', 'show', 'interface', _tunnelName]);
-    return result.exitCode == 0 && result.stdout.toString().contains(_tunnelName);
+    // WireGuard installs the tunnel as a service named
+    // "WireGuardTunnel$<name>". Query the service manager directly
+    // rather than netsh, since the interface name WireGuard chooses
+    // internally isn't guaranteed to match our tunnel name exactly.
+    final result = await Process.run(
+      'sc', ['query', 'WireGuardTunnel\$$_tunnelName'],
+    );
+    return result.exitCode == 0 &&
+        result.stdout.toString().contains('RUNNING');
   }
 }
 

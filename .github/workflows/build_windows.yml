@@ -1,4 +1,4 @@
-name: Build Windows App (BoringTun)
+name: Build Windows App (Official WireGuard)
 
 on:
   push:
@@ -28,47 +28,53 @@ jobs:
       - name: Build Windows app
         run: flutter build windows --release
 
-      # Install Rust to build BoringTun from source.
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: x86_64-pc-windows-msvc
-          override: true
-
-      - name: Build BoringTun for Windows
+      # No Rust/Cargo build step needed anymore. boringtun-cli only ever
+      # targeted Linux/macOS and cannot compile for MSVC (it pulls in
+      # `daemonize` and std::os::unix APIs that don't exist on Windows).
+      # Instead we bundle the OFFICIAL, pre-built WireGuard for Windows
+      # binary (wireguard.exe), which already includes the Wintun driver
+      # and is what the real WireGuard Windows client uses.
+      - name: Download and extract official WireGuard for Windows
         run: |
-          git clone --depth 1 https://github.com/cloudflare/boringtun.git boringtun-src
-          cd boringtun-src
-          cargo build --release --target x86_64-pc-windows-msvc
-          if (-not (Test-Path "target\\x86_64-pc-windows-msvc\\release\\boringtun.exe")) {
-            Write-Host "BoringTun build failed."
+          $wgVersion = "1.0.1"
+          $msiUrl = "https://download.wireguard.com/windows-client/wireguard-amd64-$wgVersion.msi"
+          Invoke-WebRequest -Uri $msiUrl -OutFile "wireguard.msi"
+
+          $extractDir = "$PWD\wireguard_extracted"
+          New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
+
+          $msiExecArgs = @(
+            "/a", "`"$PWD\wireguard.msi`"",
+            "/qn",
+            "TARGETDIR=`"$extractDir`""
+          )
+          Start-Process msiexec.exe -ArgumentList $msiExecArgs -Wait -NoNewWindow
+
+          $wgExe = Get-ChildItem -Path $extractDir -Filter "wireguard.exe" -Recurse | Select-Object -First 1
+          if (-not $wgExe) {
+            Write-Host "Failed to extract wireguard.exe from MSI."
+            Get-ChildItem -Path $extractDir -Recurse | ForEach-Object { Write-Host $_.FullName }
             exit 1
           }
-          Write-Host "BoringTun built successfully."
+          Write-Host "Found wireguard.exe at: $($wgExe.FullName)"
+          Copy-Item $wgExe.FullName "$PWD\wireguard.exe"
 
-      - name: Bundle BoringTun + official Wintun driver inside data/
+      - name: Bundle WireGuard binary inside data/
         run: |
-          $ReleaseDir = "build\\windows\\x64\\runner\\Release"
-          New-Item -ItemType Directory -Force -Path "$ReleaseDir\\data"
+          $ReleaseDir = "build\windows\x64\runner\Release"
+          New-Item -ItemType Directory -Force -Path "$ReleaseDir\data" | Out-Null
 
-          Copy-Item "boringtun-src\\target\\x86_64-pc-windows-msvc\\release\\boringtun.exe" "$ReleaseDir\\data\\boringtun.exe"
+          Copy-Item "$PWD\wireguard.exe" "$ReleaseDir\data\wireguard.exe"
 
-          # Official Wintun driver from wintun.net
-          $wintunVersion = "0.14.1"
-          Invoke-WebRequest -Uri "https://www.wintun.net/builds/wintun-$wintunVersion.zip" -OutFile "wintun.zip"
-          Expand-Archive "wintun.zip" -DestinationPath "wintun_extracted"
-          Copy-Item "wintun_extracted\\wintun\\bin\\amd64\\wintun.dll" "$ReleaseDir\\data\\wintun.dll"
-
-          if (-not (Test-Path "$ReleaseDir\\data\\wintun.dll")) {
-            Write-Host "wintun.dll bundling failed."
+          if (-not (Test-Path "$ReleaseDir\data\wireguard.exe")) {
+            Write-Host "wireguard.exe bundling failed."
             exit 1
           }
 
-          Write-Host "BoringTun and wintun.dll bundled."
+          Write-Host "Official WireGuard for Windows bundled successfully."
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: oryvexvpn-windows-boringtun
+          name: oryvexvpn-windows
           path: build/windows/x64/runner/Release/
