@@ -43,7 +43,6 @@ class FlutterProjectFixer:
 
     def initialize_windows(self) -> bool:
         self.log("Ensuring Windows platform is initialized cleanly...", "STEP")
-        # --overwrite ensures we have a perfectly clean CMake and project structure locally
         subprocess.run("flutter create --platforms windows --overwrite .", shell=True, cwd=self.root, capture_output=True)
         return True
 
@@ -601,37 +600,20 @@ flutter:
 
     def fix_windows_manifest(self) -> bool:
         manifest_path = self.root / "windows" / "runner" / "runner.exe.manifest"
-        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        if not manifest_path.exists():
+            self.log("Manifest not found! Ensure initialization worked.", "ERROR")
+            return False
         
-        correct = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-  <assemblyIdentity version="1.0.0.0" name="oryvex_vpn_demo" type="win32"/>
-  <description>Oryvex VPN</description>
-  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
-    <security>
-      <requestedPrivileges>
-        <requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
-      </requestedPrivileges>
-    </security>
-  </trustInfo>
-  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
-    <application>
-      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/>
-      <supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}"/>
-      <supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}"/>
-    </application>
-  </compatibility>
-  <application xmlns="urn:schemas-microsoft-com:asm.v3">
-    <windowsSettings>
-      <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true</dpiAware>
-      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
-    </windowsSettings>
-  </application>
-</assembly>"""
+        content = manifest_path.read_text(encoding='utf-8')
+        # This regex securely replaces asInvoker without breaking the rest of the XML formatting
+        new_content = re.sub(r'level="asInvoker"', 'level="requireAdministrator"', content)
         
-        manifest_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("windows/runner/runner.exe.manifest (Forced UAC Shield Icon & Admin Privileges)")
-        return True
+        if content != new_content:
+            manifest_path.write_text(new_content, encoding='utf-8')
+            self.fixed_files.append("windows/runner/runner.exe.manifest (Forced UAC Shield Icon & Admin Privileges)")
+            return True
+            
+        return False
 
     def fix_workflow(self) -> bool:
         workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
@@ -660,13 +642,7 @@ jobs:
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
 
-      - name: Precache Windows artifacts
-        run: flutter precache --windows
-
-      - name: Clean Project
-        run: flutter clean
-
-      - name: Install dependencies
+      - name: Get dependencies
         run: flutter pub get
 
       - name: Build Windows app
@@ -674,13 +650,13 @@ jobs:
 
       - name: Bundle WireGuard inside data/
         run: |
-          $ReleaseDir = "build/windows/x64/runner/Release"
-          New-Item -ItemType Directory -Force -Path "$ReleaseDir/data"
+          $ReleaseDir = "build\windows\x64\runner\Release"
+          New-Item -ItemType Directory -Force -Path "$ReleaseDir\data"
           Invoke-WebRequest -Uri "https://download.wireguard.com/windows-client/wireguard-amd64-0.5.3.msi" -OutFile "wg.msi"
-          Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD/wg.msi`" /qb TARGETDIR=`"$PWD/wg_extract`"" -Wait -NoNewWindow
-          if (Test-Path "wg_extract/WireGuard/wireguard.exe") {
-            Copy-Item -Path "wg_extract/WireGuard/wireguard.exe" -Destination "$ReleaseDir/data/wireguard.exe"
-            Copy-Item -Path "wg_extract/WireGuard/wg.exe" -Destination "$ReleaseDir/data/wg.exe"
+          Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD\wg.msi`" /qb TARGETDIR=`"$PWD\wg_extract`"" -Wait -NoNewWindow
+          if (Test-Path "wg_extract\WireGuard\wireguard.exe") {
+            Copy-Item -Path "wg_extract\WireGuard\wireguard.exe" -Destination "$ReleaseDir\data\wireguard.exe"
+            Copy-Item -Path "wg_extract\WireGuard\wg.exe" -Destination "$ReleaseDir\data\wg.exe"
             Write-Host "WireGuard successfully bundled in data/ folder."
           } else {
             Write-Host "Failed to extract WireGuard."
@@ -695,7 +671,7 @@ jobs:
 """
         workflow_path.parent.mkdir(parents=True, exist_ok=True)
         workflow_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("build_windows.yml (Clean CI with Precache)")
+        self.fixed_files.append("build_windows.yml (Clean CI Build - No C++ modifications in server)")
         return True
 
     def remove_obsolete_files(self) -> bool:
@@ -739,7 +715,7 @@ jobs:
 
     def run(self) -> bool:
         print("\\n" + "=" * 60)
-        print("🔧 Flutter Project Fixer - OryvexVPN (Admin Shield Icon & Clean CI Build)")
+        print("🔧 Flutter Project Fixer - OryvexVPN (Admin Shield Icon & Build Fix)")
         print("=" * 60)
         print(f"\\nProject Path: {self.root}\\n")
 
@@ -749,7 +725,7 @@ jobs:
         # First initialize the full windows architecture LOCALLY
         self.initialize_windows()
         
-        # Then patch them dynamically to ensure the Admin shield and sizing are applied
+        # Then patch them dynamically to ensure the Admin shield and sizing are applied without breaking XML
         self.fix_windows_main_cpp()
         self.fix_windows_manifest()
 

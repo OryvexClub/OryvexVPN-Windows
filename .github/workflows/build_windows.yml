@@ -22,13 +22,7 @@ jobs:
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
 
-      - name: Precache Windows artifacts
-        run: flutter precache --windows
-
-      - name: Clean Project
-        run: flutter clean
-
-      - name: Install dependencies
+      - name: Get dependencies
         run: flutter pub get
 
       - name: Build Windows app
@@ -36,13 +30,13 @@ jobs:
 
       - name: Bundle WireGuard inside data/
         run: |
-          $ReleaseDir = "build/windows/x64/runner/Release"
-          New-Item -ItemType Directory -Force -Path "$ReleaseDir/data"
+          $ReleaseDir = "build\windows\x64\runner\Release"
+          New-Item -ItemType Directory -Force -Path "$ReleaseDir\data"
           Invoke-WebRequest -Uri "https://download.wireguard.com/windows-client/wireguard-amd64-0.5.3.msi" -OutFile "wg.msi"
-          Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD/wg.msi`" /qb TARGETDIR=`"$PWD/wg_extract`"" -Wait -NoNewWindow
-          if (Test-Path "wg_extract/WireGuard/wireguard.exe") {
-            Copy-Item -Path "wg_extract/WireGuard/wireguard.exe" -Destination "$ReleaseDir/data/wireguard.exe"
-            Copy-Item -Path "wg_extract/WireGuard/wg.exe" -Destination "$ReleaseDir/data/wg.exe"
+          Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD\wg.msi`" /qb TARGETDIR=`"$PWD\wg_extract`"" -Wait -NoNewWindow
+          if (Test-Path "wg_extract\WireGuard\wireguard.exe") {
+            Copy-Item -Path "wg_extract\WireGuard\wireguard.exe" -Destination "$ReleaseDir\data\wireguard.exe"
+            Copy-Item -Path "wg_extract\WireGuard\wg.exe" -Destination "$ReleaseDir\data\wg.exe"
             Write-Host "WireGuard successfully bundled in data/ folder."
           } else {
             Write-Host "Failed to extract WireGuard."
