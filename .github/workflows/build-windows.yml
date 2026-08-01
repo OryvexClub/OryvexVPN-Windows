@@ -43,49 +43,53 @@ jobs:
         Write-Host "Installing WireGuard silently..."
         Start-Process -FilePath $installerPath -ArgumentList "/S" -Wait -NoNewWindow
 
-        # Wait for installation to complete
         Start-Sleep -Seconds 3
 
-        # Copy wireguard.exe to data folder
         $wgPath = "C:\Program Files\WireGuard\wireguard.exe"
         if (Test-Path $wgPath) {
           Copy-Item $wgPath -Destination "data\wireguard.exe" -Force
-          Write-Host "✓ wireguard.exe copied successfully"
-          Write-Host "  Size: $((Get-Item 'data\wireguard.exe').Length / 1MB) MB"
+          Write-Host "SUCCESS: wireguard.exe copied"
+          $size = (Get-Item 'data\wireguard.exe').Length / 1MB
+          Write-Host "  Size: $size MB"
         } else {
-          Write-Host "ERROR: WireGuard not found at $wgPath"
+          Write-Host "ERROR: WireGuard not found at expected location"
           Write-Host "Checking alternative locations..."
 
-          # Try alternative locations
           $altPaths = @(
             "C:\Program Files (x86)\WireGuard\wireguard.exe",
-            "$env:ProgramFiles\WireGuard\wireguard.exe",
-            "${env:ProgramFiles(x86)}\WireGuard\wireguard.exe"
+            "$env:ProgramFiles\WireGuard\wireguard.exe"
           )
 
+          $found = $false
           foreach ($altPath in $altPaths) {
             if (Test-Path $altPath) {
               Copy-Item $altPath -Destination "data\wireguard.exe" -Force
-              Write-Host "✓ Found and copied from: $altPath"
+              Write-Host "SUCCESS: Found and copied from: $altPath"
+              $found = $true
               break
             }
           }
+
+          if (-not $found) {
+            Write-Host "ERROR: Could not find WireGuard executable"
+            exit 1
+          }
         }
 
-        # Also copy wg.exe if available for better statistics
         $wgExe = "C:\Program Files\WireGuard\wg.exe"
         if (Test-Path $wgExe) {
           Copy-Item $wgExe -Destination "data\wg.exe" -Force
-          Write-Host "✓ wg.exe copied successfully"
+          Write-Host "SUCCESS: wg.exe copied"
         }
 
-        # Verify files were copied
         if (Test-Path "data\wireguard.exe") {
           Write-Host ""
           Write-Host "=== WireGuard Setup Complete ==="
-          Write-Host "wireguard.exe: $((Get-Item 'data\wireguard.exe').Length) bytes"
+          $wgSize = (Get-Item 'data\wireguard.exe').Length
+          Write-Host "wireguard.exe: $wgSize bytes"
           if (Test-Path "data\wg.exe") {
-            Write-Host "wg.exe: $((Get-Item 'data\wg.exe').Length) bytes"
+            $wgExeSize = (Get-Item 'data\wg.exe').Length
+            Write-Host "wg.exe: $wgExeSize bytes"
           }
         } else {
           Write-Host "ERROR: Failed to copy WireGuard executables"
