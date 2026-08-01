@@ -40,7 +40,7 @@ jobs:
       - name: Update Windows Project Files
         run: |
           flutter create --platforms windows --overwrite .
-          git checkout lib/ pubspec.yaml README.md
+          git checkout lib/ pubspec.yaml README.md windows/runner/runner.exe.manifest windows/runner/main.cpp
 
       - name: Get dependencies (again after create)
         run: flutter pub get

@@ -116,7 +116,7 @@ PersistentKeepalive = 25''';
 
     if (result.exitCode != 0) {
       throw Exception(
-        'نصب تونل ناموفق بود. برنامه باید با دسترسی Administrator (Run as admin) اجرا شود.\n'
+        'نصب تونل ناموفق بود. خطای سیستمی ویندوز:\n'
         '${result.stderr}'
       );
     }

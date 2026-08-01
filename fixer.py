@@ -4,7 +4,8 @@
 """
 fixer.py - OryvexVPN Auto-Fixer
 Implements automatic Cloudflare WARP key generation, endpoint sweeping, 
-real WireGuard connection via bundled data/wireguard.exe, and a fully Persian UI.
+real WireGuard connection via bundled data/wireguard.exe, Persian UI, 
+and forced Administrator privileges for Windows.
 """
 
 import os
@@ -210,7 +211,7 @@ PersistentKeepalive = 25''';
 
     if (result.exitCode != 0) {
       throw Exception(
-        'نصب تونل ناموفق بود. برنامه باید با دسترسی Administrator (Run as admin) اجرا شود.\\n'
+        'نصب تونل ناموفق بود. خطای سیستمی ویندوز:\\n'
         '${result.stderr}'
       );
     }
@@ -242,7 +243,7 @@ PersistentKeepalive = 25''';
 """
         warp_path.parent.mkdir(parents=True, exist_ok=True)
         warp_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("warp_service.dart (NEW)")
+        self.fixed_files.append("warp_service.dart")
         return True
 
     def fix_vpn_service(self) -> bool:
@@ -592,6 +593,24 @@ flutter:
         self.fixed_files.append("windows/runner/main.cpp (Resized to 400x700)")
         return True
 
+    def fix_windows_manifest(self) -> bool:
+        manifest_path = self.root / "windows" / "runner" / "runner.exe.manifest"
+        if not manifest_path.exists():
+            self.log("windows/runner/runner.exe.manifest not found.", "WARNING")
+            return False
+        
+        content = manifest_path.read_text(encoding='utf-8')
+        
+        # Replace asInvoker with requireAdministrator to trigger UAC prompt automatically
+        new_content = content.replace('level="asInvoker"', 'level="requireAdministrator"')
+        
+        if content != new_content:
+            manifest_path.write_text(new_content, encoding='utf-8')
+            self.fixed_files.append("runner.exe.manifest (Forced Administrator Privileges)")
+            return True
+            
+        return False
+
     def fix_workflow(self) -> bool:
         workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
         correct = """name: Build Windows App
@@ -636,7 +655,7 @@ jobs:
       - name: Update Windows Project Files
         run: |
           flutter create --platforms windows --overwrite .
-          git checkout lib/ pubspec.yaml README.md
+          git checkout lib/ pubspec.yaml README.md windows/runner/runner.exe.manifest windows/runner/main.cpp
 
       - name: Get dependencies (again after create)
         run: flutter pub get
@@ -711,7 +730,7 @@ jobs:
 
     def run(self) -> bool:
         print("\\n" + "=" * 60)
-        print("🔧 Flutter Project Fixer - OryvexVPN (Automatic Generation + Bundled WG + Persian)")
+        print("🔧 Flutter Project Fixer - OryvexVPN (Admin Privileges & Bundled WG)")
         print("=" * 60)
         print(f"\\nProject Path: {self.root}\\n")
 
@@ -724,6 +743,7 @@ jobs:
         self.fix_vpn_service()
         self.fix_home_screen()
         self.fix_windows_main_cpp()
+        self.fix_windows_manifest()
         self.fix_workflow()
         self.remove_obsolete_files()
         self.scrub_tokens()
@@ -737,7 +757,7 @@ jobs:
             for f in self.fixed_files:
                 print(f"  ✓ {f}")
 
-        print("\\n✅ All issues resolved. WireGuard will now be bundled automatically via GitHub Actions.")
+        print("\\n✅ Administrator privileges have been forced. You can now execute push.py.")
         return True
 
 def main():
