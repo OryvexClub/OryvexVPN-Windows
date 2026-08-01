@@ -5,7 +5,7 @@
 fixer.py - OryvexVPN Auto-Fixer
 Implements automatic Cloudflare WARP key generation, endpoint sweeping, 
 real WireGuard connection via bundled data/wireguard.exe, Persian UI, 
-and forced Administrator privileges for Windows (Shield Icon).
+forced Administrator privileges, and dynamic CI patching to fix CMake errors.
 """
 
 import os
@@ -584,58 +584,11 @@ flutter:
         pubspec_path.write_text(correct, encoding='utf-8')
         self.fixed_files.append("pubspec.yaml")
         return True
-        
-    def fix_windows_main_cpp(self) -> bool:
-        main_cpp_path = self.root / "windows" / "runner" / "main.cpp"
-        if not main_cpp_path.exists():
-            return False
-        content = main_cpp_path.read_text(encoding='utf-8')
-        
-        content = content.replace("Win32Window::Size(1280, 720)", "Win32Window::Size(400, 700)")
-        content = content.replace("Win32Window::Point(10, 10)", "Win32Window::Point(100, 100)")
-        
-        main_cpp_path.write_text(content, encoding='utf-8')
-        self.fixed_files.append("windows/runner/main.cpp (Resized to 400x700)")
-        return True
-
-    def fix_windows_manifest(self) -> bool:
-        manifest_path = self.root / "windows" / "runner" / "runner.exe.manifest"
-        manifest_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        correct = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-  <assemblyIdentity version="1.0.0.0" name="oryvex_vpn_demo" type="win32"/>
-  <description>Oryvex VPN</description>
-  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
-    <security>
-      <requestedPrivileges>
-        <requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
-      </requestedPrivileges>
-    </security>
-  </trustInfo>
-  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
-    <application>
-      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/>
-      <supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}"/>
-      <supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}"/>
-    </application>
-  </compatibility>
-  <application xmlns="urn:schemas-microsoft-com:asm.v3">
-    <windowsSettings>
-      <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true</dpiAware>
-      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
-    </windowsSettings>
-  </application>
-</assembly>"""
-        
-        manifest_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("windows/runner/runner.exe.manifest (Forced UAC Shield Icon & Admin Privileges)")
-        return True
 
     def fix_workflow(self) -> bool:
         workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
         
-        # We use a raw string (r"...") so the backslashes in PowerShell aren't mangled by Python
+        # Raw string r"..." prevents Python from interpreting backslashes like \n, \t
         correct = r"""name: Build Windows App
 
 on:
@@ -660,21 +613,37 @@ jobs:
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
 
-      - name: Get dependencies
-        run: flutter pub get
+      - name: Create Windows Platform Files
+        run: flutter create --platforms windows .
+
+      - name: Force UAC Administrator Privileges
+        run: |
+          $manifest = "windows/runner/runner.exe.manifest"
+          if (Test-Path $manifest) {
+            (Get-Content $manifest) -replace 'level="asInvoker"', 'level="requireAdministrator"' | Set-Content $manifest
+            Write-Host "Manifest patched for Administrator UAC Prompt successfully."
+          }
+
+      - name: Resize Windows App
+        run: |
+          $mainCpp = "windows/runner/main.cpp"
+          if (Test-Path $mainCpp) {
+            (Get-Content $mainCpp) -replace 'Win32Window::Size\(1280, 720\)', 'Win32Window::Size(400, 700)' -replace 'Win32Window::Point\(10, 10\)', 'Win32Window::Point(100, 100)' | Set-Content $mainCpp
+            Write-Host "Window resized successfully."
+          }
 
       - name: Build Windows app
         run: flutter build windows --release
 
       - name: Bundle WireGuard inside data/
         run: |
-          $ReleaseDir = "build\windows\x64\runner\Release"
-          New-Item -ItemType Directory -Force -Path "$ReleaseDir\data"
+          $ReleaseDir = "build/windows/x64/runner/Release"
+          New-Item -ItemType Directory -Force -Path "$ReleaseDir/data"
           Invoke-WebRequest -Uri "https://download.wireguard.com/windows-client/wireguard-amd64-0.5.3.msi" -OutFile "wg.msi"
-          Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD\wg.msi`" /qb TARGETDIR=`"$PWD\wg_extract`"" -Wait -NoNewWindow
-          if (Test-Path "wg_extract\WireGuard\wireguard.exe") {
-            Copy-Item -Path "wg_extract\WireGuard\wireguard.exe" -Destination "$ReleaseDir\data\wireguard.exe"
-            Copy-Item -Path "wg_extract\WireGuard\wg.exe" -Destination "$ReleaseDir\data\wg.exe"
+          Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD/wg.msi`" /qb TARGETDIR=`"$PWD/wg_extract`"" -Wait -NoNewWindow
+          if (Test-Path "wg_extract/WireGuard/wireguard.exe") {
+            Copy-Item -Path "wg_extract/WireGuard/wireguard.exe" -Destination "$ReleaseDir/data/wireguard.exe"
+            Copy-Item -Path "wg_extract/WireGuard/wg.exe" -Destination "$ReleaseDir/data/wg.exe"
             Write-Host "WireGuard successfully bundled in data/ folder."
           } else {
             Write-Host "Failed to extract WireGuard."
@@ -689,7 +658,7 @@ jobs:
 """
         workflow_path.parent.mkdir(parents=True, exist_ok=True)
         workflow_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("build_windows.yml (Cleaned up workflow to avoid LNK1327)")
+        self.fixed_files.append("build_windows.yml (Dynamic CI Patching added to fix CMake & UAC issues)")
         return True
 
     def remove_obsolete_files(self) -> bool:
@@ -746,8 +715,6 @@ jobs:
         self.fix_warp_service()
         self.fix_vpn_service()
         self.fix_home_screen()
-        self.fix_windows_main_cpp()
-        self.fix_windows_manifest()
         self.fix_workflow()
         self.remove_obsolete_files()
         self.scrub_tokens()
@@ -761,7 +728,7 @@ jobs:
             for f in self.fixed_files:
                 print(f"  ✓ {f}")
 
-        print("\\n✅ Shield Icon enabled and build action corrected. You can now execute push.py.")
+        print("\\n✅ Workflow updated to natively patch CMake and UAC Admin restrictions.")
         return True
 
 def main():

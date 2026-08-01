@@ -9,6 +9,7 @@ from pathlib import Path
 from getpass import getpass
 from typing import Tuple
 
+# Fix Windows console encoding issues
 if sys.platform == 'win32':
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
@@ -209,7 +210,7 @@ class GitHubPusher:
             return False
 
         self.log("Committing...", "STEP")
-        success, output = self.run_command('git commit -m "OryvexVPN: Cleaned workflow & Admin Manifest Update"')
+        success, output = self.run_command('git commit -m "OryvexVPN: CMake build fix and Dynamic CI UAC Patch"')
         if not success and "nothing to commit" not in output:
             self.log(f"Commit warning: {output}", "WARNING")
 

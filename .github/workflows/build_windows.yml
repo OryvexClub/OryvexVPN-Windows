@@ -22,21 +22,37 @@ jobs:
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
 
-      - name: Get dependencies
-        run: flutter pub get
+      - name: Create Windows Platform Files
+        run: flutter create --platforms windows .
+
+      - name: Force UAC Administrator Privileges
+        run: |
+          $manifest = "windows/runner/runner.exe.manifest"
+          if (Test-Path $manifest) {
+            (Get-Content $manifest) -replace 'level="asInvoker"', 'level="requireAdministrator"' | Set-Content $manifest
+            Write-Host "Manifest patched for Administrator UAC Prompt successfully."
+          }
+
+      - name: Resize Windows App
+        run: |
+          $mainCpp = "windows/runner/main.cpp"
+          if (Test-Path $mainCpp) {
+            (Get-Content $mainCpp) -replace 'Win32Window::Size\(1280, 720\)', 'Win32Window::Size(400, 700)' -replace 'Win32Window::Point\(10, 10\)', 'Win32Window::Point(100, 100)' | Set-Content $mainCpp
+            Write-Host "Window resized successfully."
+          }
 
       - name: Build Windows app
         run: flutter build windows --release
 
       - name: Bundle WireGuard inside data/
         run: |
-          $ReleaseDir = "build\windows\x64\runner\Release"
-          New-Item -ItemType Directory -Force -Path "$ReleaseDir\data"
+          $ReleaseDir = "build/windows/x64/runner/Release"
+          New-Item -ItemType Directory -Force -Path "$ReleaseDir/data"
           Invoke-WebRequest -Uri "https://download.wireguard.com/windows-client/wireguard-amd64-0.5.3.msi" -OutFile "wg.msi"
-          Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD\wg.msi`" /qb TARGETDIR=`"$PWD\wg_extract`"" -Wait -NoNewWindow
-          if (Test-Path "wg_extract\WireGuard\wireguard.exe") {
-            Copy-Item -Path "wg_extract\WireGuard\wireguard.exe" -Destination "$ReleaseDir\data\wireguard.exe"
-            Copy-Item -Path "wg_extract\WireGuard\wg.exe" -Destination "$ReleaseDir\data\wg.exe"
+          Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$PWD/wg.msi`" /qb TARGETDIR=`"$PWD/wg_extract`"" -Wait -NoNewWindow
+          if (Test-Path "wg_extract/WireGuard/wireguard.exe") {
+            Copy-Item -Path "wg_extract/WireGuard/wireguard.exe" -Destination "$ReleaseDir/data/wireguard.exe"
+            Copy-Item -Path "wg_extract/WireGuard/wg.exe" -Destination "$ReleaseDir/data/wg.exe"
             Write-Host "WireGuard successfully bundled in data/ folder."
           } else {
             Write-Host "Failed to extract WireGuard."
