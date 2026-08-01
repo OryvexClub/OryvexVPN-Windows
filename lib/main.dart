@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'core/config.dart';
 import 'screens/home_screen.dart';
@@ -10,11 +11,7 @@ import 'services/vpn_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize native window properties
   await WindowManagerService.init();
-
-  // Start network status monitoring
   await NetworkManager.instance.start();
 
   runApp(
@@ -55,7 +52,17 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> {
     return MaterialApp(
       title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(),
+      builder: (context, child) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: child!,
+        );
+      },
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF0A0A0A),
+        textTheme: GoogleFonts.vazirmatnTextTheme(ThemeData.dark().textTheme),
+      ),
       home: const HomeScreen(),
     );
   }

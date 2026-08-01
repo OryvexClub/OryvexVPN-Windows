@@ -2,18 +2,18 @@
 # -*- coding: utf-8 -*-
 
 """
-fixer.py - OryvexVPN CI-First Project Fixer
+fixer.py - OryvexVPN CI-Ready Project Fixer
 
-اصلاح‌کننده سریع پروژه برای آماده‌سازی کامل فایل‌ها جهت بیلد در GitHub Actions.
-بدون نیاز به اجرای دستورات flutter روی سیستم لوکال.
+- Fixes "Access is denied" via PowerShell UAC elevation (RunAs).
+- Restores custom window controls (Close/Minimize).
+- Applies GoogleFonts (Vazirmatn) and a high-contrast minimalist dark theme.
 """
 
 import os
 import re
 import sys
 from pathlib import Path
-from typing import Optional, List, Tuple
-
+from typing import Optional, List
 
 class FlutterProjectFixer:
     def __init__(self, project_root: Optional[str] = None):
@@ -26,29 +26,15 @@ class FlutterProjectFixer:
             else:
                 self.root = Path(os.getcwd())
         self.fixed_files: List[str] = []
-        self.skipped_files: List[str] = []
 
     def log(self, message: str, level: str = "INFO"):
-        icons = {
-            "INFO": "[i]", "SUCCESS": "[OK]", "WARNING": "[!]",
-            "ERROR": "[X]", "STEP": "[>]", "FIX": "[FIX]", "SKIP": "[--]",
-        }
+        icons = {"INFO": "[i]", "SUCCESS": "[OK]", "WARNING": "[!]", "ERROR": "[X]", "FIX": "[FIX]"}
         print(f"{icons.get(level, '[i]')} {message}")
 
     def _write_if_needed(self, path: Path, content: str, reason: str, force: bool = False):
         path.parent.mkdir(parents=True, exist_ok=True)
         rel = str(path.relative_to(self.root)) if self._is_relative(path) else str(path)
-
-        if path.exists() and not force:
-            try:
-                existing = path.read_text(encoding='utf-8')
-            except Exception:
-                existing = ""
-            if existing.strip():
-                self.skipped_files.append(f"{rel} (دست‌نخورده باقی ماند)")
-                self.log(f"اسکیپ شد: {rel}", "SKIP")
-                return False
-
+        
         path.write_text(content, encoding='utf-8')
         self.fixed_files.append(f"{rel} ({reason})")
         self.log(f"اصلاح شد: {rel} <- {reason}", "FIX")
@@ -65,14 +51,14 @@ class FlutterProjectFixer:
         if not (self.root / "pubspec.yaml").exists():
             self.log("فایل pubspec.yaml یافت نشد! مسیر پروژه درست نیست.", "ERROR")
             return False
-        self.log("پروژه فلاتر شناسایی شد.", "SUCCESS")
         return True
 
-    # 1. بازیابی فایل main.dart به برنامه اصلی اورایوکس
+    # 1. Fix Main Dart (RTL + Google Fonts)
     def fix_main_dart(self) -> bool:
         path = self.root / "lib" / "main.dart"
         content = '''import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'core/config.dart';
 import 'screens/home_screen.dart';
@@ -83,11 +69,7 @@ import 'services/vpn_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // تنظیمات اولیه پنجره ویندو
   await WindowManagerService.init();
-
-  // شروع پایش وضعیت شبکه
   await NetworkManager.instance.start();
 
   runApp(
@@ -128,335 +110,373 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> {
     return MaterialApp(
       title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(),
+      builder: (context, child) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: child!,
+        );
+      },
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF0A0A0A),
+        textTheme: GoogleFonts.vazirmatnTextTheme(ThemeData.dark().textTheme),
+      ),
       home: const HomeScreen(),
     );
   }
 }
 '''
-        existing = path.read_text(encoding='utf-8') if path.exists() else ""
-        is_default_demo = 'Flutter Demo' in existing or 'MyHomePage' in existing or '_counter' in existing
-        
-        return self._write_if_needed(
-            path, 
-            content, 
-            "بازگردانی main.dart از برنامه نمونه فلاتر به پروژه اصلی", 
-            force=is_default_demo
-        )
+        return self._write_if_needed(path, content, "افزودن فونت وزیرمتن و راست‌چین (RTL)", force=True)
 
-    # 2. تکمیل فایل‌های Core و Services
-    def fix_config_dart(self) -> bool:
-        path = self.root / "lib" / "core" / "config.dart"
-        content = '''class AppConfig {
-  AppConfig._();
+    # 2. Fix Home Screen (Add Window Controls & High-Contrast Theme)
+    def fix_home_screen(self) -> bool:
+        path = self.root / "lib" / "screens" / "home_screen.dart"
+        content = '''import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:window_manager/window_manager.dart';
+import '../services/vpn_service.dart';
+import '../services/window_manager_service.dart';
 
-  static const String appName = 'OryvexVPN';
-  static const String appVersion = '1.0.0';
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
-  static const String warpRegisterUrl =
-      'https://api.cloudflareclient.com/v0a737/reg';
-  static const String defaultDnsPrimary = '1.1.1.1';
-  static const String defaultDnsSecondary = '1.0.0.1';
-  static const String defaultEndpointPort = '2408';
-  static const int mtu = 1280;
-  static const int persistentKeepaliveSeconds = 25;
-
-  static const String tunnelInterfaceName = 'oryvexvpn';
-  static const Duration processStartupGrace = Duration(milliseconds: 500);
-  static const Duration processShutdownGrace = Duration(seconds: 2);
-  static const Duration registerTimeout = Duration(seconds: 15);
-
-  static const double windowWidth = 400;
-  static const double windowHeight = 700;
-
-  static const String prefAutoConnect = 'auto_connect';
-  static const String prefStartMinimized = 'start_minimized';
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
 }
-'''
-        return self._write_if_needed(path, content, "تنظیم مقادیر کانفیگ برنامه")
 
-    def fix_network_manager(self) -> bool:
-        path = self.root / "lib" / "services" / "network_manager.dart"
-        content = '''import 'dart:async';
-import 'package:connectivity_plus/connectivity_plus.dart';
-
-class NetworkManager {
-  NetworkManager._internal();
-  static final NetworkManager instance = NetworkManager._internal();
-
-  final Connectivity _connectivity = Connectivity();
-  final StreamController<bool> _onlineController =
-      StreamController<bool>.broadcast();
-  StreamSubscription<List<ConnectivityResult>>? _subscription;
-
-  bool _isOnline = true;
-  bool get isOnline => _isOnline;
-
-  Stream<bool> get onConnectivityChanged => _onlineController.stream;
-
-  Future<void> start() async {
-    try {
-      final initial = await _connectivity.checkConnectivity();
-      _isOnline = _resultsToOnline(initial);
-    } catch (_) {
-      _isOnline = true;
-    }
-
-    _subscription?.cancel();
-    _subscription = _connectivity.onConnectivityChanged.listen((results) {
-      final online = _resultsToOnline(results);
-      if (online != _isOnline) {
-        _isOnline = online;
-        _onlineController.add(_isOnline);
-      }
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<VPNService>().initStatus();
     });
   }
 
-  bool _resultsToOnline(List<ConnectivityResult> results) {
-    return results.any((r) => r != ConnectivityResult.none);
-  }
+  @override
+  Widget build(BuildContext context) {
+    final vpn = context.watch<VPNService>();
 
-  Future<bool> checkNow() async {
-    try {
-      final results = await _connectivity.checkConnectivity();
-      _isOnline = _resultsToOnline(results);
-      return _isOnline;
-    } catch (_) {
-      return _isOnline;
+    Color getStatusColor() {
+      if (vpn.isConnected) return const Color(0xFF00E5FF); 
+      if (vpn.isConnecting) return const Color(0xFF00FFCC); 
+      if (vpn.stage == VpnStage.error) return const Color(0xFFFF3366); 
+      return const Color(0xFF555555);
     }
-  }
 
-  void dispose() {
-    _subscription?.cancel();
-    _subscription = null;
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0A), 
+      body: Column(
+        children: [
+          // Custom Window Controls
+          GestureDetector(
+            onPanStart: (details) => windowManager.startDragging(),
+            child: Container(
+              color: Colors.transparent,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        vpn.isConnected ? Icons.shield_rounded : Icons.shield_outlined,
+                        color: getStatusColor(),
+                        size: 22,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'اورایوکس',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.minimize, color: Colors.white54, size: 20),
+                        onPressed: () => windowManager.minimize(),
+                        splashRadius: 20,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                      const SizedBox(width: 16),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white54, size: 20),
+                        onPressed: () => WindowManagerService.quit(),
+                        hoverColor: Colors.redAccent,
+                        splashRadius: 20,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ),
+          
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    vpn.statusMessage,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: getStatusColor(),
+                    ),
+                  ),
+                  if (vpn.lastError != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 32),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF3366).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFFF3366).withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        vpn.lastError!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFFFF3366),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 50),
+                  
+                  // Main Connect Button
+                  GestureDetector(
+                    onTap: vpn.isConnecting
+                        ? null
+                        : () => vpn.isConnected ? vpn.disconnect() : vpn.connect(),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      width: 160,
+                      height: 160,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color(0xFF141414),
+                        boxShadow: [
+                          BoxShadow(
+                            color: getStatusColor().withOpacity(vpn.isConnected || vpn.isConnecting ? 0.2 : 0.0),
+                            blurRadius: 40,
+                            spreadRadius: vpn.isConnected || vpn.isConnecting ? 5 : 0,
+                          ),
+                        ],
+                        border: Border.all(
+                          color: getStatusColor().withOpacity(vpn.isConnected ? 0.8 : 0.3),
+                          width: vpn.isConnected ? 3 : 1.5,
+                        ),
+                      ),
+                      child: Center(
+                        child: vpn.isConnecting
+                            ? const SizedBox(
+                                width: 50,
+                                height: 50,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  color: Color(0xFF00FFCC),
+                                ),
+                              )
+                            : Icon(
+                                Icons.power_settings_new_rounded,
+                                size: 60,
+                                color: getStatusColor(),
+                              ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 '''
-        return self._write_if_needed(path, content, "مدیریت اتصال به شبکه")
+        return self._write_if_needed(path, content, "طراحی رابط کاربری تاریک، افزودن دکمه‌های پنجره", force=True)
 
-    def fix_proxy_service(self) -> bool:
-        path = self.root / "lib" / "services" / "proxy_service.dart"
+    # 3. Fix Warp Service (UAC Elevation via PowerShell)
+    def fix_warp_service(self) -> bool:
+        path = self.root / "lib" / "services" / "warp_service.dart"
         content = '''import 'dart:io';
+import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:cryptography/cryptography.dart';
+import 'package:path_provider/path_provider.dart';
 
-class ProxyService {
-  ProxyService._();
+class WarpService {
+  static const _tunnelName = 'oryvexvpn';
+  static bool _connected = false;
 
-  static const String _regPath =
-      r'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings';
+  static const List<String> _endpoints = [
+    "162.159.192.1", "162.159.192.2", "162.159.193.1", "162.159.193.5",
+    "188.114.96.0", "188.114.96.1", "188.114.97.1", "188.114.98.1"
+  ];
 
-  static Future<bool> isProxyEnabled() async {
-    if (!Platform.isWindows) return false;
-    try {
-      final result = await Process.run(
-        'reg',
-        ['query', _regPath, '/v', 'ProxyEnable'],
-      );
-      if (result.exitCode != 0) return false;
-      final out = result.stdout.toString();
-      return out.contains('0x1');
-    } catch (_) {
-      return false;
-    }
+  static String get _exeDir => File(Platform.resolvedExecutable).parent.path;
+  static String get _wireguardExe => '$_exeDir\\\\data\\\\wireguard.exe';
+
+  static Future<bool> _coreFilesPresent() async => File(_wireguardExe).exists();
+
+  static Future<String> _confDir() async {
+    final dir = await getApplicationSupportDirectory();
+    final confDir = Directory('${dir.path}\\\\wireguard');
+    if (!await confDir.exists()) await confDir.create(recursive: true);
+    return confDir.path;
   }
 
-  static Future<String?> currentProxyServer() async {
-    if (!Platform.isWindows) return null;
-    try {
-      final result = await Process.run(
-        'reg',
-        ['query', _regPath, '/v', 'ProxyServer'],
-      );
-      if (result.exitCode != 0) return null;
-      final out = result.stdout.toString();
-      final match = RegExp(r'REG_SZ\\s+(\\S+)').firstMatch(out);
-      return match?.group(1);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  static Future<void> refreshSystemProxySettings() async {
-    if (!Platform.isWindows) return;
-    try {
-      await Process.run('netsh', ['winhttp', 'import', 'proxy', 'source=ie']);
-    } catch (_) {}
-  }
-}
-'''
-        return self._write_if_needed(path, content, "سرویس تنظمیات پروکسی")
-
-    def fix_tray_service(self) -> bool:
-        path = self.root / "lib" / "services" / "tray_service.dart"
-        content = '''import 'dart:io';
-import 'package:tray_manager/tray_manager.dart';
-import 'package:window_manager/window_manager.dart';
-
-class TrayService with TrayListener {
-  TrayService._internal();
-  static final TrayService instance = TrayService._internal();
-
-  bool _initialized = false;
-  bool _isConnected = false;
-
-  Future<void> Function()? onConnectRequested;
-  Future<void> Function()? onDisconnectRequested;
-  Future<void> Function()? onQuitRequested;
-
-  Future<void> init() async {
-    if (!Platform.isWindows || _initialized) return;
-    _initialized = true;
-
-    trayManager.addListener(this);
-
-    try {
-      await trayManager.setIcon('windows/runner/resources/app_icon.ico');
-    } catch (_) {}
-
-    await _rebuildMenu();
-    await trayManager.setToolTip('OryvexVPN');
-  }
-
-  Future<void> updateConnectionState(bool isConnected) async {
-    _isConnected = isConnected;
-    if (!_initialized) return;
-    await _rebuildMenu();
-    await trayManager.setToolTip(
-      isConnected ? 'OryvexVPN - متصل' : 'OryvexVPN - قطع',
-    );
-  }
-
-  Future<void> _rebuildMenu() async {
-    final menu = Menu(
-      items: [
-        MenuItem(key: 'show_window', label: 'نمایش پنجره'),
-        MenuItem.separator(),
-        MenuItem(
-          key: 'toggle_connection',
-          label: _isConnected ? 'قطع اتصال' : 'اتصال',
-        ),
-        MenuItem.separator(),
-        MenuItem(key: 'quit', label: 'خروج'),
-      ],
-    );
-    await trayManager.setContextMenu(menu);
-  }
-
-  Future<void> dispose() async {
-    if (!_initialized) return;
-    trayManager.removeListener(this);
-    _initialized = false;
-  }
-
-  @override
-  void onTrayIconMouseDown() {
-    _restoreWindow();
-  }
-
-  @override
-  void onTrayIconRightMouseDown() {
-    trayManager.popUpContextMenu();
-  }
-
-  @override
-  void onTrayMenuItemClick(MenuItem menuItem) async {
-    switch (menuItem.key) {
-      case 'show_window':
-        await _restoreWindow();
-        break;
-      case 'toggle_connection':
-        if (_isConnected) {
-          await onDisconnectRequested?.call();
-        } else {
-          await onConnectRequested?.call();
+  static Future<String> _findBestEndpoint(Function(String) onProgress) async {
+    onProgress('در حال جستجوی سریع‌ترین سرور...');
+    final futures = _endpoints.map((ip) async {
+      try {
+        final start = DateTime.now();
+        final res = await Process.run('ping', ['-n', '1', '-w', '1000', ip]);
+        if (res.exitCode == 0) {
+          return {'ip': ip, 'latency': DateTime.now().difference(start).inMilliseconds};
         }
-        break;
-      case 'quit':
-        await onQuitRequested?.call();
-        break;
-    }
-  }
-
-  Future<void> _restoreWindow() async {
-    if (!Platform.isWindows) return;
-    final isVisible = await windowManager.isVisible();
-    if (!isVisible) {
-      await windowManager.show();
-    }
-    await windowManager.focus();
-  }
-}
-'''
-        return self._write_if_needed(path, content, "سرویس آیکون کنار ساعت (Tray)")
-
-    def fix_window_manager_service(self) -> bool:
-        path = self.root / "lib" / "services" / "window_manager_service.dart"
-        content = '''import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:window_manager/window_manager.dart';
-import 'package:warp_vpn_app/core/config.dart';
-
-class WindowManagerService {
-  WindowManagerService._();
-
-  static bool _initialized = false;
-
-  static Future<void> init() async {
-    if (!Platform.isWindows || _initialized) return;
-    _initialized = true;
-
-    await windowManager.ensureInitialized();
-
-    const windowOptions = WindowOptions(
-      size: Size(AppConfig.windowWidth, AppConfig.windowHeight),
-      minimumSize: Size(AppConfig.windowWidth, AppConfig.windowHeight),
-      maximumSize: Size(AppConfig.windowWidth, AppConfig.windowHeight),
-      center: true,
-      backgroundColor: Colors.transparent,
-      skipTaskbar: false,
-      titleBarStyle: TitleBarStyle.hidden,
-    );
-
-    await windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.show();
-      await windowManager.focus();
+      } catch (_) {}
+      return {'ip': ip, 'latency': 9999};
     });
+
+    final results = await Future.wait(futures);
+    results.sort((a, b) => (a['latency'] as int).compareTo(b['latency'] as int));
+    return results.first['latency'] != 9999 ? results.first['ip'] as String : _endpoints.first;
   }
 
-  static Future<void> hideToTray() async {
-    if (!Platform.isWindows) return;
-    await windowManager.hide();
-  }
+  static Future<_WarpRegistration> _register(Function(String) onProgress) async {
+    onProgress('در حال ساخت کلید رمزنگاری...');
+    final algorithm = X25519();
+    final keyPair = await algorithm.newKeyPair();
+    final publicKey = await keyPair.extractPublicKey();
+    final privateKeyBytes = await keyPair.extractPrivateKeyBytes();
 
-  static Future<void> restore() async {
-    if (!Platform.isWindows) return;
-    await windowManager.show();
-    await windowManager.focus();
-  }
+    final pubKeyBase64 = base64Encode(publicKey.bytes);
+    final privKeyBase64 = base64Encode(privateKeyBytes);
 
-  static Future<void> quit() async {
-    if (!Platform.isWindows) {
-      exit(0);
+    onProgress('در حال ارتباط با کلادفلر...');
+    final response = await http.post(
+      Uri.parse('https://api.cloudflareclient.com/v0a737/reg'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        "key": pubKeyBase64,
+        "install_id": "",
+        "warp_enabled": true,
+        "tos": DateTime.now().toUtc().toIso8601String(),
+        "type": "Windows",
+        "locale": "fa_IR"
+      }),
+    ).timeout(const Duration(seconds: 15));
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('ثبت‌نام دستگاه ناموفق بود.');
     }
-    await windowManager.destroy();
+
+    final data = jsonDecode(response.body);
+    final peer = data['config']['peers'][0];
+    final address = (data['config']['interface']['addresses']['v4'] as String);
+    final peerPublicKeyBase64 = peer['public_key'] as String;
+
+    final bestIp = await _findBestEndpoint(onProgress);
+
+    return _WarpRegistration(
+      privateKeyBase64: privKeyBase64,
+      address: address,
+      peerPublicKeyBase64: peerPublicKeyBase64,
+      endpointIp: bestIp,
+      endpointPort: '2408',
+    );
+  }
+
+  static String _buildConf(_WarpRegistration reg) {
+    final b = StringBuffer();
+    b.writeln('[Interface]');
+    b.writeln('PrivateKey = ${reg.privateKeyBase64}');
+    b.writeln('Address = ${reg.address}');
+    b.writeln('DNS = 1.1.1.1');
+    b.writeln('');
+    b.writeln('[Peer]');
+    b.writeln('PublicKey = ${reg.peerPublicKeyBase64}');
+    b.writeln('Endpoint = ${reg.endpointIp}:${reg.endpointPort}');
+    b.writeln('AllowedIPs = 0.0.0.0/0');
+    b.writeln('PersistentKeepalive = 25');
+    return b.toString();
+  }
+
+  static Future<void> _installTunnelService(_WarpRegistration reg) async {
+    final confDir = await _confDir();
+    final confFile = File('$confDir\\\\$_tunnelName.conf');
+    await confFile.writeAsString(_buildConf(reg));
+
+    // Force UAC Prompt using PowerShell to resolve "Access is denied"
+    final uninstallCmd = 'Start-Process -FilePath "$_wireguardExe" -ArgumentList "/uninstalltunnelservice $_tunnelName" -Verb RunAs -WindowStyle Hidden -Wait';
+    await Process.run('powershell', ['-NoProfile', '-Command', uninstallCmd]);
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    final installCmd = 'Start-Process -FilePath "$_wireguardExe" -ArgumentList "/installtunnelservice `"${confFile.path}`"" -Verb RunAs -WindowStyle Hidden -Wait';
+    final result = await Process.run('powershell', ['-NoProfile', '-Command', installCmd]);
+
+    if (result.exitCode != 0) {
+      throw Exception('اتصال لغو شد یا دسترسی ادمین (UAC) داده نشد.');
+    }
+    await Future.delayed(const Duration(seconds: 1));
+  }
+
+  static Future<void> connectWithProgress(Function(String) onProgress) async {
+    if (!await _coreFilesPresent()) throw Exception('فایل هسته (wireguard.exe) یافت نشد.');
+    final reg = await _register(onProgress);
+    onProgress('درخواست دسترسی مدیریت (UAC)...');
+    await _installTunnelService(reg);
+    _connected = true;
+  }
+
+  static Future<void> connect() async => await connectWithProgress((_) {});
+
+  static Future<void> disconnect() async {
+    if (!Platform.isWindows) return;
+    try {
+      final uninstallCmd = 'Start-Process -FilePath "$_wireguardExe" -ArgumentList "/uninstalltunnelservice $_tunnelName" -Verb RunAs -WindowStyle Hidden -Wait';
+      await Process.run('powershell', ['-NoProfile', '-Command', uninstallCmd]);
+    } catch (_) {}
+    _connected = false;
+  }
+
+  static Future<bool> isConnected() async {
+    if (!Platform.isWindows || !_connected) return false;
+    final result = await Process.run('sc', ['query', 'WireGuardTunnel\\\\$$_tunnelName']);
+    return result.exitCode == 0 && result.stdout.toString().contains('RUNNING');
   }
 }
-'''
-        existing = path.read_text(encoding='utf-8') if path.exists() else ""
-        # در صورت نبودن پکیج متریال، فایل را اجباری بازنویسی می‌کند
-        is_broken = not path.exists() or ('flutter/material.dart' not in existing)
-        
-        return self._write_if_needed(
-            path, 
-            content, 
-            "اصلاح فایل window_manager_service.dart (رفع ارور Size و Colors)", 
-            force=is_broken
-        )
 
-    # 3. اصلاح وابستگی‌های pubspec.yaml
+class _WarpRegistration {
+  final String privateKeyBase64, address, peerPublicKeyBase64, endpointIp, endpointPort;
+  const _WarpRegistration({
+    required this.privateKeyBase64, required this.address, required this.peerPublicKeyBase64,
+    required this.endpointIp, required this.endpointPort,
+  });
+}
+'''
+        return self._write_if_needed(path, content, "افزودن دریافت دسترسی UAC برای رفع ارور Access is denied", force=True)
+
+    # 4. Fix Pubspec Dependencies
     def fix_pubspec_dependencies(self) -> bool:
         path = self.root / "pubspec.yaml"
-        if not path.exists():
-            return False
+        if not path.exists(): return False
 
         text = path.read_text(encoding='utf-8')
         required_deps = {
@@ -469,6 +489,7 @@ class WindowManagerService {
             "http": "^1.2.2",
             "cryptography": "^2.7.0",
             "path_provider": "^2.1.1",
+            "google_fonts": "^6.1.0",
         }
 
         lines = text.splitlines()
@@ -485,13 +506,9 @@ class WindowManagerService {
                 break
 
         block = "\n".join(lines[dep_idx:end_idx])
-        missing = {
-            name: ver for name, ver in required_deps.items()
-            if re.search(rf'^\s*{re.escape(name)}\s*:', block, re.MULTILINE) is None
-        }
+        missing = {name: ver for name, ver in required_deps.items() if re.search(rf'^\s*{re.escape(name)}\s*:', block, re.MULTILINE) is None}
 
-        if not missing:
-            return False
+        if not missing: return False
 
         insertion = "\n".join(f"  {name}: {ver}" for name, ver in missing.items())
         new_lines = lines[:end_idx] + [insertion] + lines[end_idx:]
@@ -503,57 +520,29 @@ class WindowManagerService {
         pubspec = self.root / "pubspec.yaml"
         if pubspec.exists():
             text = pubspec.read_text(encoding='utf-8')
-            new_text, count = re.subn(
-                r"sdk:\s*['\"][^'\"]*['\"]",
-                "sdk: '>=3.0.0 <4.0.0'",
-                text,
-                count=1,
-            )
+            new_text, count = re.subn(r"sdk:\s*['\"][^'\"]*['\"]", "sdk: '>=3.0.0 <4.0.0'", text, count=1)
             if count > 0 and new_text != text:
                 pubspec.write_text(new_text, encoding='utf-8')
-                self.fixed_files.append("pubspec.yaml (اصلاح رنج نسخه Dart برای GitHub Actions)")
+                self.fixed_files.append("pubspec.yaml (اصلاح رنج نسخه Dart)")
                 return True
         return False
 
     def run(self) -> bool:
         print("\n" + "=" * 64)
-        print("OryvexVPN CI-Ready Project Fixer")
+        print("OryvexVPN UAC & UI Fixer")
         print("=" * 64)
-        print(f"\nمسیر پروژه: {self.root}\n")
+        
+        if not self.check_project(): return False
 
-        if not self.check_project():
-            return False
-
-        # بازسازی بدون فراخوانی ترمینال فلاتر
         self.fix_main_dart()
-        self.fix_config_dart()
-        self.fix_network_manager()
-        self.fix_proxy_service()
-        self.fix_tray_service()
-        self.fix_window_manager_service()
+        self.fix_home_screen()
+        self.fix_warp_service()
         self.fix_pubspec_dependencies()
         self.fix_sdk_constraint()
 
-        print("\n" + "=" * 64)
-        print("گزارش نهایی")
-        print("=" * 64)
-
-        if self.fixed_files:
-            print("\nفایل‌های اصلاح شده:")
-            for f in self.fixed_files:
-                print(f"  [OK]  {f}")
-        else:
-            print("\nتمام فایل‌ها سالم بودند نیاز به تغییری نبود.")
-
-        print("\nکار تمام است! حالا بدون زدن هیچ دستوری در سیستم لوکال، کد را Commit و Push کنید تا بیلد در GitHub Actions انجام شود.")
+        print("\nکار تمام است! کدها را در گیت‌هاب Push کنید تا مشکل دسترسی (UAC) و طراحی UI برطرف شود.")
         return True
 
-
 if __name__ == "__main__":
-    try:
-        root = sys.argv[1] if len(sys.argv) > 1 else os.getcwd()
-        fixer = FlutterProjectFixer(root)
-        fixer.run()
-    except Exception as e:
-        print(f"\nخطا: {e}")
-        sys.exit(1)
+    fixer = FlutterProjectFixer(sys.argv[1] if len(sys.argv) > 1 else os.getcwd())
+    fixer.run()
