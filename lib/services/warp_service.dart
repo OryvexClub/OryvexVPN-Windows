@@ -187,21 +187,39 @@ PersistentKeepalive = 25''';
     return File(_wireguardExe).exists();
   }
 
-  /// Direct execution – app must be running as admin (manifest enforces this).
-  static Future<void> _runWireGuard(List<String> args) async {
+  /// Escapes a string for safe embedding inside a single-quoted
+  /// PowerShell string literal (doubles any embedded single quotes).
+  static String _psQuote(String value) => "'${value.replaceAll("'", "''")}'";
+
+  /// Runs [exePath] with [args] fully elevated, regardless of whether
+  /// this Dart process itself is elevated. Uses PowerShell's
+  /// Start-Process -Verb RunAs -Wait so a UAC prompt is triggered only
+  /// if the parent is not elevated; if the app is already admin, no prompt
+  /// appears. Waits for completion and captures exit code.
+  static Future<int> _runElevated(String exePath, List<String> args) async {
+    final argList = args.map(_psQuote).join(',');
+    final psCommand =
+        "\$p = Start-Process -FilePath ${_psQuote(exePath)} "
+        "-ArgumentList $argList "
+        "-Verb RunAs -Wait -PassThru -WindowStyle Hidden; "
+        "exit \$p.ExitCode";
+
     final result = await Process.run(
-      _wireguardExe,
-      args,
+      'powershell.exe',
+      ['-NoProfile', '-NonInteractive', '-Command', psCommand],
       runInShell: false,
     );
+
     if (result.exitCode != 0) {
       final stderrText = (result.stderr ?? '').toString().trim();
       final stdoutText = (result.stdout ?? '').toString().trim();
       final detail = [stderrText, stdoutText].where((s) => s.isNotEmpty).join(' | ');
+      final detailSuffix = detail.isNotEmpty ? '\nجزئیات: $detail' : '';
       throw Exception(
-        'اجرای وایرگارد ناموفق بود (کد: ${result.exitCode})${detail.isNotEmpty ? '\nجزئیات: $detail' : ''}',
+        'اجرای وایرگارد ناموفق بود (کد: ${result.exitCode})$detailSuffix',
       );
     }
+    return result.exitCode;
   }
 
   static Future<void> connect(String config) async {
@@ -215,7 +233,7 @@ PersistentKeepalive = 25''';
     final file = await _writeConfigFile(config);
 
     try {
-      await _runWireGuard(['/installtunnelservice', file.path]);
+      await _runElevated(_wireguardExe, ['/installtunnelservice', file.path]);
     } catch (e) {
       throw Exception(
         'نصب تونل ناموفق بود. مطمئن شوید برنامه با دسترسی ادمین اجرا شده است.\n$e',
@@ -232,14 +250,13 @@ PersistentKeepalive = 25''';
   static Future<void> disconnect() async {
     if (!Platform.isWindows) return;
     try {
-      await _runWireGuard(['/uninstalltunnelservice', _tunnelName]);
+      await _runElevated(_wireguardExe, ['/uninstalltunnelservice', _tunnelName]);
     } catch (e) {
       // If the tunnel wasn't installed, ignore the error
       if (e.toString().contains('The system cannot find the file specified') ||
           e.toString().contains('service does not exist')) {
         return;
       }
-      // Rethrow other errors so the UI can show them
       rethrow;
     }
   }

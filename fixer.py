@@ -4,15 +4,13 @@
 """
 fixer.py - OryvexVPN Auto-Fixer (Access Denied / Tunnel Install Fix)
 
-Fixes the "نصب تونل ناموفق بود ... Access is denied" error by:
-  1. Setting the app manifest to requireAdministrator so the whole app
-     runs elevated once (no extra UAC prompt for wireguard.exe).
-  2. Removing the PowerShell elevation layer – directly calling
-     wireguard.exe with Process.run since the app is already admin.
-  3. Expanding the endpoint list and using concurrent ping scanning
-     to find the best server, improving connection success.
-  4. Fixing disconnect by ensuring the uninstall command can run
-     without permission issues.
+Fixes:
+  1. The app manifest is set to requireAdministrator – app runs elevated once.
+  2. WireGuard calls use PowerShell Start-Process -Verb RunAs, which does not
+     show an additional UAC prompt if the parent is already elevated.
+  3. Expands endpoint list and uses concurrent ping scanning for best server.
+  4. Fixes disconnect: uninstall works with elevation.
+  5. Verifies service is running after install.
 """
 
 import os
@@ -107,13 +105,13 @@ class MyApp extends StatelessWidget {
 
     def fix_warp_service(self) -> bool:
         """
-        Rewrite warp_service.dart with:
+        Rewrite warp_service.dart:
 
-        - Direct Process.run calls (no PowerShell elevation) because
-          the app now runs as admin via manifest.
-        - Much larger endpoint list and concurrent ping scanning.
-        - Proper disconnect (uninstall tunnel) that actually works.
-        - Verify the service is running after install.
+        - Uses PowerShell Start-Process -Verb RunAs for elevation.
+          No extra UAC prompt if the app itself is already elevated.
+        - Expanded endpoint list (300+ IPs) with concurrent ping scan.
+        - Proper disconnect (uninstall) that works.
+        - Verifies service running after install.
         """
         warp_path = self.root / "lib" / "services" / "warp_service.dart"
         correct = r"""import 'dart:io';
@@ -305,21 +303,39 @@ PersistentKeepalive = 25''';
     return File(_wireguardExe).exists();
   }
 
-  /// Direct execution – app must be running as admin (manifest enforces this).
-  static Future<void> _runWireGuard(List<String> args) async {
+  /// Escapes a string for safe embedding inside a single-quoted
+  /// PowerShell string literal (doubles any embedded single quotes).
+  static String _psQuote(String value) => "'${value.replaceAll("'", "''")}'";
+
+  /// Runs [exePath] with [args] fully elevated, regardless of whether
+  /// this Dart process itself is elevated. Uses PowerShell's
+  /// Start-Process -Verb RunAs -Wait so a UAC prompt is triggered only
+  /// if the parent is not elevated; if the app is already admin, no prompt
+  /// appears. Waits for completion and captures exit code.
+  static Future<int> _runElevated(String exePath, List<String> args) async {
+    final argList = args.map(_psQuote).join(',');
+    final psCommand =
+        "\$p = Start-Process -FilePath ${_psQuote(exePath)} "
+        "-ArgumentList $argList "
+        "-Verb RunAs -Wait -PassThru -WindowStyle Hidden; "
+        "exit \$p.ExitCode";
+
     final result = await Process.run(
-      _wireguardExe,
-      args,
+      'powershell.exe',
+      ['-NoProfile', '-NonInteractive', '-Command', psCommand],
       runInShell: false,
     );
+
     if (result.exitCode != 0) {
       final stderrText = (result.stderr ?? '').toString().trim();
       final stdoutText = (result.stdout ?? '').toString().trim();
       final detail = [stderrText, stdoutText].where((s) => s.isNotEmpty).join(' | ');
+      final detailSuffix = detail.isNotEmpty ? '\nجزئیات: $detail' : '';
       throw Exception(
-        'اجرای وایرگارد ناموفق بود (کد: ${result.exitCode})${detail.isNotEmpty ? '\nجزئیات: $detail' : ''}',
+        'اجرای وایرگارد ناموفق بود (کد: ${result.exitCode})$detailSuffix',
       );
     }
+    return result.exitCode;
   }
 
   static Future<void> connect(String config) async {
@@ -333,7 +349,7 @@ PersistentKeepalive = 25''';
     final file = await _writeConfigFile(config);
 
     try {
-      await _runWireGuard(['/installtunnelservice', file.path]);
+      await _runElevated(_wireguardExe, ['/installtunnelservice', file.path]);
     } catch (e) {
       throw Exception(
         'نصب تونل ناموفق بود. مطمئن شوید برنامه با دسترسی ادمین اجرا شده است.\n$e',
@@ -350,14 +366,13 @@ PersistentKeepalive = 25''';
   static Future<void> disconnect() async {
     if (!Platform.isWindows) return;
     try {
-      await _runWireGuard(['/uninstalltunnelservice', _tunnelName]);
+      await _runElevated(_wireguardExe, ['/uninstalltunnelservice', _tunnelName]);
     } catch (e) {
       // If the tunnel wasn't installed, ignore the error
       if (e.toString().contains('The system cannot find the file specified') ||
           e.toString().contains('service does not exist')) {
         return;
       }
-      // Rethrow other errors so the UI can show them
       rethrow;
     }
   }
@@ -378,7 +393,7 @@ PersistentKeepalive = 25''';
 """
         warp_path.parent.mkdir(parents=True, exist_ok=True)
         warp_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("warp_service.dart (direct admin calls + huge endpoint list)")
+        self.fixed_files.append("warp_service.dart (PowerShell elevation, no extra prompt if admin)")
         return True
 
     def fix_vpn_service(self) -> bool:
@@ -668,7 +683,8 @@ jobs:
 
         print("\n✅ Fixes applied:")
         print("  • App manifest set to requireAdministrator – app runs elevated once.")
-        print("  • wireguard.exe now called directly (no extra UAC prompt).")
+        print("  • WireGuard calls use PowerShell Start-Process -Verb RunAs.")
+        print("    (No extra UAC prompt if the app is already admin).")
         print("  • Endpoint list expanded to 300+ IPs with concurrent ping scan.")
         print("  • Disconnect now actually uninstalls the tunnel service.")
         print("  • Connection verifies the service is running after install.")
