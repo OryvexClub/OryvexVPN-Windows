@@ -23,7 +23,13 @@ add_executable(${BINARY_NAME} WIN32
 # requestedExecutionLevel. runner.exe.manifest is the sole source
 # of truth for the execution level.
 set_target_properties(${BINARY_NAME} PROPERTIES
-  LINK_FLAGS "/MANIFEST:EMBED /MANIFESTINPUT:${CMAKE_CURRENT_SOURCE_DIR}/runner.exe.manifest"
+  LINK_FLAGS "/MANIFESTUAC:NO"
+)
+
+# Embed the manifest using modern CMake approach
+target_link_options(${BINARY_NAME} PRIVATE
+  "/MANIFEST:EMBED"
+  "/MANIFESTINPUT:${CMAKE_CURRENT_SOURCE_DIR}/runner.exe.manifest"
 )
 
 
