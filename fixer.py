@@ -263,6 +263,18 @@ def check_cmakelists(cmake_path: Path) -> bool:
     block is never actually embedded by the linker, which is what
     produces LNK1327 during `mt.exe` even though a naive text search
     would report "OK".
+
+    Also verifies VS_MANIFEST_UAC is disabled on the target. Without
+    this, CMake/MSVC auto-generates its own /MANIFESTUAC:"level='asInvoker'"
+    linker flag alongside our custom runner.exe.manifest (passed via
+    /manifestinput). mt.exe then sees two manifest snippets asserting
+    different values for the same "level" attribute and fails with:
+      manifest authoring error c1010001: Values of attribute "level"
+      not equal in different manifest snippets.
+      LINK : fatal error LNK1327: failure during running mt.exe
+    This is a *different* failure mode than a missing/duplicated
+    manifest source - the manifest can be wired in perfectly and this
+    will still fail every single time until VS_MANIFEST_UAC is off.
     """
     if not cmake_path.exists():
         return False
@@ -277,7 +289,58 @@ def check_cmakelists(cmake_path: Path) -> bool:
     # Zero occurrences = never wired in. More than one = duplicate
     # manifest source, which also breaks mt.exe.
     occurrences = block_text.count("runner.exe.manifest")
-    return occurrences == 1
+    if occurrences != 1:
+        return False
+
+    if not _has_manifest_uac_disabled(text):
+        return False
+
+    return True
+
+
+def _has_manifest_uac_disabled(text: str) -> bool:
+    """
+    True if the CMakeLists sets VS_MANIFEST_UAC to an off-like value
+    (NO/OFF/FALSE, any case, quoted or not) anywhere in the file. This
+    is a simple presence check rather than scoping to a specific
+    set_target_properties() call, since CMake target property syntax
+    has several equivalent forms and we only need to know the flag is
+    disabled somewhere applicable to the runner target.
+    """
+    return re.search(
+        r'VS_MANIFEST_UAC\s+"?(NO|OFF|FALSE)"?',
+        text,
+        re.IGNORECASE,
+    ) is not None
+
+
+def _insert_manifest_uac_disable(text: str) -> str:
+    """
+    Append a set_target_properties(...) call right after the
+    add_executable(${BINARY_NAME} ...) block that disables
+    VS_MANIFEST_UAC, so CMake stops emitting its own conflicting
+    /MANIFESTUAC:"level='asInvoker'" linker flag. Falls back to
+    returning the text unchanged if the add_executable block can't be
+    found.
+    """
+    block = _find_add_executable_block(text)
+    if block is None:
+        return text
+
+    _, end, _ = block
+
+    insertion = (
+        "\n\n"
+        "# Prevent CMake/MSVC from auto-generating a conflicting UAC manifest\n"
+        "# snippet (level='asInvoker'). Without this, mt.exe fails with\n"
+        "# LNK1327 / \"manifest authoring error c1010001\" because the\n"
+        "# auto-generated snippet and runner.exe.manifest disagree on the\n"
+        "# requestedExecutionLevel. runner.exe.manifest is the sole source\n"
+        "# of truth for the execution level.\n"
+        "set_target_properties(${BINARY_NAME} PROPERTIES VS_MANIFEST_UAC \"NO\")\n"
+    )
+
+    return text[:end] + insertion + text[end:]
 
 
 def _insert_manifest_into_cmakelists(text: str) -> str:
@@ -331,7 +394,10 @@ def apply_fixes(root: Path, dry_run: bool) -> None:
 
     # 2. CMakeLists.txt must list runner.exe.manifest exactly once as a
     #    source inside add_executable(${BINARY_NAME} ...) so MSVC embeds
-    #    it as the exe's manifest resource via mt.exe.
+    #    it as the exe's manifest resource via mt.exe. It must ALSO
+    #    disable VS_MANIFEST_UAC so CMake doesn't auto-generate a
+    #    conflicting /MANIFESTUAC:"level='asInvoker'" flag that fights
+    #    with runner.exe.manifest's requireAdministrator setting.
     if cmake_path.exists() and not check_cmakelists(cmake_path):
         text = cmake_path.read_text(encoding="utf-8")
         block = _find_add_executable_block(text)
@@ -339,13 +405,13 @@ def apply_fixes(root: Path, dry_run: bool) -> None:
         if block is not None:
             _, _, block_text = block
             occurrences = block_text.count("runner.exe.manifest")
+            made_edit = False
 
             if occurrences == 0:
                 new_text = _insert_manifest_into_cmakelists(text)
                 if new_text != text:
-                    changed.append(str(cmake_path))
-                    if not dry_run:
-                        cmake_path.write_text(new_text, encoding="utf-8")
+                    text = new_text
+                    made_edit = True
             elif occurrences > 1:
                 print(
                     f"WARNING: {cmake_path} lists runner.exe.manifest more than once "
@@ -353,6 +419,17 @@ def apply_fixes(root: Path, dry_run: bool) -> None:
                     "failures. Not auto-editing this - please de-duplicate it by hand.",
                     file=sys.stderr,
                 )
+
+            if not _has_manifest_uac_disabled(text):
+                new_text = _insert_manifest_uac_disable(text)
+                if new_text != text:
+                    text = new_text
+                    made_edit = True
+
+            if made_edit:
+                changed.append(str(cmake_path))
+                if not dry_run:
+                    cmake_path.write_text(text, encoding="utf-8")
         else:
             print(
                 f"WARNING: could not find add_executable(${{BINARY_NAME}} ...) in "
@@ -397,9 +474,18 @@ Next steps (manual, on your Windows machine - I can't compile here):
      -> confirm build\\windows\\x64\\runner\\Release\\warp_vpn_app.exe
         now shows the UAC shield icon and prompts for elevation on launch.
      -> if you still see LNK1327, open windows\\runner\\CMakeLists.txt and
-        confirm "runner.exe.manifest" appears EXACTLY ONCE inside the
-        add_executable(${BINARY_NAME} ...) argument list, next to
-        "Runner.rc" - not duplicated, not outside that block.
+        confirm BOTH of these:
+          1. "runner.exe.manifest" appears EXACTLY ONCE inside the
+             add_executable(${BINARY_NAME} ...) argument list, next to
+             "Runner.rc" - not duplicated, not outside that block.
+          2. set_target_properties(${BINARY_NAME} PROPERTIES
+             VS_MANIFEST_UAC "NO") is present after that add_executable()
+             call. Without it, CMake auto-generates a conflicting
+             /MANIFESTUAC:"level='asInvoker'" linker flag that fights
+             with requireAdministrator in runner.exe.manifest, and
+             mt.exe fails with: manifest authoring error c1010001:
+             Values of attribute "level" not equal in different
+             manifest snippets.
   3. Install Inno Setup 6 (https://jrsoftware.org/isinfo.php) if you
      haven't, then: iscc installer\\installer.iss
   4. Open installer.iss and set your real Publisher name, AppURL, and
@@ -410,13 +496,28 @@ Next steps (manual, on your Windows machine - I can't compile here):
 
 def check_only(root: Path) -> int:
     windows_runner = root / "windows" / "runner"
+    cmake_path = windows_runner / "CMakeLists.txt"
+
     manifest_ok = check_manifest(windows_runner / "runner.exe.manifest")
-    cmake_ok = check_cmakelists(windows_runner / "CMakeLists.txt")
+    cmake_ok = check_cmakelists(cmake_path)
     iss_ok = (root / "installer" / "installer.iss").exists()
 
-    print(f"manifest requireAdministrator : {'OK' if manifest_ok else 'MISSING'}")
-    print(f"CMakeLists embeds manifest    : {'OK' if cmake_ok else 'MISSING'}")
-    print(f"installer/installer.iss       : {'OK' if iss_ok else 'MISSING'}")
+    # Break the combined CMakeLists check into its two components for
+    # clearer diagnostics, since they fail in different, non-obvious ways.
+    manifest_wired_ok = False
+    uac_disabled_ok = False
+    if cmake_path.exists():
+        text = cmake_path.read_text(encoding="utf-8")
+        block = _find_add_executable_block(text)
+        if block is not None:
+            _, _, block_text = block
+            manifest_wired_ok = block_text.count("runner.exe.manifest") == 1
+        uac_disabled_ok = _has_manifest_uac_disabled(text)
+
+    print(f"manifest requireAdministrator      : {'OK' if manifest_ok else 'MISSING'}")
+    print(f"CMakeLists embeds manifest source  : {'OK' if manifest_wired_ok else 'MISSING'}")
+    print(f"CMakeLists disables VS_MANIFEST_UAC: {'OK' if uac_disabled_ok else 'MISSING'}")
+    print(f"installer/installer.iss            : {'OK' if iss_ok else 'MISSING'}")
 
     return 0 if (manifest_ok and cmake_ok and iss_ok) else 1
 
