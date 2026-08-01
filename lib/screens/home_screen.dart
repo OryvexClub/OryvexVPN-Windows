@@ -35,55 +35,48 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: const Color(0xFF0A0A0A), 
       body: Column(
         children: [
-          // Custom Window Controls
-          GestureDetector(
-            onPanStart: (details) => windowManager.startDragging(),
-            child: Container(
-              color: Colors.transparent,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        vpn.isConnected ? Icons.shield_rounded : Icons.shield_outlined,
-                        color: getStatusColor(),
-                        size: 22,
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'اورایوکس',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
+          // Custom Window Controls (Fixed Layout)
+          Container(
+            height: 50,
+            color: Colors.transparent,
+            child: Row(
+              children: [
+                const SizedBox(width: 16),
+                Icon(
+                  vpn.isConnected ? Icons.shield_rounded : Icons.shield_outlined,
+                  color: getStatusColor(),
+                  size: 22,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'اورایوکس',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.minimize, color: Colors.white54, size: 20),
-                        onPressed: () => windowManager.minimize(),
-                        splashRadius: 20,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                      const SizedBox(width: 16),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white54, size: 20),
-                        onPressed: () => WindowManagerService.quit(),
-                        hoverColor: Colors.redAccent,
-                        splashRadius: 20,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  )
-                ],
-              ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onPanStart: (details) => windowManager.startDragging(),
+                    child: const SizedBox(height: double.infinity),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.minimize, color: Colors.white54, size: 20),
+                  onPressed: () => windowManager.minimize(),
+                  hoverColor: Colors.white10,
+                  splashRadius: 20,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white54, size: 20),
+                  onPressed: () => WindowManagerService.quit(),
+                  hoverColor: Colors.redAccent.withOpacity(0.5),
+                  splashRadius: 20,
+                ),
+                const SizedBox(width: 8),
+              ],
             ),
           ),
           
@@ -102,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   if (vpn.lastError != null) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 32),
                       padding: const EdgeInsets.all(12),
@@ -113,10 +106,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: Text(
                         vpn.lastError!,
-                        textAlign: TextAlign.center,
+                        textAlign: TextAlign.left,
+                        textDirection: TextDirection.ltr, // Logs show better in LTR
                         style: const TextStyle(
-                          fontSize: 13,
+                          fontSize: 12,
                           color: Color(0xFFFF3366),
+                          fontFamily: 'Consolas',
                         ),
                       ),
                     ),

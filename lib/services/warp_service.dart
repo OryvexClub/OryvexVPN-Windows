@@ -143,7 +143,7 @@ class WarpService {
 
   static Future<bool> isConnected() async {
     if (!Platform.isWindows || !_connected) return false;
-    final result = await Process.run('sc', ['query', 'WireGuardTunnel\\$$_tunnelName']);
+    final result = await Process.run('sc', ['query', 'WireGuardTunnel\$${_tunnelName}']);
     return result.exitCode == 0 && result.stdout.toString().contains('RUNNING');
   }
 }

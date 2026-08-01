@@ -61,6 +61,7 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> {
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF0A0A0A),
+        fontFamily: GoogleFonts.vazirmatn().fontFamily,
         textTheme: GoogleFonts.vazirmatnTextTheme(ThemeData.dark().textTheme),
       ),
       home: const HomeScreen(),

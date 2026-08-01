@@ -2,11 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-fixer.py - OryvexVPN CI-Ready Project Fixer
-
-- Fixes "Access is denied" via PowerShell UAC elevation (RunAs).
-- Restores custom window controls (Close/Minimize).
-- Applies GoogleFonts (Vazirmatn) and a high-contrast minimalist dark theme.
+fixer.py - OryvexVPN Full Resolution Script
+رفع کامل خطاهای کامپایل گیت‌هاب (Dart String Interpolation)
+رفع مشکلات رابط کاربری (مخفی شدن دکمه‌های کنترل پنجره و فونت)
 """
 
 import os
@@ -53,10 +51,10 @@ class FlutterProjectFixer:
             return False
         return True
 
-    # 1. Fix Main Dart (RTL + Google Fonts)
+    # 1. Main Entrypoint & Font Global Theme
     def fix_main_dart(self) -> bool:
         path = self.root / "lib" / "main.dart"
-        content = '''import 'package:flutter/material.dart';
+        content = r'''import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -119,6 +117,7 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> {
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF0A0A0A),
+        fontFamily: GoogleFonts.vazirmatn().fontFamily,
         textTheme: GoogleFonts.vazirmatnTextTheme(ThemeData.dark().textTheme),
       ),
       home: const HomeScreen(),
@@ -126,12 +125,12 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> {
   }
 }
 '''
-        return self._write_if_needed(path, content, "افزودن فونت وزیرمتن و راست‌چین (RTL)", force=True)
+        return self._write_if_needed(path, content, "اعمال فونت وزیرمتن و تنظیمات اصلی", force=True)
 
-    # 2. Fix Home Screen (Add Window Controls & High-Contrast Theme)
+    # 2. UI Layout (Fix Missing Close Buttons & UI structure)
     def fix_home_screen(self) -> bool:
         path = self.root / "lib" / "screens" / "home_screen.dart"
-        content = '''import 'package:flutter/material.dart';
+        content = r'''import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import '../services/vpn_service.dart';
@@ -168,55 +167,48 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: const Color(0xFF0A0A0A), 
       body: Column(
         children: [
-          // Custom Window Controls
-          GestureDetector(
-            onPanStart: (details) => windowManager.startDragging(),
-            child: Container(
-              color: Colors.transparent,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        vpn.isConnected ? Icons.shield_rounded : Icons.shield_outlined,
-                        color: getStatusColor(),
-                        size: 22,
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'اورایوکس',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
+          // Custom Window Controls (Fixed Layout)
+          Container(
+            height: 50,
+            color: Colors.transparent,
+            child: Row(
+              children: [
+                const SizedBox(width: 16),
+                Icon(
+                  vpn.isConnected ? Icons.shield_rounded : Icons.shield_outlined,
+                  color: getStatusColor(),
+                  size: 22,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'اورایوکس',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.minimize, color: Colors.white54, size: 20),
-                        onPressed: () => windowManager.minimize(),
-                        splashRadius: 20,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                      const SizedBox(width: 16),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white54, size: 20),
-                        onPressed: () => WindowManagerService.quit(),
-                        hoverColor: Colors.redAccent,
-                        splashRadius: 20,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  )
-                ],
-              ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onPanStart: (details) => windowManager.startDragging(),
+                    child: const SizedBox(height: double.infinity),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.minimize, color: Colors.white54, size: 20),
+                  onPressed: () => windowManager.minimize(),
+                  hoverColor: Colors.white10,
+                  splashRadius: 20,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white54, size: 20),
+                  onPressed: () => WindowManagerService.quit(),
+                  hoverColor: Colors.redAccent.withOpacity(0.5),
+                  splashRadius: 20,
+                ),
+                const SizedBox(width: 8),
+              ],
             ),
           ),
           
@@ -235,7 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   if (vpn.lastError != null) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 32),
                       padding: const EdgeInsets.all(12),
@@ -246,10 +238,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: Text(
                         vpn.lastError!,
-                        textAlign: TextAlign.center,
+                        textAlign: TextAlign.left,
+                        textDirection: TextDirection.ltr, // Logs show better in LTR
                         style: const TextStyle(
-                          fontSize: 13,
+                          fontSize: 12,
                           color: Color(0xFFFF3366),
+                          fontFamily: 'Consolas',
                         ),
                       ),
                     ),
@@ -308,12 +302,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 '''
-        return self._write_if_needed(path, content, "طراحی رابط کاربری تاریک، افزودن دکمه‌های پنجره", force=True)
+        return self._write_if_needed(path, content, "اصلاح جایگاه دکمه‌های کنترل پنجره و ارور لاگ", force=True)
 
-    # 3. Fix Warp Service (UAC Elevation via PowerShell)
+    # 3. Fix Warp Service (UAC and Compilation String Errors)
     def fix_warp_service(self) -> bool:
         path = self.root / "lib" / "services" / "warp_service.dart"
-        content = '''import 'dart:io';
+        content = r'''import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -330,13 +324,13 @@ class WarpService {
   ];
 
   static String get _exeDir => File(Platform.resolvedExecutable).parent.path;
-  static String get _wireguardExe => '$_exeDir\\\\data\\\\wireguard.exe';
+  static String get _wireguardExe => '$_exeDir\\data\\wireguard.exe';
 
   static Future<bool> _coreFilesPresent() async => File(_wireguardExe).exists();
 
   static Future<String> _confDir() async {
     final dir = await getApplicationSupportDirectory();
-    final confDir = Directory('${dir.path}\\\\wireguard');
+    final confDir = Directory('${dir.path}\\wireguard');
     if (!await confDir.exists()) await confDir.create(recursive: true);
     return confDir.path;
   }
@@ -420,7 +414,7 @@ class WarpService {
 
   static Future<void> _installTunnelService(_WarpRegistration reg) async {
     final confDir = await _confDir();
-    final confFile = File('$confDir\\\\$_tunnelName.conf');
+    final confFile = File('$confDir\\$_tunnelName.conf');
     await confFile.writeAsString(_buildConf(reg));
 
     // Force UAC Prompt using PowerShell to resolve "Access is denied"
@@ -458,7 +452,7 @@ class WarpService {
 
   static Future<bool> isConnected() async {
     if (!Platform.isWindows || !_connected) return false;
-    final result = await Process.run('sc', ['query', 'WireGuardTunnel\\\\$$_tunnelName']);
+    final result = await Process.run('sc', ['query', 'WireGuardTunnel\$${_tunnelName}']);
     return result.exitCode == 0 && result.stdout.toString().contains('RUNNING');
   }
 }
@@ -471,7 +465,62 @@ class _WarpRegistration {
   });
 }
 '''
-        return self._write_if_needed(path, content, "افزودن دریافت دسترسی UAC برای رفع ارور Access is denied", force=True)
+        return self._write_if_needed(path, content, "حل مشکل کامپایل Dart (Raw String) و درخواست UAC", force=True)
+
+    def fix_window_manager_service(self) -> bool:
+        path = self.root / "lib" / "services" / "window_manager_service.dart"
+        content = r'''import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:window_manager/window_manager.dart';
+import 'package:warp_vpn_app/core/config.dart';
+
+class WindowManagerService {
+  WindowManagerService._();
+
+  static bool _initialized = false;
+
+  static Future<void> init() async {
+    if (!Platform.isWindows || _initialized) return;
+    _initialized = true;
+
+    await windowManager.ensureInitialized();
+
+    const windowOptions = WindowOptions(
+      size: Size(AppConfig.windowWidth, AppConfig.windowHeight),
+      minimumSize: Size(AppConfig.windowWidth, AppConfig.windowHeight),
+      maximumSize: Size(AppConfig.windowWidth, AppConfig.windowHeight),
+      center: true,
+      backgroundColor: Colors.transparent,
+      skipTaskbar: false,
+      titleBarStyle: TitleBarStyle.hidden,
+    );
+
+    await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
+
+  static Future<void> hideToTray() async {
+    if (!Platform.isWindows) return;
+    await windowManager.hide();
+  }
+
+  static Future<void> restore() async {
+    if (!Platform.isWindows) return;
+    await windowManager.show();
+    await windowManager.focus();
+  }
+
+  static Future<void> quit() async {
+    if (!Platform.isWindows) {
+      exit(0);
+    }
+    await windowManager.destroy();
+  }
+}
+'''
+        return self._write_if_needed(path, content, "اطمینان از ایمپورت شدن Material برای Colors/Size", force=True)
 
     # 4. Fix Pubspec Dependencies
     def fix_pubspec_dependencies(self) -> bool:
@@ -529,7 +578,7 @@ class _WarpRegistration {
 
     def run(self) -> bool:
         print("\n" + "=" * 64)
-        print("OryvexVPN UAC & UI Fixer")
+        print("OryvexVPN Ultimate Fixer (UI + UAC + Compiler)")
         print("=" * 64)
         
         if not self.check_project(): return False
@@ -537,10 +586,11 @@ class _WarpRegistration {
         self.fix_main_dart()
         self.fix_home_screen()
         self.fix_warp_service()
+        self.fix_window_manager_service()
         self.fix_pubspec_dependencies()
         self.fix_sdk_constraint()
 
-        print("\nکار تمام است! کدها را در گیت‌هاب Push کنید تا مشکل دسترسی (UAC) و طراحی UI برطرف شود.")
+        print("\nکار تمام است! کدها را در گیت‌هاب Push کنید.")
         return True
 
 if __name__ == "__main__":
