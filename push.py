@@ -8,24 +8,29 @@ import re
 from pathlib import Path
 from getpass import getpass
 from typing import Tuple
+
 # Fix Windows console encoding issues
 if sys.platform == 'win32':
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
 COMMIT_MESSAGE = "OryvexVPN: Fix empty/broken files, missing pubspec deps"
+
 class GitHubPusher:
     def __init__(self, project_root=None):
         self.root = Path(project_root or os.getcwd())
         self.username = ""
         self.token = ""
         self.repo_name = "oryvex_vpn_demo"
+
     def log(self, message, level="INFO"):
         icons = {
             "INFO": "[i]", "SUCCESS": "[OK]", "WARNING": "[!]",
             "ERROR": "[X]", "STEP": "[>]", "SECURE": "[SEC]"
         }
         print(f"{icons.get(level, '[i]')} {message}")
+
     def check_git(self) -> bool:
         try:
             result = subprocess.run(
@@ -38,6 +43,7 @@ class GitHubPusher:
             pass
         self.log("Git not found! Please install Git first.", "ERROR")
         return False
+
     def test_token(self) -> bool:
         import urllib.request
         import json
@@ -55,6 +61,7 @@ class GitHubPusher:
         except Exception as e:
             self.log(f"Token invalid: {e}", "ERROR")
             return False
+
     def get_credentials(self) -> bool:
         print("\n" + "=" * 60)
         print("GitHub Login")
@@ -62,14 +69,18 @@ class GitHubPusher:
         print("\nCreate a token: https://github.com/settings/tokens")
         print("Select scopes: 'repo' and 'workflow'")
         print("NEVER commit this token to git or share it.\n")
+
         username = input("GitHub Username: ").strip()
         token = getpass("Personal Access Token (hidden): ").strip()
+
         if not username or not token:
             self.log("Username and token are required!", "ERROR")
             return False
+
         self.username = username
         self.token = token
         return self.test_token()
+
     def run_command(self, cmd, env=None, ignore_error: bool = False, timeout: int = 120) -> Tuple[bool, str]:
         try:
             result = subprocess.run(
@@ -86,6 +97,7 @@ class GitHubPusher:
             return False, "Command timed out"
         except Exception as e:
             return False, str(e)
+
     def create_repo_if_missing(self) -> bool:
         import urllib.request
         import urllib.error
@@ -113,6 +125,7 @@ class GitHubPusher:
             self.log(f"Error checking repository: {e}", "ERROR")
             return False
         return False
+
     def _create_repo(self) -> bool:
         import urllib.request
         import json
@@ -143,6 +156,7 @@ class GitHubPusher:
         except Exception as e:
             self.log(f"Error creating repository: {e}", "ERROR")
             return False
+
     def _check_diff_for_token(self) -> bool:
         success, diff = self.run_command('git diff --cached', ignore_error=True)
         if not success:
@@ -152,6 +166,7 @@ class GitHubPusher:
             self.log("GitHub token found in staged files!", "ERROR")
             return True
         return False
+
     def run_fixer_and_verify(self) -> bool:
         """
         Run fixer.py, then independently verify with `fixer.py --check`
@@ -236,6 +251,7 @@ class GitHubPusher:
                 return False
 
         return True
+
     def push_to_github(self) -> bool:
         print("\n" + "=" * 60)
         print("Pushing to GitHub")
@@ -251,14 +267,17 @@ class GitHubPusher:
             if not success:
                 self.log(f"Failed to init git: {output}", "ERROR")
                 return False
+
         self.log("Setting git config...", "STEP")
         self.run_command('git config user.email "oryvex@demo.com"')
         self.run_command('git config user.name "OryvexVPN"')
+
         self.log("Adding all files...", "STEP")
         success, output = self.run_command("git add .")
         if not success:
             self.log(f"Failed to add files: {output}", "ERROR")
             return False
+
         if self._check_diff_for_token():
             self.log("Push blocked due to token in staging. Run fixer.py to scrub tokens.", "ERROR")
             return False
@@ -283,14 +302,18 @@ class GitHubPusher:
         success, output = self.run_command(f'git commit -m "{COMMIT_MESSAGE}"')
         if not success and "nothing to commit" not in output:
             self.log(f"Commit warning: {output}", "WARNING")
+
         self.log("Setting up remote...", "STEP")
         self.run_command("git branch -M main")
         self.run_command("git remote remove origin", ignore_error=True)
         self.run_command(f"git remote add origin https://github.com/{self.username}/{self.repo_name}.git", ignore_error=True)
+
         self.log("Pushing to GitHub...", "STEP")
         print("\nPushing... this may take a moment...\n")
+
         push_complete = [False]
         push_result = [None]
+
         def do_push():
             try:
                 push_url_with_auth = f"https://{self.username}:{self.token}@github.com/{self.username}/{self.repo_name}.git"
@@ -306,30 +329,36 @@ class GitHubPusher:
             except Exception as e:
                 push_complete[0] = True
                 push_result[0] = e
+
         push_thread = threading.Thread(target=do_push)
         push_thread.daemon = True
         push_thread.start()
+
         dots = 0
         while not push_complete[0]:
             dots = (dots + 1) % 4
             print(f"\rPushing{' .' * dots}   ", end="", flush=True)
             time.sleep(0.5)
         print("\r" + " " * 30 + "\r", end="", flush=True)
+
         if push_result[0] is None:
             self.log("Push timed out after 3 minutes", "ERROR")
             return False
         if isinstance(push_result[0], Exception):
             self.log(f"Push error: {push_result[0]}", "ERROR")
             return False
+
         result = push_result[0]
         if result.returncode == 0:
             self.log("Push successful!", "SUCCESS")
             return True
+
         error = result.stderr.strip() or result.stdout.strip()
         if self.token in error:
             error = error.replace(self.token, "[TOKEN_HIDDEN]")
         self.log(f"Push failed: {error}", "ERROR")
         return False
+
     def show_build_status(self):
         actions_url = f"https://github.com/{self.username}/{self.repo_name}/actions"
         print("\n" + "=" * 60)
@@ -345,29 +374,37 @@ class GitHubPusher:
         print("   4. Download the Windows EXE")
         print("\nAfter downloading and running the new EXE, you should see a UAC")
         print("prompt appear at the moment you press Connect — click 'Yes' on it.")
+
         try:
             print("\nOpening GitHub Actions in browser...")
             webbrowser.open(actions_url)
         except Exception:
             pass
+
     def run(self):
         print("\n" + "=" * 60)
         print("OryvexVPN - Push & Build")
         print("=" * 60)
         print("\nWill run fixer.py first, verify the fix, then build: Windows EXE")
+
         if not self.check_git():
             sys.exit(1)
+
         if not self.root.exists():
             self.log(f"Directory not found: {self.root}", "ERROR")
             sys.exit(1)
+
         if not (self.root / "pubspec.yaml").exists():
             self.log("Not a Flutter project! No pubspec.yaml found.", "ERROR")
             sys.exit(1)
+
         if not self.get_credentials():
             sys.exit(1)
+
         if not self.create_repo_if_missing():
             self.log("Failed to ensure repository exists", "ERROR")
             sys.exit(1)
+
         if self.push_to_github():
             self.show_build_status()
         else:
@@ -376,6 +413,7 @@ class GitHubPusher:
             print("   git push -u origin main --force")
             print("   (Enter your GitHub username and a Personal Access Token as the password)")
             sys.exit(1)
+
 def main():
     try:
         pusher = GitHubPusher()
@@ -386,5 +424,6 @@ def main():
     except Exception as e:
         print(f"\nUnexpected error: {e}")
         sys.exit(1)
+
 if __name__ == "__main__":
     main()

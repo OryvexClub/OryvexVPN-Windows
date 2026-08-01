@@ -22,6 +22,15 @@ add_executable(${BINARY_NAME} WIN32
 # auto-generated snippet and runner.exe.manifest disagree on the
 # requestedExecutionLevel. runner.exe.manifest is the sole source
 # of truth for the execution level.
+set_target_properties(${BINARY_NAME} PROPERTIES VS_MANIFEST_UAC "NO")
+
+
+# Prevent CMake/MSVC from auto-generating a conflicting UAC manifest
+# snippet (level='asInvoker'). Without this, mt.exe fails with
+# LNK1327 / "manifest authoring error c1010001" because the
+# auto-generated snippet and runner.exe.manifest disagree on the
+# requestedExecutionLevel. runner.exe.manifest is the sole source
+# of truth for the execution level.
 set_target_properties(${BINARY_NAME} PROPERTIES
   LINK_FLAGS "/MANIFESTUAC:NO"
 )
