@@ -1233,6 +1233,12 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
       46852f6a781ec11cc8dd858a5e25aef4aa221825 e149c80291a49ac8b51c042367b09e036a7507c6 OryvexVPN <oryvex@demo.com> 1785587364 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
       e149c80291a49ac8b51c042367b09e036a7507c6 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785587364 +0330	Branch: renamed refs/heads/main to refs/heads/main
       e149c80291a49ac8b51c042367b09e036a7507c6 e149c80291a49ac8b51c042367b09e036a7507c6 OryvexVPN <oryvex@demo.com> 1785587364 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      e149c80291a49ac8b51c042367b09e036a7507c6 1f8ab1f99ae7cf6a4c5977e2de8611294f423683 OryvexVPN <oryvex@demo.com> 1785588235 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
+      1f8ab1f99ae7cf6a4c5977e2de8611294f423683 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785588235 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      1f8ab1f99ae7cf6a4c5977e2de8611294f423683 1f8ab1f99ae7cf6a4c5977e2de8611294f423683 OryvexVPN <oryvex@demo.com> 1785588235 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      1f8ab1f99ae7cf6a4c5977e2de8611294f423683 5189a1cb4748a5942246c47cefea856bae0c4950 OryvexVPN <oryvex@demo.com> 1785588724 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
+      5189a1cb4748a5942246c47cefea856bae0c4950 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785588724 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      5189a1cb4748a5942246c47cefea856bae0c4950 5189a1cb4748a5942246c47cefea856bae0c4950 OryvexVPN <oryvex@demo.com> 1785588724 +0330	Branch: renamed refs/heads/main to refs/heads/main
 
 
 
@@ -1311,6 +1317,10 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
           46852f6a781ec11cc8dd858a5e25aef4aa221825 46852f6a781ec11cc8dd858a5e25aef4aa221825 OryvexVPN <oryvex@demo.com> 1785586812 +0330	Branch: renamed refs/heads/main to refs/heads/main
           46852f6a781ec11cc8dd858a5e25aef4aa221825 e149c80291a49ac8b51c042367b09e036a7507c6 OryvexVPN <oryvex@demo.com> 1785587364 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
           e149c80291a49ac8b51c042367b09e036a7507c6 e149c80291a49ac8b51c042367b09e036a7507c6 OryvexVPN <oryvex@demo.com> 1785587364 +0330	Branch: renamed refs/heads/main to refs/heads/main
+          e149c80291a49ac8b51c042367b09e036a7507c6 1f8ab1f99ae7cf6a4c5977e2de8611294f423683 OryvexVPN <oryvex@demo.com> 1785588235 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
+          1f8ab1f99ae7cf6a4c5977e2de8611294f423683 1f8ab1f99ae7cf6a4c5977e2de8611294f423683 OryvexVPN <oryvex@demo.com> 1785588235 +0330	Branch: renamed refs/heads/main to refs/heads/main
+          1f8ab1f99ae7cf6a4c5977e2de8611294f423683 5189a1cb4748a5942246c47cefea856bae0c4950 OryvexVPN <oryvex@demo.com> 1785588724 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
+          5189a1cb4748a5942246c47cefea856bae0c4950 5189a1cb4748a5942246c47cefea856bae0c4950 OryvexVPN <oryvex@demo.com> 1785588724 +0330	Branch: renamed refs/heads/main to refs/heads/main
 
 
 
@@ -1422,6 +1432,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     09
+      36cb60b0e20815893c42fdcaeda6307ed47c73
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       6d1dab3adf1d18113a089dbb8f66ebced9e67d
         [Binary or unreadable file]
 
@@ -1840,6 +1863,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     1f
+      8ab1f99ae7cf6a4c5977e2de8611294f423683
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       96b401880bfcba67b5cfd9cbc30cc5ed729ebf
         [Binary or unreadable file]
 
@@ -2154,6 +2190,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     30
       1b9379fd87a617727d5a4fdff40e6acb7ef2a7
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      3314584a89d978778a54ed3e0c7ce9fa81523f
         [Binary or unreadable file]
 
 
@@ -2919,6 +2968,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     4a
+      1db96bef52708acd1c5e835c7b2d92851a6978
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       a15de6dbe8df3c2024a60c4535076282c66d52
         [Binary or unreadable file]
 
@@ -3054,6 +3116,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    51
+      89a1cb4748a5942246c47cefea856bae0c4950
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     52
       3f20559d189412404822b209e7d1d0008ac261
         [Binary or unreadable file]
@@ -3137,6 +3213,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     57
       4ecd20cc82ff1e89902406b6a9c17bf273829c
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      fb1025cddae3bad30e668ac6222f0e2d773094
         [Binary or unreadable file]
 
 
@@ -3315,6 +3404,32 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     61
       455044741777efda41bb9004cf567a4983c27d
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      abbf20465d03517ea4791dabbaf8231fd2d84b
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      c2ca02a940969a6838a6648b1b9f5fb951e1a2
         [Binary or unreadable file]
 
 
@@ -3599,6 +3714,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     71
       83273817b2f3534a68ed1f2b07f59e4d30a599
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    72
+      f6ac623c91a1d760838dfa7ce98b87278d4716
         [Binary or unreadable file]
 
 
@@ -3924,6 +4053,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+      64f47f9f5b6635c6c7125bf5e0000304233e2d
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       6677d02e8061ffda44149f99b06681d211eb5e
         [Binary or unreadable file]
 
@@ -3979,6 +4121,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     8a
       530c73e8d96fc45b4120999aa1fc5a5290c32a
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      5527b98b9dca953ba4d3f5a4261bbbd5b66a14
         [Binary or unreadable file]
 
 
@@ -5325,6 +5480,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+      ade5b26fea2530f8279a5c1fcabf2bb1e77817
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     dc
       7ebf9e6dd179bd4856db9a55b2fd347c26c284
         [Binary or unreadable file]
@@ -5462,6 +5630,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     e2
       133a3261686bc334bdbbbdefb20c04cec1c544
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      de3f99cf151af72e5f4cf1356571eb4fa2b73f
         [Binary or unreadable file]
 
 
@@ -5691,6 +5872,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     ed
+      ca0251bb8f15ba8087b56a12cff8d2a22eb2b8
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       e3f66fc6f6283055ed8389d6638b6856137fa3
         [Binary or unreadable file]
 
@@ -6029,7 +6223,7 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
   refs
     heads
       main
-        e149c80291a49ac8b51c042367b09e036a7507c6
+        5189a1cb4748a5942246c47cefea856bae0c4950
 
 
 
@@ -6520,20 +6714,13 @@ fixer.py
   """
   fixer.py - OryvexVPN Auto-Fixer (Access Denied / Tunnel Install Fix)
   
-  Fixes the "نصب تونل ناموفق بود ... Access is denied" error by:
-    1. Forcing REAL elevation for the wireguard.exe tunnel install/uninstall
-       via PowerShell Start-Process -Verb RunAs -Wait, instead of relying on
-       the parent process's own elevation state (which can silently fail to
-       propagate, especially for dev/debug builds that skip the manifest).
-    2. Removing runInShell:true from the direct wireguard.exe invocation,
-       which was routing the call through cmd.exe and risking bad quoting
-       on paths that contain spaces (e.g. "C:\\Users\\nasle javan\\...").
-    3. Capturing and surfacing the PowerShell/wireguard exit code + stderr
-       so future failures show the real Windows error instead of a vague
-       message.
-    4. Keeping the app manifest as requireAdministrator so the whole app
-       still gets a UAC prompt on launch (defense in depth), while the
-       tunnel install no longer depends on that alone.
+  Fixes:
+    1. The app manifest is set to requireAdministrator – app runs elevated once.
+    2. WireGuard calls use PowerShell Start-Process -Verb RunAs, which does not
+       show an additional UAC prompt if the parent is already elevated.
+    3. Expands endpoint list and uses concurrent ping scanning for best server.
+    4. Fixes disconnect: uninstall works with elevation.
+    5. Verifies service is running after install.
   """
   
   import os
@@ -6628,39 +6815,13 @@ fixer.py
   
       def fix_warp_service(self) -> bool:
           """
-          THE ACTUAL BUG FIX.
+          Rewrite warp_service.dart:
   
-          Previous version called:
-              Process.run(_wireguardExe, ['/installtunnelservice', path], runInShell: true)
-  
-          Problems:
-            - runInShell routes the call through cmd.exe, which can mangle a
-              path containing spaces (the user's profile path has one) and
-              does NOT guarantee the child inherits an elevated token in all
-              environments.
-            - If the parent Flutter process wasn't actually elevated for any
-              reason (dev run, manifest not re-embedded, etc.), the tunnel
-              service install fails with exactly "Access is denied" (Win32
-              error 5), because installing a Windows service always requires
-              an elevated token.
-  
-          Fix:
-            - Always force a *fresh* elevation for the specific wireguard.exe
-              call via `powershell Start-Process -Verb RunAs -Wait`, which
-              triggers its own UAC prompt if needed and does not depend on
-              the caller's elevation state at all.
-            - Never use runInShell for the actual binary call; quoting is
-              handled explicitly and safely for the PowerShell -ArgumentList.
-            - Capture real exit codes/stderr from PowerShell so failures are
-              diagnosable instead of a generic message.
-  
-          NOTE for maintainers: this Dart source is stored as a Python RAW
-          string (r\"\"\"...\"\"\") on purpose. Dart uses backslash escapes
-          (\\\\, \\n, \\$) and $ interpolation extensively; a *non-raw*
-          Python string would silently pre-process those before they ever
-          reach the .dart file (e.g. turning a real newline escape into an
-          actual line break mid-string, or leaving a stray backslash in
-          front of a $ that was meant to interpolate). Keep this raw.
+          - Uses PowerShell Start-Process -Verb RunAs for elevation.
+            No extra UAC prompt if the app itself is already elevated.
+          - Expanded endpoint list (300+ IPs) with concurrent ping scan.
+          - Proper disconnect (uninstall) that works.
+          - Verifies service running after install.
           """
           warp_path = self.root / "lib" / "services" / "warp_service.dart"
           correct = r"""import 'dart:io';
@@ -6671,11 +6832,97 @@ fixer.py
   class WarpService {
     static const _tunnelName = 'oryvexvpn';
   
+    // Expanded endpoint list (same as your Python script)
     static const List<String> _endpoints = [
-      "162.159.192.1", "162.159.193.1", "162.159.195.1",
-      "188.114.96.1", "188.114.97.1", "188.114.98.1",
-      "8.6.112.165", "8.6.112.139", "8.6.112.178",
-      "104.16.248.249", "103.21.244.0"
+      // Original 8.6.112.x
+      "8.6.112.165", "8.6.112.139", "8.6.112.178", "8.6.112.205",
+      "8.6.112.176", "8.6.112.190", "8.6.112.121", "8.6.112.202",
+      "8.6.112.223", "8.6.112.230", "8.6.112.200", "8.6.112.233",
+      "8.6.112.4", "8.6.112.159", "8.6.112.93", "8.6.112.182",
+      "8.6.112.133", "8.6.112.52", "8.6.112.78", "8.6.112.248",
+      "8.6.112.246", "8.6.112.172", "8.6.112.104", "8.6.112.249",
+      "8.6.112.46", "8.6.112.234", "8.6.112.136", "8.6.112.224",
+      "8.6.112.251", "8.6.112.127", "8.6.112.237", "8.6.112.82",
+      "8.6.112.170", "8.6.112.29", "8.6.112.7", "8.6.112.67",
+      "188.114.97.6", "8.6.112.235", "8.6.112.228", "8.6.112.19",
+      "8.6.112.184", "8.6.112.51", "8.6.112.8", "8.6.112.253",
+      "8.6.112.221", "8.6.112.96", "8.6.112.174", "8.6.112.212",
+      "8.6.112.154", "8.6.112.65", "8.6.112.171", "8.6.112.160",
+      "8.6.112.86", "8.6.112.163", "8.6.112.122", "8.6.112.70",
+      "8.6.112.53", "8.6.112.181", "8.6.112.191", "8.6.112.79",
+      "8.6.112.180", "8.6.112.61", "8.6.112.77", "8.6.112.107",
+      "8.6.112.106", "8.6.112.60",
+      // 8.6.112.x with port 2408
+      "8.6.112.1", "8.6.112.2", "8.6.112.3", "8.6.112.5",
+      "8.6.112.6", "8.6.112.9", "8.6.112.10", "8.6.112.11",
+      "8.6.112.12", "8.6.112.13", "8.6.112.14", "8.6.112.15",
+      "8.6.112.16", "8.6.112.17", "8.6.112.18", "8.6.112.20",
+      "8.6.112.21", "8.6.112.22", "8.6.112.23", "8.6.112.24",
+      "8.6.112.25", "8.6.112.26", "8.6.112.27", "8.6.112.28",
+      "8.6.112.30", "8.6.112.31", "8.6.112.32", "8.6.112.33",
+      "8.6.112.34", "8.6.112.35", "8.6.112.36", "8.6.112.37",
+      "8.6.112.38", "8.6.112.39", "8.6.112.40", "8.6.112.41",
+      "8.6.112.42", "8.6.112.43", "8.6.112.44", "8.6.112.45",
+      "8.6.112.47", "8.6.112.48", "8.6.112.49", "8.6.112.50",
+      "8.6.112.54", "8.6.112.55", "8.6.112.56", "8.6.112.57",
+      "8.6.112.58", "8.6.112.59", "8.6.112.62", "8.6.112.63",
+      "8.6.112.64", "8.6.112.66", "8.6.112.68", "8.6.112.69",
+      "8.6.112.71", "8.6.112.72", "8.6.112.73", "8.6.112.74",
+      "8.6.112.75", "8.6.112.76", "8.6.112.80", "8.6.112.81",
+      "8.6.112.83", "8.6.112.84", "8.6.112.85", "8.6.112.87",
+      "8.6.112.88", "8.6.112.89", "8.6.112.90", "8.6.112.91",
+      "8.6.112.92", "8.6.112.94", "8.6.112.95", "8.6.112.97",
+      "8.6.112.98", "8.6.112.99", "8.6.112.100", "8.6.112.101",
+      "8.6.112.102", "8.6.112.103", "8.6.112.105", "8.6.112.108",
+      "8.6.112.109", "8.6.112.110", "8.6.112.111", "8.6.112.112",
+      "8.6.112.113", "8.6.112.114", "8.6.112.115", "8.6.112.116",
+      "8.6.112.117", "8.6.112.118", "8.6.112.119", "8.6.112.120",
+      "8.6.112.123", "8.6.112.124", "8.6.112.125", "8.6.112.126",
+      "8.6.112.128", "8.6.112.129", "8.6.112.130", "8.6.112.131",
+      "8.6.112.132", "8.6.112.134", "8.6.112.135", "8.6.112.137",
+      "8.6.112.138", "8.6.112.140", "8.6.112.141", "8.6.112.142",
+      "8.6.112.143", "8.6.112.144", "8.6.112.145", "8.6.112.146",
+      "8.6.112.147", "8.6.112.148", "8.6.112.149", "8.6.112.150",
+      "8.6.112.151", "8.6.112.152", "8.6.112.153", "8.6.112.155",
+      "8.6.112.156", "8.6.112.157", "8.6.112.158", "8.6.112.161",
+      "8.6.112.162", "8.6.112.164", "8.6.112.166", "8.6.112.167",
+      "8.6.112.168", "8.6.112.169", "8.6.112.173", "8.6.112.175",
+      "8.6.112.177", "8.6.112.179", "8.6.112.183", "8.6.112.185",
+      "8.6.112.186", "8.6.112.187", "8.6.112.188", "8.6.112.189",
+      "8.6.112.192", "8.6.112.193", "8.6.112.194", "8.6.112.195",
+      "8.6.112.196", "8.6.112.197", "8.6.112.198", "8.6.112.199",
+      "8.6.112.201", "8.6.112.203", "8.6.112.204", "8.6.112.206",
+      "8.6.112.207", "8.6.112.208", "8.6.112.209", "8.6.112.210",
+      "8.6.112.211", "8.6.112.213", "8.6.112.214", "8.6.112.215",
+      "8.6.112.216", "8.6.112.217", "8.6.112.218", "8.6.112.219",
+      "8.6.112.220", "8.6.112.222", "8.6.112.225", "8.6.112.226",
+      "8.6.112.227", "8.6.112.229", "8.6.112.231", "8.6.112.232",
+      "8.6.112.236", "8.6.112.238", "8.6.112.239", "8.6.112.240",
+      "8.6.112.241", "8.6.112.242", "8.6.112.243", "8.6.112.244",
+      "8.6.112.245", "8.6.112.247", "8.6.112.250", "8.6.112.252",
+      "8.6.112.254", "8.6.112.255",
+      // Cloudflare Anycast
+      "162.159.192.1", "162.159.192.2", "162.159.193.1", "162.159.193.5",
+      "162.159.195.1", "162.159.195.2", "162.159.195.5",
+      // 188.114.x.x
+      "188.114.96.0", "188.114.96.1", "188.114.96.2", "188.114.96.3",
+      "188.114.96.4", "188.114.96.5", "188.114.97.0", "188.114.97.1",
+      "188.114.97.2", "188.114.97.3", "188.114.97.4", "188.114.97.5",
+      "188.114.98.0", "188.114.98.1", "188.114.98.2", "188.114.99.0",
+      "188.114.99.1", "188.114.99.2", "188.114.97.6",
+      // 104.x.x.x
+      "104.16.248.249", "104.16.249.249", "104.17.248.249", "104.17.249.249",
+      "104.18.0.0", "104.18.1.0", "104.18.2.0", "104.18.3.0",
+      // 141.101.x.x
+      "141.101.64.0", "141.101.65.0", "141.101.66.0", "141.101.67.0",
+      "141.101.68.0", "141.101.69.0", "141.101.70.0", "141.101.71.0",
+      // 173.245.x.x
+      "173.245.48.0", "173.245.49.0", "173.245.50.0", "173.245.51.0",
+      "173.245.52.0", "173.245.53.0", "173.245.54.0", "173.245.55.0",
+      // 103.x.x.x
+      "103.21.244.0", "103.21.245.0", "103.21.246.0", "103.21.247.0",
+      "103.22.200.0", "103.22.201.0", "103.22.202.0", "103.22.203.0",
+      "103.31.4.0", "103.31.5.0", "103.31.6.0", "103.31.7.0",
     ];
   
     static String get _wireguardExe {
@@ -6684,6 +6931,7 @@ fixer.py
       return '$exeDir\\data\\wireguard.exe';
     }
   
+    /// Concurrent ping scan to find the fastest endpoint.
     static Future<String> _findBestEndpoint(Function(String) onProgress) async {
       onProgress('در حال جستجوی سریع‌ترین سرور...');
       final futures = _endpoints.map((ip) async {
@@ -6702,6 +6950,7 @@ fixer.py
       results.sort((a, b) => (a['latency'] as int).compareTo(b['latency'] as int));
   
       final bestIp = results.first['latency'] != 9999 ? results.first['ip'] as String : _endpoints.first;
+      // Use default port 2408 (WireGuard standard)
       return '$bestIp:2408';
     }
   
@@ -6770,9 +7019,9 @@ fixer.py
   
     /// Runs [exePath] with [args] fully elevated, regardless of whether
     /// this Dart process itself is elevated. Uses PowerShell's
-    /// Start-Process -Verb RunAs -Wait so a UAC prompt is triggered if
-    /// needed, and waits for the launched process to actually finish
-    /// before returning its exit code.
+    /// Start-Process -Verb RunAs -Wait so a UAC prompt is triggered only
+    /// if the parent is not elevated; if the app is already admin, no prompt
+    /// appears. Waits for completion and captures exit code.
     static Future<int> _runElevated(String exePath, List<String> args) async {
       final argList = args.map(_psQuote).join(',');
       final psCommand =
@@ -6793,7 +7042,7 @@ fixer.py
         final detail = [stderrText, stdoutText].where((s) => s.isNotEmpty).join(' | ');
         final detailSuffix = detail.isNotEmpty ? '\nجزئیات: $detail' : '';
         throw Exception(
-          'اجرای مجوز-بالا (Elevated) ناموفق بود. کد خطا: ${result.exitCode}$detailSuffix',
+          'اجرای وایرگارد ناموفق بود (کد: ${result.exitCode})$detailSuffix',
         );
       }
       return result.exitCode;
@@ -6813,8 +7062,14 @@ fixer.py
         await _runElevated(_wireguardExe, ['/installtunnelservice', file.path]);
       } catch (e) {
         throw Exception(
-          'نصب تونل ناموفق بود. اطمینان حاصل کنید که در پنجره UAC روی "بله" کلیک کرده‌اید.\n$e',
+          'نصب تونل ناموفق بود. مطمئن شوید برنامه با دسترسی ادمین اجرا شده است.\n$e',
         );
+      }
+  
+      // Verify the service is actually running
+      final isUp = await isConnected();
+      if (!isUp) {
+        throw Exception('سرویس وایرگارد پس از نصب شروع نشد.');
       }
     }
   
@@ -6822,9 +7077,13 @@ fixer.py
       if (!Platform.isWindows) return;
       try {
         await _runElevated(_wireguardExe, ['/uninstalltunnelservice', _tunnelName]);
-      } catch (_) {
-        // Best-effort: if the tunnel was already gone/never installed,
-        // don't block the UI from returning to idle state.
+      } catch (e) {
+        // If the tunnel wasn't installed, ignore the error
+        if (e.toString().contains('The system cannot find the file specified') ||
+            e.toString().contains('service does not exist')) {
+          return;
+        }
+        rethrow;
       }
     }
   
@@ -6844,7 +7103,7 @@ fixer.py
   """
           warp_path.parent.mkdir(parents=True, exist_ok=True)
           warp_path.write_text(correct, encoding='utf-8')
-          self.fixed_files.append("warp_service.dart (real elevation fix for 'Access is denied')")
+          self.fixed_files.append("warp_service.dart (PowerShell elevation, no extra prompt if admin)")
           return True
   
       def fix_vpn_service(self) -> bool:
@@ -6897,7 +7156,7 @@ fixer.py
         final config = await WarpService.generateConfig(_updateStatus);
   
         _stage = VpnStage.installingTunnel;
-        _updateStatus('در حال درخواست مجوز ادمین برای نصب تونل...');
+        _updateStatus('در حال نصب تونل...');
   
         await WarpService.connect(config);
   
@@ -6920,10 +7179,16 @@ fixer.py
       _stage = VpnStage.disconnecting;
       _updateStatus('در حال قطع اتصال...');
   
-      await WarpService.disconnect();
-  
-      _stage = VpnStage.idle;
-      _updateStatus('قطع شد');
+      try {
+        await WarpService.disconnect();
+        _stage = VpnStage.idle;
+        _updateStatus('قطع شد');
+      } catch (e) {
+        _stage = VpnStage.error;
+        _lastError = e.toString().replaceFirst('Exception: ', '');
+        _updateStatus('قطع اتصال ناموفق بود');
+      }
+      notifyListeners();
     }
   }
   """
@@ -6979,38 +7244,27 @@ fixer.py
           if not main_cpp_path.exists():
               return False
           content = main_cpp_path.read_text(encoding='utf-8')
-  
           content = content.replace("Win32Window::Size(1280, 720)", "Win32Window::Size(400, 700)")
           content = content.replace("Win32Window::Point(10, 10)", "Win32Window::Point(100, 100)")
-  
           main_cpp_path.write_text(content, encoding='utf-8')
           self.fixed_files.append("windows/runner/main.cpp (Resized to 400x700)")
           return True
   
       def fix_windows_manifest(self) -> bool:
-          """
-          Keep requireAdministrator on the manifest as defense-in-depth (the
-          whole app still gets a UAC prompt on launch), but the actual tunnel
-          install no longer depends on this alone — see fix_warp_service().
-          """
           manifest_path = self.root / "windows" / "runner" / "runner.exe.manifest"
           if not manifest_path.exists():
               self.log("Manifest not found! Ensure initialization worked.", "ERROR")
               return False
-  
           content = manifest_path.read_text(encoding='utf-8')
           new_content = re.sub(r'level="asInvoker"', 'level="requireAdministrator"', content)
-  
           if content != new_content:
               manifest_path.write_text(new_content, encoding='utf-8')
               self.fixed_files.append("windows/runner/runner.exe.manifest (requireAdministrator)")
               return True
-  
           return False
   
       def fix_workflow(self) -> bool:
           workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
-  
           correct = r"""name: Build Windows App
   
   on:
@@ -7108,7 +7362,7 @@ fixer.py
   
       def run(self) -> bool:
           print("\n" + "=" * 60)
-          print("🔧 Flutter Project Fixer - OryvexVPN ('Access is denied' Tunnel Fix)")
+          print("🔧 Flutter Project Fixer - OryvexVPN (Admin + Disconnect + Endpoint Fix)")
           print("=" * 60)
           print(f"\nProject Path: {self.root}\n")
   
@@ -7137,10 +7391,14 @@ fixer.py
               for f in self.fixed_files:
                   print(f"  ✓ {f}")
   
-          print("\n✅ Fix applied: WireGuard tunnel install/uninstall now runs via a")
-          print("   forced elevated PowerShell Start-Process call, independent of the")
-          print("   app's own elevation state. You should now see a UAC prompt at the")
-          print("   moment of connecting — click 'Yes' on it. Run push.py to deploy.")
+          print("\n✅ Fixes applied:")
+          print("  • App manifest set to requireAdministrator – app runs elevated once.")
+          print("  • WireGuard calls use PowerShell Start-Process -Verb RunAs.")
+          print("    (No extra UAC prompt if the app is already admin).")
+          print("  • Endpoint list expanded to 300+ IPs with concurrent ping scan.")
+          print("  • Disconnect now actually uninstalls the tunnel service.")
+          print("  • Connection verifies the service is running after install.")
+          print("\nRun push.py to deploy to GitHub and build the new EXE.")
           return True
   
   
@@ -8410,6 +8668,12 @@ folder_structure.txt
         46852f6a781ec11cc8dd858a5e25aef4aa221825 e149c80291a49ac8b51c042367b09e036a7507c6 OryvexVPN <oryvex@demo.com> 1785587364 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced...
         e149c80291a49ac8b51c042367b09e036a7507c6 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785587364 +0330	Branch: renamed refs/heads/main to refs/heads/main
         e149c80291a49ac8b51c042367b09e036a7507c6 e149c80291a49ac8b51c042367b09e036a7507c6 OryvexVPN <oryvex@demo.com> 1785587364 +0330	Branch: renamed refs/heads/main to refs/heads/main
+        e149c80291a49ac8b51c042367b09e036a7507c6 1f8ab1f99ae7cf6a4c5977e2de8611294f423683 OryvexVPN <oryvex@demo.com> 1785588235 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced...
+        1f8ab1f99ae7cf6a4c5977e2de8611294f423683 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785588235 +0330	Branch: renamed refs/heads/main to refs/heads/main
+        1f8ab1f99ae7cf6a4c5977e2de8611294f423683 1f8ab1f99ae7cf6a4c5977e2de8611294f423683 OryvexVPN <oryvex@demo.com> 1785588235 +0330	Branch: renamed refs/heads/main to refs/heads/main
+        1f8ab1f99ae7cf6a4c5977e2de8611294f423683 5189a1cb4748a5942246c47cefea856bae0c4950 OryvexVPN <oryvex@demo.com> 1785588724 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced...
+        5189a1cb4748a5942246c47cefea856bae0c4950 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785588724 +0330	Branch: renamed refs/heads/main to refs/heads/main
+        5189a1cb4748a5942246c47cefea856bae0c4950 5189a1cb4748a5942246c47cefea856bae0c4950 OryvexVPN <oryvex@demo.com> 1785588724 +0330	Branch: renamed refs/heads/main to refs/heads/main
   
   
   
@@ -8488,6 +8752,10 @@ folder_structure.txt
             46852f6a781ec11cc8dd858a5e25aef4aa221825 46852f6a781ec11cc8dd858a5e25aef4aa221825 OryvexVPN <oryvex@demo.com> 1785586812 +0330	Branch: renamed refs/heads/main to refs/heads/main
             46852f6a781ec11cc8dd858a5e25aef4aa221825 e149c80291a49ac8b51c042367b09e036a7507c6 OryvexVPN <oryvex@demo.com> 1785587364 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via fo...
             e149c80291a49ac8b51c042367b09e036a7507c6 e149c80291a49ac8b51c042367b09e036a7507c6 OryvexVPN <oryvex@demo.com> 1785587364 +0330	Branch: renamed refs/heads/main to refs/heads/main
+            e149c80291a49ac8b51c042367b09e036a7507c6 1f8ab1f99ae7cf6a4c5977e2de8611294f423683 OryvexVPN <oryvex@demo.com> 1785588235 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via fo...
+            1f8ab1f99ae7cf6a4c5977e2de8611294f423683 1f8ab1f99ae7cf6a4c5977e2de8611294f423683 OryvexVPN <oryvex@demo.com> 1785588235 +0330	Branch: renamed refs/heads/main to refs/heads/main
+            1f8ab1f99ae7cf6a4c5977e2de8611294f423683 5189a1cb4748a5942246c47cefea856bae0c4950 OryvexVPN <oryvex@demo.com> 1785588724 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via fo...
+            5189a1cb4748a5942246c47cefea856bae0c4950 5189a1cb4748a5942246c47cefea856bae0c4950 OryvexVPN <oryvex@demo.com> 1785588724 +0330	Branch: renamed refs/heads/main to refs/heads/main
   
   
   
@@ -8599,6 +8867,19 @@ folder_structure.txt
   
   
       09
+        36cb60b0e20815893c42fdcaeda6307ed47c73
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         6d1dab3adf1d18113a089dbb8f66ebced9e67d
           [Binary or unreadable file]
   
@@ -9017,6 +9298,19 @@ folder_structure.txt
   
   
       1f
+        8ab1f99ae7cf6a4c5977e2de8611294f423683
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         96b401880bfcba67b5cfd9cbc30cc5ed729ebf
           [Binary or unreadable file]
   
@@ -9331,6 +9625,19 @@ folder_structure.txt
   
       30
         1b9379fd87a617727d5a4fdff40e6acb7ef2a7
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        3314584a89d978778a54ed3e0c7ce9fa81523f
           [Binary or unreadable file]
   
   
@@ -10096,6 +10403,19 @@ folder_structure.txt
   
   
       4a
+        1db96bef52708acd1c5e835c7b2d92851a6978
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         a15de6dbe8df3c2024a60c4535076282c66d52
           [Binary or unreadable file]
   
@@ -10231,6 +10551,20 @@ folder_structure.txt
   
   
   
+      51
+        89a1cb4748a5942246c47cefea856bae0c4950
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
       52
         3f20559d189412404822b209e7d1d0008ac261
           [Binary or unreadable file]
@@ -10314,6 +10648,19 @@ folder_structure.txt
   
       57
         4ecd20cc82ff1e89902406b6a9c17bf273829c
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        fb1025cddae3bad30e668ac6222f0e2d773094
           [Binary or unreadable file]
   
   
@@ -10492,6 +10839,32 @@ folder_structure.txt
   
       61
         455044741777efda41bb9004cf567a4983c27d
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        abbf20465d03517ea4791dabbaf8231fd2d84b
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        c2ca02a940969a6838a6648b1b9f5fb951e1a2
           [Binary or unreadable file]
   
   
@@ -10776,6 +11149,20 @@ folder_structure.txt
   
       71
         83273817b2f3534a68ed1f2b07f59e4d30a599
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      72
+        f6ac623c91a1d760838dfa7ce98b87278d4716
           [Binary or unreadable file]
   
   
@@ -11101,6 +11488,19 @@ folder_structure.txt
   
   
   
+        64f47f9f5b6635c6c7125bf5e0000304233e2d
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         6677d02e8061ffda44149f99b06681d211eb5e
           [Binary or unreadable file]
   
@@ -11156,6 +11556,19 @@ folder_structure.txt
   
       8a
         530c73e8d96fc45b4120999aa1fc5a5290c32a
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        5527b98b9dca953ba4d3f5a4261bbbd5b66a14
           [Binary or unreadable file]
   
   
@@ -12502,6 +12915,19 @@ folder_structure.txt
   
   
   
+        ade5b26fea2530f8279a5c1fcabf2bb1e77817
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
       dc
         7ebf9e6dd179bd4856db9a55b2fd347c26c284
           [Binary or unreadable file]
@@ -12639,6 +13065,19 @@ folder_structure.txt
   
       e2
         133a3261686bc334bdbbbdefb20c04cec1c544
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        de3f99cf151af72e5f4cf1356571eb4fa2b73f
           [Binary or unreadable file]
   
   
@@ -12868,6 +13307,19 @@ folder_structure.txt
   
   
       ed
+        ca0251bb8f15ba8087b56a12cff8d2a22eb2b8
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         e3f66fc6f6283055ed8389d6638b6856137fa3
           [Binary or unreadable file]
   
@@ -13206,7 +13658,7 @@ folder_structure.txt
     refs
       heads
         main
-          e149c80291a49ac8b51c042367b09e036a7507c6
+          5189a1cb4748a5942246c47cefea856bae0c4950
   
   
   
@@ -13697,20 +14149,13 @@ folder_structure.txt
     """
     fixer.py - OryvexVPN Auto-Fixer (Access Denied / Tunnel Install Fix)
     
-    Fixes the "نصب تونل ناموفق بود ... Access is denied" error by:
-      1. Forcing REAL elevation for the wireguard.exe tunnel install/uninstall
-         via PowerShell Start-Process -Verb RunAs -Wait, instead of relying on
-         the parent process's own elevation state (which can silently fail to
-         propagate, especially for dev/debug builds that skip the manifest).
-      2. Removing runInShell:true from the direct wireguard.exe invocation,
-         which was routing the call through cmd.exe and risking bad quoting
-         on paths that contain spaces (e.g. "C:\\Users\\nasle javan\\...").
-      3. Capturing and surfacing the PowerShell/wireguard exit code + stderr
-         so future failures show the real Windows error instead of a vague
-         message.
-      4. Keeping the app manifest as requireAdministrator so the whole app
-         still gets a UAC prompt on launch (defense in depth), while the
-         tunnel install no longer depends on that alone.
+    Fixes:
+      1. The app manifest is set to requireAdministrator – app runs elevated once.
+      2. WireGuard calls use PowerShell Start-Process -Verb RunAs, which does not
+         show an additional UAC prompt if the parent is already elevated.
+      3. Expands endpoint list and uses concurrent ping scanning for best server.
+      4. Fixes disconnect: uninstall works with elevation.
+      5. Verifies service is running after install.
     """
     
     import os
@@ -13805,39 +14250,13 @@ folder_structure.txt
     
         def fix_warp_service(self) -> bool:
             """
-            THE ACTUAL BUG FIX.
+            Rewrite warp_service.dart:
     
-            Previous version called:
-                Process.run(_wireguardExe, ['/installtunnelservice', path], runInShell: true)
-    
-            Problems:
-              - runInShell routes the call through cmd.exe, which can mangle a
-                path containing spaces (the user's profile path has one) and
-                does NOT guarantee the child inherits an elevated token in all
-                environments.
-              - If the parent Flutter process wasn't actually elevated for any
-                reason (dev run, manifest not re-embedded, etc.), the tunnel
-                service install fails with exactly "Access is denied" (Win32
-                error 5), because installing a Windows service always requires
-                an elevated token.
-    
-            Fix:
-              - Always force a *fresh* elevation for the specific wireguard.exe
-                call via `powershell Start-Process -Verb RunAs -Wait`, which
-                triggers its own UAC prompt if needed and does not depend on
-                the caller's elevation state at all.
-              - Never use runInShell for the actual binary call; quoting is
-                handled explicitly and safely for the PowerShell -ArgumentList.
-              - Capture real exit codes/stderr from PowerShell so failures are
-                diagnosable instead of a generic message.
-    
-            NOTE for maintainers: this Dart source is stored as a Python RAW
-            string (r\"\"\"...\"\"\") on purpose. Dart uses backslash escapes
-            (\\\\, \\n, \\$) and $ interpolation extensively; a *non-raw*
-            Python string would silently pre-process those before they ever
-            reach the .dart file (e.g. turning a real newline escape into an
-            actual line break mid-string, or leaving a stray backslash in
-            front of a $ that was meant to interpolate). Keep this raw.
+            - Uses PowerShell Start-Process -Verb RunAs for elevation.
+              No extra UAC prompt if the app itself is already elevated.
+            - Expanded endpoint list (300+ IPs) with concurrent ping scan.
+            - Proper disconnect (uninstall) that works.
+            - Verifies service running after install.
             """
             warp_path = self.root / "lib" / "services" / "warp_service.dart"
             correct = r"""import 'dart:io';
@@ -13848,46 +14267,11 @@ folder_structure.txt
     class WarpService {
       static const _tunnelName = 'oryvexvpn';
     
+      // Expanded endpoint list (same as your Python script)
       static const List<String> _endpoints = [
-        "162.159.192.1", "162.159.193.1", "162.159.195.1",
-        "188.114.96.1", "188.114.97.1", "188.114.98.1",
-        "8.6.112.165", "8.6.112.139", "8.6.112.178",
-        "104.16.248.249", "103.21.244.0"
-      ];
-    
-      static String get _wireguardExe {
-        final exePath = Platform.resolvedExecutable;
-        final exeDir = File(exePath).parent.path;
-        return '$exeDir\\data\\wireguard.exe';
-      }
-    
-      static Future<String> _findBestEndpoint(Function(String) onProgress) async {
-        onProgress('در حال جستجوی سریع‌ترین سرور...');
-        final futures = _endpoints.map((ip) async {
-          try {
-            final start = DateTime.now();
-            final res = await Process.run('ping', ['-n', '1', '-w', '1000', ip]);
-            if (res.exitCode == 0) {
-              final latency = DateTime.now().difference(start).inMilliseconds;
-              return {'ip': ip, 'latency': latency};
-            }
-          } catch (_) {}
-          return {'ip': ip, 'latency': 9999};
-        });
-    
-        final results = await Future.wait(futures);
-        results.sort((a, b) => (a['latency'] as int).compareTo(b['latency'] as int));
-    
-        final bestIp = results.first['latency'] != 9999 ? results.first['ip'] as String : _endpoints.first;
-        return '$bestIp:2408';
-      }
-    
-      static Future<String> generateConfig(Function(String) onProgress) async {
-        onProgress('در حال ساخت کلید رمزنگاری...');
-        final algorithm = X25519();
-        final keyPair = await algorithm.newKeyPair();
-        final publicKey = await keyPair.extractPublicKey();
-        final privateKeyBytes = await keyPair.extractPrivateKeyBytes();
+        // Original 8.6.112.x
+        "8.6.112.165", "8.6.112.139", "8.6.112.178", "8.6.112.205",
+        "8.6.112.176", "8.6.112.190", "8.6.112.121", "8.6.112.202",
 
 
 
@@ -14334,7 +14718,7 @@ lib
             final config = await WarpService.generateConfig(_updateStatus);
       
             _stage = VpnStage.installingTunnel;
-            _updateStatus('در حال درخواست مجوز ادمین برای نصب تونل...');
+            _updateStatus('در حال نصب تونل...');
       
             await WarpService.connect(config);
       
@@ -14357,10 +14741,16 @@ lib
           _stage = VpnStage.disconnecting;
           _updateStatus('در حال قطع اتصال...');
       
-          await WarpService.disconnect();
-      
-          _stage = VpnStage.idle;
-          _updateStatus('قطع شد');
+          try {
+            await WarpService.disconnect();
+            _stage = VpnStage.idle;
+            _updateStatus('قطع شد');
+          } catch (e) {
+            _stage = VpnStage.error;
+            _lastError = e.toString().replaceFirst('Exception: ', '');
+            _updateStatus('قطع اتصال ناموفق بود');
+          }
+          notifyListeners();
         }
       }
 
@@ -14383,11 +14773,97 @@ lib
       class WarpService {
         static const _tunnelName = 'oryvexvpn';
       
+        // Expanded endpoint list (same as your Python script)
         static const List<String> _endpoints = [
-          "162.159.192.1", "162.159.193.1", "162.159.195.1",
-          "188.114.96.1", "188.114.97.1", "188.114.98.1",
-          "8.6.112.165", "8.6.112.139", "8.6.112.178",
-          "104.16.248.249", "103.21.244.0"
+          // Original 8.6.112.x
+          "8.6.112.165", "8.6.112.139", "8.6.112.178", "8.6.112.205",
+          "8.6.112.176", "8.6.112.190", "8.6.112.121", "8.6.112.202",
+          "8.6.112.223", "8.6.112.230", "8.6.112.200", "8.6.112.233",
+          "8.6.112.4", "8.6.112.159", "8.6.112.93", "8.6.112.182",
+          "8.6.112.133", "8.6.112.52", "8.6.112.78", "8.6.112.248",
+          "8.6.112.246", "8.6.112.172", "8.6.112.104", "8.6.112.249",
+          "8.6.112.46", "8.6.112.234", "8.6.112.136", "8.6.112.224",
+          "8.6.112.251", "8.6.112.127", "8.6.112.237", "8.6.112.82",
+          "8.6.112.170", "8.6.112.29", "8.6.112.7", "8.6.112.67",
+          "188.114.97.6", "8.6.112.235", "8.6.112.228", "8.6.112.19",
+          "8.6.112.184", "8.6.112.51", "8.6.112.8", "8.6.112.253",
+          "8.6.112.221", "8.6.112.96", "8.6.112.174", "8.6.112.212",
+          "8.6.112.154", "8.6.112.65", "8.6.112.171", "8.6.112.160",
+          "8.6.112.86", "8.6.112.163", "8.6.112.122", "8.6.112.70",
+          "8.6.112.53", "8.6.112.181", "8.6.112.191", "8.6.112.79",
+          "8.6.112.180", "8.6.112.61", "8.6.112.77", "8.6.112.107",
+          "8.6.112.106", "8.6.112.60",
+          // 8.6.112.x with port 2408
+          "8.6.112.1", "8.6.112.2", "8.6.112.3", "8.6.112.5",
+          "8.6.112.6", "8.6.112.9", "8.6.112.10", "8.6.112.11",
+          "8.6.112.12", "8.6.112.13", "8.6.112.14", "8.6.112.15",
+          "8.6.112.16", "8.6.112.17", "8.6.112.18", "8.6.112.20",
+          "8.6.112.21", "8.6.112.22", "8.6.112.23", "8.6.112.24",
+          "8.6.112.25", "8.6.112.26", "8.6.112.27", "8.6.112.28",
+          "8.6.112.30", "8.6.112.31", "8.6.112.32", "8.6.112.33",
+          "8.6.112.34", "8.6.112.35", "8.6.112.36", "8.6.112.37",
+          "8.6.112.38", "8.6.112.39", "8.6.112.40", "8.6.112.41",
+          "8.6.112.42", "8.6.112.43", "8.6.112.44", "8.6.112.45",
+          "8.6.112.47", "8.6.112.48", "8.6.112.49", "8.6.112.50",
+          "8.6.112.54", "8.6.112.55", "8.6.112.56", "8.6.112.57",
+          "8.6.112.58", "8.6.112.59", "8.6.112.62", "8.6.112.63",
+          "8.6.112.64", "8.6.112.66", "8.6.112.68", "8.6.112.69",
+          "8.6.112.71", "8.6.112.72", "8.6.112.73", "8.6.112.74",
+          "8.6.112.75", "8.6.112.76", "8.6.112.80", "8.6.112.81",
+          "8.6.112.83", "8.6.112.84", "8.6.112.85", "8.6.112.87",
+          "8.6.112.88", "8.6.112.89", "8.6.112.90", "8.6.112.91",
+          "8.6.112.92", "8.6.112.94", "8.6.112.95", "8.6.112.97",
+          "8.6.112.98", "8.6.112.99", "8.6.112.100", "8.6.112.101",
+          "8.6.112.102", "8.6.112.103", "8.6.112.105", "8.6.112.108",
+          "8.6.112.109", "8.6.112.110", "8.6.112.111", "8.6.112.112",
+          "8.6.112.113", "8.6.112.114", "8.6.112.115", "8.6.112.116",
+          "8.6.112.117", "8.6.112.118", "8.6.112.119", "8.6.112.120",
+          "8.6.112.123", "8.6.112.124", "8.6.112.125", "8.6.112.126",
+          "8.6.112.128", "8.6.112.129", "8.6.112.130", "8.6.112.131",
+          "8.6.112.132", "8.6.112.134", "8.6.112.135", "8.6.112.137",
+          "8.6.112.138", "8.6.112.140", "8.6.112.141", "8.6.112.142",
+          "8.6.112.143", "8.6.112.144", "8.6.112.145", "8.6.112.146",
+          "8.6.112.147", "8.6.112.148", "8.6.112.149", "8.6.112.150",
+          "8.6.112.151", "8.6.112.152", "8.6.112.153", "8.6.112.155",
+          "8.6.112.156", "8.6.112.157", "8.6.112.158", "8.6.112.161",
+          "8.6.112.162", "8.6.112.164", "8.6.112.166", "8.6.112.167",
+          "8.6.112.168", "8.6.112.169", "8.6.112.173", "8.6.112.175",
+          "8.6.112.177", "8.6.112.179", "8.6.112.183", "8.6.112.185",
+          "8.6.112.186", "8.6.112.187", "8.6.112.188", "8.6.112.189",
+          "8.6.112.192", "8.6.112.193", "8.6.112.194", "8.6.112.195",
+          "8.6.112.196", "8.6.112.197", "8.6.112.198", "8.6.112.199",
+          "8.6.112.201", "8.6.112.203", "8.6.112.204", "8.6.112.206",
+          "8.6.112.207", "8.6.112.208", "8.6.112.209", "8.6.112.210",
+          "8.6.112.211", "8.6.112.213", "8.6.112.214", "8.6.112.215",
+          "8.6.112.216", "8.6.112.217", "8.6.112.218", "8.6.112.219",
+          "8.6.112.220", "8.6.112.222", "8.6.112.225", "8.6.112.226",
+          "8.6.112.227", "8.6.112.229", "8.6.112.231", "8.6.112.232",
+          "8.6.112.236", "8.6.112.238", "8.6.112.239", "8.6.112.240",
+          "8.6.112.241", "8.6.112.242", "8.6.112.243", "8.6.112.244",
+          "8.6.112.245", "8.6.112.247", "8.6.112.250", "8.6.112.252",
+          "8.6.112.254", "8.6.112.255",
+          // Cloudflare Anycast
+          "162.159.192.1", "162.159.192.2", "162.159.193.1", "162.159.193.5",
+          "162.159.195.1", "162.159.195.2", "162.159.195.5",
+          // 188.114.x.x
+          "188.114.96.0", "188.114.96.1", "188.114.96.2", "188.114.96.3",
+          "188.114.96.4", "188.114.96.5", "188.114.97.0", "188.114.97.1",
+          "188.114.97.2", "188.114.97.3", "188.114.97.4", "188.114.97.5",
+          "188.114.98.0", "188.114.98.1", "188.114.98.2", "188.114.99.0",
+          "188.114.99.1", "188.114.99.2", "188.114.97.6",
+          // 104.x.x.x
+          "104.16.248.249", "104.16.249.249", "104.17.248.249", "104.17.249.249",
+          "104.18.0.0", "104.18.1.0", "104.18.2.0", "104.18.3.0",
+          // 141.101.x.x
+          "141.101.64.0", "141.101.65.0", "141.101.66.0", "141.101.67.0",
+          "141.101.68.0", "141.101.69.0", "141.101.70.0", "141.101.71.0",
+          // 173.245.x.x
+          "173.245.48.0", "173.245.49.0", "173.245.50.0", "173.245.51.0",
+          "173.245.52.0", "173.245.53.0", "173.245.54.0", "173.245.55.0",
+          // 103.x.x.x
+          "103.21.244.0", "103.21.245.0", "103.21.246.0", "103.21.247.0",
+          "103.22.200.0", "103.22.201.0", "103.22.202.0", "103.22.203.0",
+          "103.31.4.0", "103.31.5.0", "103.31.6.0", "103.31.7.0",
         ];
       
         static String get _wireguardExe {
@@ -14396,6 +14872,7 @@ lib
           return '$exeDir\\data\\wireguard.exe';
         }
       
+        /// Concurrent ping scan to find the fastest endpoint.
         static Future<String> _findBestEndpoint(Function(String) onProgress) async {
           onProgress('در حال جستجوی سریع‌ترین سرور...');
           final futures = _endpoints.map((ip) async {
@@ -14414,6 +14891,7 @@ lib
           results.sort((a, b) => (a['latency'] as int).compareTo(b['latency'] as int));
       
           final bestIp = results.first['latency'] != 9999 ? results.first['ip'] as String : _endpoints.first;
+          // Use default port 2408 (WireGuard standard)
           return '$bestIp:2408';
         }
       
@@ -14482,9 +14960,9 @@ lib
       
         /// Runs [exePath] with [args] fully elevated, regardless of whether
         /// this Dart process itself is elevated. Uses PowerShell's
-        /// Start-Process -Verb RunAs -Wait so a UAC prompt is triggered if
-        /// needed, and waits for the launched process to actually finish
-        /// before returning its exit code.
+        /// Start-Process -Verb RunAs -Wait so a UAC prompt is triggered only
+        /// if the parent is not elevated; if the app is already admin, no prompt
+        /// appears. Waits for completion and captures exit code.
         static Future<int> _runElevated(String exePath, List<String> args) async {
           final argList = args.map(_psQuote).join(',');
           final psCommand =
@@ -14505,7 +14983,7 @@ lib
             final detail = [stderrText, stdoutText].where((s) => s.isNotEmpty).join(' | ');
             final detailSuffix = detail.isNotEmpty ? '\nجزئیات: $detail' : '';
             throw Exception(
-              'اجرای مجوز-بالا (Elevated) ناموفق بود. کد خطا: ${result.exitCode}$detailSuffix',
+              'اجرای وایرگارد ناموفق بود (کد: ${result.exitCode})$detailSuffix',
             );
           }
           return result.exitCode;
@@ -14525,8 +15003,14 @@ lib
             await _runElevated(_wireguardExe, ['/installtunnelservice', file.path]);
           } catch (e) {
             throw Exception(
-              'نصب تونل ناموفق بود. اطمینان حاصل کنید که در پنجره UAC روی "بله" کلیک کرده‌اید.\n$e',
+              'نصب تونل ناموفق بود. مطمئن شوید برنامه با دسترسی ادمین اجرا شده است.\n$e',
             );
+          }
+      
+          // Verify the service is actually running
+          final isUp = await isConnected();
+          if (!isUp) {
+            throw Exception('سرویس وایرگارد پس از نصب شروع نشد.');
           }
         }
       
@@ -14534,9 +15018,13 @@ lib
           if (!Platform.isWindows) return;
           try {
             await _runElevated(_wireguardExe, ['/uninstalltunnelservice', _tunnelName]);
-          } catch (_) {
-            // Best-effort: if the tunnel was already gone/never installed,
-            // don't block the UI from returning to idle state.
+          } catch (e) {
+            // If the tunnel wasn't installed, ignore the error
+            if (e.toString().contains('The system cannot find the file specified') ||
+                e.toString().contains('service does not exist')) {
+              return;
+            }
+            rethrow;
           }
         }
       
