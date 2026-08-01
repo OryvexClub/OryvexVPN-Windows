@@ -56,7 +56,7 @@ class _EndpointSelectorState extends State<EndpointSelector> {
       ]),
       if (_selectedIp.isNotEmpty) ...[
         const SizedBox(height:8),
-        Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3))), child: Row(children: [const Icon(Icons.check_circle, color: Color(0xFF10B981), size:16), const SizedBox(width:8), Text('${Strings.selected}: $_selectedIp:$_selectedPort', style: const TextStyle(color: Color(0xFF10B981), fontSize:13, fontWeight:FontWeight.w500))])),
+        Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: const Color(0xFF10B981).withOpacity(0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3))), child: Row(children: [const Icon(Icons.check_circle, color: Color(0xFF10B981), size:16), const SizedBox(width:8), Text('${Strings.selected}: $_selectedIp:$_selectedPort', style: const TextStyle(color: Color(0xFF10B981), fontSize:13, fontWeight:FontWeight.w500))])),
       ],
     ],
   ])));

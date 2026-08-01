@@ -89,9 +89,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFF3B30).withValues(alpha: 0.1),
+                        color: const Color(0xFFFF3B30).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFFF3B30).withValues(alpha: 0.3)),
+                        border: Border.all(color: const Color(0xFFFF3B30).withOpacity(0.3)),
                       ),
                       child: Text(
                         vpn.lastError!,
@@ -123,13 +123,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: const Color(0xFF18181B),
                       boxShadow: [
                         BoxShadow(
-                          color: getStatusColor().withValues(alpha: vpn.isConnected || vpn.isConnecting ? 0.4 : 0.0),
+                          color: getStatusColor().withOpacity(vpn.isConnected || vpn.isConnecting ? 0.4 : 0.0),
                           blurRadius: vpn.isConnected || vpn.isConnecting ? 60 : 20,
                           spreadRadius: vpn.isConnected || vpn.isConnecting ? 10 : 0,
                         ),
                       ],
                       border: Border.all(
-                        color: getStatusColor().withValues(alpha: vpn.isConnected ? 1.0 : (vpn.isConnecting ? 0.8 : 0.1)),
+                        color: getStatusColor().withOpacity(vpn.isConnected ? 1.0 : (vpn.isConnecting ? 0.8 : 0.1)),
                         width: vpn.isConnected ? 6 : 2,
                       ),
                     ),
@@ -166,7 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFF18181B),
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.3)),
+                              border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.3)),
                             ),
                             child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
