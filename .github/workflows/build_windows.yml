@@ -1,4 +1,4 @@
-name: Build Windows App
+name: Build Windows App (BoringTun)
 
 on:
   push:
@@ -28,51 +28,33 @@ jobs:
       - name: Build Windows app
         run: flutter build windows --release
 
-      - name: Setup Go (to build wireguard-go from source)
-        uses: actions/setup-go@v5
+      # Install Rust to build BoringTun from source.
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
         with:
-          go-version: 'stable'
+          toolchain: stable
+          target: x86_64-pc-windows-msvc
+          override: true
 
-      # We build the OFFICIAL, open-source wireguard-go (the same core used
-      # inside wireguard-windows / AmneziaWG) directly from its own upstream
-      # source, ourselves, at build time. No third-party GUI app, no MSI
-      # installer, no commercial SDK.
-      #
-      # KNOWN LIMITATION (documented upstream, accepted as a risk for this
-      # build): wireguard-go's Windows UAPI named pipe
-      # (\\.\pipe\ProtectedPrefix\Administrators\WireGuard\<name>) has a
-      # long-standing issue where pipe creation can fail with
-      # "This security ID may not be assigned as the owner of this object"
-      # even when the process is already elevated. This is exactly the
-      # gap that wireguard-windows/AmneziaWG normally paper over by running
-      # everything inside a proper Windows service under SYSTEM. We are
-      # NOT doing that here — see warp_service.dart for how we surface this
-      # if it happens at runtime.
-      - name: Build wireguard-go.exe for Windows
+      - name: Build BoringTun for Windows
         run: |
-          git clone --depth 1 https://github.com/WireGuard/wireguard-go.git wireguard-go-src
-          cd wireguard-go-src
-          $env:GOOS = "windows"
-          $env:GOARCH = "amd64"
-          $env:CGO_ENABLED = "0"
-          go build -ldflags="-s -w" -o wireguard-go.exe .
-          if (-not (Test-Path "wireguard-go.exe")) {
-            Write-Host "wireguard-go.exe build failed."
+          git clone --depth 1 https://github.com/cloudflare/boringtun.git boringtun-src
+          cd boringtun-src
+          cargo build --release --target x86_64-pc-windows-msvc
+          if (-not (Test-Path "target\\x86_64-pc-windows-msvc\\release\\boringtun.exe")) {
+            Write-Host "BoringTun build failed."
             exit 1
           }
-          Write-Host "wireguard-go.exe built successfully."
+          Write-Host "BoringTun built successfully."
 
-      - name: Bundle wireguard-go.exe + official Wintun driver inside data/
+      - name: Bundle BoringTun + official Wintun driver inside data/
         run: |
           $ReleaseDir = "build\\windows\\x64\\runner\\Release"
           New-Item -ItemType Directory -Force -Path "$ReleaseDir\\data"
 
-          Copy-Item "wireguard-go-src\\wireguard-go.exe" "$ReleaseDir\\data\\wireguard-go.exe"
+          Copy-Item "boringtun-src\\target\\x86_64-pc-windows-msvc\\release\\boringtun.exe" "$ReleaseDir\\data\\boringtun.exe"
 
-          # Official Wintun driver from the WireGuard project (wintun.net).
-          # Redistributable per its license, no separate MSI/driver install
-          # step needed by the user — the DLL sets up the driver itself the
-          # first time an app calls into it.
+          # Official Wintun driver from wintun.net
           $wintunVersion = "0.14.1"
           Invoke-WebRequest -Uri "https://www.wintun.net/builds/wintun-$wintunVersion.zip" -OutFile "wintun.zip"
           Expand-Archive "wintun.zip" -DestinationPath "wintun_extracted"
@@ -83,10 +65,10 @@ jobs:
             exit 1
           }
 
-          Write-Host "wireguard-go.exe and wintun.dll bundled in data/ folder."
+          Write-Host "BoringTun and wintun.dll bundled."
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: oryvexvpn-windows
+          name: oryvexvpn-windows-boringtun
           path: build/windows/x64/runner/Release/

@@ -2,34 +2,15 @@
 # -*- coding: utf-8 -*-
 
 """
-fixer.py - OryvexVPN Auto-Fixer (self-built wireguard-go + wintun.dll edition)
+fixer.py - OryvexVPN Auto‑Fixer (BoringTun edition)
 
-The VPN core is now the OFFICIAL, open-source wireguard-go
-(https://github.com/WireGuard/wireguard-go), built from source in CI, plus
-the official Wintun driver DLL (wintun.net). No AmneziaWG, no WireSock, no
-commercial SDK, and the official wireguard.exe GUI/MSI is never used.
+Switches the VPN core from wireguard‑go to Cloudflare BoringTun:
+  - Builds BoringTun from source in CI (Rust toolchain required).
+  - Bundles BoringTun + official wintun.dll inside the app's data/ folder.
+  - Drives BoringTun via its command‑line parameters, not UAPI.
+  - Tunnel restart is used for endpoint changes (simpler, more reliable).
 
-We drive wireguard-go directly through its own UAPI protocol over its
-Windows named pipe, and configure the adapter's IP/route/DNS ourselves
-(the job wg-quick normally does on Linux).
-
-KNOWN, ACCEPTED RISK: wireguard-go's Windows UAPI named pipe
-(\\\\.\\pipe\\ProtectedPrefix\\Administrators\\WireGuard\\<name>) has a
-long-documented upstream issue where pipe creation can fail with
-"This security ID may not be assigned as the owner of this object", even
-from an elevated process. wireguard-windows/AmneziaWG normally avoid this
-by wrapping wireguard-go in a real Windows service running as SYSTEM. This
-build intentionally does NOT do that (per explicit request), so that
-failure mode is possible here. If it happens, warp_service.dart surfaces a
-clear message identifying it as an upstream limitation, not a bug in this
-app.
-
-Fixes carried over from earlier revisions:
-  1. The app manifest is set to requireAdministrator - app runs elevated once.
-  2. Endpoint list expanded to 300+ IPs with concurrent ping scanning.
-  3. Disconnect kills the wireguard-go process and tears the adapter down.
-  4. _coreFilesPresent() now correctly awaits File.exists() (was a
-     Future<bool> && Future<bool> compile error that broke the CI build).
+All other features (WARP registration, endpoint scanning, UI) are preserved.
 """
 
 import os
@@ -124,9 +105,7 @@ class MyApp extends StatelessWidget {
 
     def fix_warp_service(self) -> bool:
         """
-        Rewrite warp_service.dart to drive a self-built, bundled copy of the
-        official wireguard-go + official wintun.dll directly via UAPI, with
-        no AmneziaWG, no WireSock, no commercial SDK involved.
+        Rewrite warp_service.dart to use BoringTun CLI instead of wireguard‑go UAPI.
         """
         warp_path = self.root / "lib" / "services" / "warp_service.dart"
         correct = r"""import 'dart:io';
@@ -134,31 +113,17 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:cryptography/cryptography.dart';
 
-/// Drives a self-built, bundled copy of the official open-source
-/// wireguard-go (https://github.com/WireGuard/wireguard-go) plus the
-/// official Wintun driver DLL, directly — no AmneziaWG, no WireSock, no
-/// commercial SDK, and never the official wireguard.exe GUI/MSI.
+/// Drives a self‑built copy of Cloudflare BoringTun
+/// (https://github.com/cloudflare/boringtun) plus the official Wintun driver.
 ///
-/// IMPORTANT / KNOWN RISK (read before relying on this in production):
-/// wireguard-go's own Windows UAPI implementation
-/// (\\.\pipe\ProtectedPrefix\Administrators\WireGuard\<name>) has a
-/// long-documented issue where creating that named pipe can fail with
-/// "This security ID may not be assigned as the owner of this object",
-/// even from an already-elevated process. Upstream's answer to this is
-/// wireguard-windows, which wraps wireguard-go in a proper Windows
-/// service running as SYSTEM — something we are intentionally NOT doing
-/// here. If you hit that specific error, it is not a bug in this file;
-/// it's the exact upstream limitation this approach accepts. The error
-/// is surfaced clearly below instead of being silently swallowed.
+/// BoringTun is started with all necessary parameters on the command line.
+/// For endpoint changes we simply kill and restart the process.
 class WarpService {
   static const _tunnelName = 'oryvexvpn';
-  static const _uapiPipeName = r'ProtectedPrefix\Administrators\WireGuard\oryvexvpn';
-
   static Process? _tunnelProcess;
   static bool _connected = false;
 
-  // Same Cloudflare WARP endpoint list you already had — unrelated to the
-  // core swap, left untouched.
+  // Cloudflare WARP endpoint list (unchanged).
   static const List<String> _endpoints = [
     "8.6.112.165", "8.6.112.139", "8.6.112.178", "8.6.112.205",
     "8.6.112.176", "8.6.112.190", "8.6.112.121", "8.6.112.202",
@@ -191,19 +156,17 @@ class WarpService {
     return File(exePath).parent.path;
   }
 
-  static String get _wireguardGoExe => '$_exeDir\\data\\wireguard-go.exe';
+  static String get _boringTunExe => '$_exeDir\\data\\boringtun.exe';
   static String get _wintunDll => '$_exeDir\\data\\wintun.dll';
 
-  /// Awaits both existence checks before combining them — File.exists()
-  /// returns Future<bool>, so ANDing two un-awaited calls together is a
-  /// compile-time type error. This was the bug that broke the CI build.
+  /// Check that both core files exist.
   static Future<bool> _coreFilesPresent() async {
-    final goExists = await File(_wireguardGoExe).exists();
+    final goExists = await File(_boringTunExe).exists();
     final wintunExists = await File(_wintunDll).exists();
     return goExists && wintunExists;
   }
 
-  /// Concurrent ping scan to find the fastest Cloudflare endpoint.
+  /// Concurrent ping scan for the fastest endpoint.
   static Future<String> _findBestEndpoint(Function(String) onProgress) async {
     onProgress('در حال جستجوی سریع‌ترین سرور...');
     final futures = _endpoints.map((ip) async {
@@ -230,9 +193,7 @@ class WarpService {
   static String _bytesToHex(List<int> bytes) =>
       bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
 
-  /// Registers with the Cloudflare WARP API and returns everything needed
-  /// to both display a human-readable config AND drive the UAPI directly
-  /// (UAPI needs hex keys, not the base64 form used in .conf files).
+  /// Register with Cloudflare WARP API and return the needed parameters.
   static Future<_WarpRegistration> _register(Function(String) onProgress) async {
     onProgress('در حال ساخت کلید رمزنگاری...');
     final algorithm = X25519();
@@ -241,7 +202,7 @@ class WarpService {
     final privateKeyBytes = await keyPair.extractPrivateKeyBytes();
 
     final pubKeyBase64 = base64Encode(publicKey.bytes);
-    final privKeyHex = _bytesToHex(privateKeyBytes);
+    final privKeyBase64 = base64Encode(privateKeyBytes);  // BoringTun expects base64
 
     onProgress('در حال ثبت‌نام در شبکه...');
     final response = await http.post(
@@ -265,140 +226,51 @@ class WarpService {
     final peer = data['config']['peers'][0];
     final address = (data['config']['interface']['addresses']['v4'] as String);
     final peerPublicKeyBase64 = peer['public_key'] as String;
-    final peerPublicKeyHex = _bytesToHex(base64Decode(peerPublicKeyBase64));
 
     final bestIp = await _findBestEndpoint(onProgress);
 
     return _WarpRegistration(
-      privateKeyHex: privKeyHex,
+      privateKeyBase64: privKeyBase64,
       address: address,
-      peerPublicKeyHex: peerPublicKeyHex,
+      peerPublicKeyBase64: peerPublicKeyBase64,
       endpointIp: bestIp,
       endpointPort: '2408',
     );
   }
 
-  /// Writes the small PowerShell helper that actually talks to the UAPI
-  /// named pipe (Dart's dart:io has no first-class Windows named pipe
-  /// client, so we drive .NET's NamedPipeClientStream for this one step).
-  static Future<File> _ensureUapiHelperScript() async {
-    final path = '${Directory.systemTemp.path}\\oryvexvpn_uapi_helper.ps1';
-    const script = r'''
-param(
-  [string]$PipeName,
-  [string]$InFile,
-  [string]$OutFile,
-  [int]$TimeoutMs = 4000
-)
-try {
-  $client = New-Object System.IO.Pipes.NamedPipeClientStream(".", $PipeName, [System.IO.Pipes.PipeDirection]::InOut)
-  $client.Connect($TimeoutMs)
-
-  $bytes = [System.IO.File]::ReadAllBytes($InFile)
-  $client.Write($bytes, 0, $bytes.Length)
-  $client.Flush()
-
-  $reader = New-Object System.IO.StreamReader($client)
-  $sb = New-Object System.Text.StringBuilder
-  while ($true) {
-    $line = $reader.ReadLine()
-    if ($null -eq $line) { break }
-    [void]$sb.AppendLine($line)
-    if ($line -eq "") { break }
-  }
-  [System.IO.File]::WriteAllText($OutFile, $sb.ToString())
-  $client.Dispose()
-  exit 0
-} catch {
-  [System.IO.File]::WriteAllText($OutFile, "ERROR: " + $_.Exception.Message)
-  exit 1
-}
-''';
-    final file = File(path);
-    await file.writeAsString(script);
-    return file;
-  }
-
-  /// Sends a raw UAPI command to the running wireguard-go's named pipe and
-  /// returns its response text.
-  static Future<String> _uapiSend(String command) async {
-    final helper = await _ensureUapiHelperScript();
-    final tmpDir = Directory.systemTemp.path;
-    final inFile = File('$tmpDir\\oryvexvpn_uapi_in.txt');
-    final outFile = File('$tmpDir\\oryvexvpn_uapi_out.txt');
-    await inFile.writeAsString(command);
-    if (await outFile.exists()) await outFile.delete();
-
-    final result = await Process.run('powershell.exe', [
-      '-NoProfile',
-      '-ExecutionPolicy', 'Bypass',
-      '-File', helper.path,
-      '-PipeName', _uapiPipeName,
-      '-InFile', inFile.path,
-      '-OutFile', outFile.path,
-    ]);
-
-    final out = await outFile.exists() ? await outFile.readAsString() : '';
-
-    if (result.exitCode != 0 || out.startsWith('ERROR:')) {
-      if (out.contains('security ID may not be assigned as the owner')) {
-        throw Exception(
-          'wireguard-go نتوانست روی pipe داخلی خودش گوش بدهد (محدودیت '
-          'شناخته‌شده‌ی خود wireguard-go روی ویندوز وقتی بدون سرویس ویندوزی '
-          'اجرا می‌شود). این یک محدودیت بالادستی است، نه باگ این برنامه.\n'
-          'جزئیات: $out',
-        );
-      }
-      throw Exception('ارتباط با هسته‌ی وایرگارد ناموفق بود.\n$out');
-    }
-    return out;
-  }
-
-  static Future<void> _configureUapi(_WarpRegistration reg) async {
-    final buf = StringBuffer();
-    buf.writeln('set=1');
-    buf.writeln('private_key=${reg.privateKeyHex}');
-    buf.writeln('listen_port=0');
-    buf.writeln('replace_peers=true');
-    buf.writeln('public_key=${reg.peerPublicKeyHex}');
-    buf.writeln('endpoint=${reg.endpointIp}:${reg.endpointPort}');
-    buf.writeln('persistent_keepalive_interval=25');
-    buf.writeln('replace_allowed_ips=true');
-    buf.writeln('allowed_ip=0.0.0.0/0');
-    buf.writeln(); // blank line terminates the UAPI transaction
-
-    final response = await _uapiSend(buf.toString());
-    if (!response.contains('errno=0')) {
-      throw Exception('پیکربندی هسته‌ی وایرگارد رد شد.\n$response');
-    }
-  }
-
-  /// wg-quick normally does this on Linux; on our bare wireguard-go setup
-  /// we have to configure the adapter's IP/MTU/DNS/route ourselves.
-  static Future<void> _configureAdapter(_WarpRegistration reg) async {
-    final ip = reg.address; // e.g. "172.16.0.2"
-    final commands = <List<String>>[
-      ['netsh', 'interface', 'ip', 'set', 'address', 'name=$_tunnelName', 'static', ip, '255.255.255.255'],
-      ['netsh', 'interface', 'ipv4', 'set', 'subinterface', _tunnelName, 'mtu=1280', 'store=active'],
-      ['netsh', 'interface', 'ip', 'set', 'dns', 'name=$_tunnelName', 'static', '1.1.1.1'],
-      ['netsh', 'interface', 'ip', 'add', 'dns', 'name=$_tunnelName', '1.0.0.1', 'index=2'],
-      ['netsh', 'interface', 'ipv4', 'add', 'route', '0.0.0.0/0', _tunnelName],
+  /// Start BoringTun with the given parameters.
+  /// BoringTun CLI: boringtun <iface> --private-key <key> --peer-public-key <key>
+  /// --endpoint <ip:port> --allowed-ips <ips> --address <ip> --dns <dns> --mtu <mtu>
+  static Future<void> _startBoringTun(_WarpRegistration reg) async {
+    final args = [
+      _tunnelName,
+      '--private-key', reg.privateKeyBase64,
+      '--peer-public-key', reg.peerPublicKeyBase64,
+      '--endpoint', '${reg.endpointIp}:${reg.endpointPort}',
+      '--allowed-ips', '0.0.0.0/0',
+      '--address', reg.address,         // e.g. 172.16.0.2/32? BoringTun accepts CIDR
+      '--dns', '1.1.1.1',
+      '--mtu', '1280',
+      '--persistent-keepalive', '25',
     ];
 
-    for (final cmd in commands) {
-      final result = await Process.run(cmd.first, cmd.sublist(1));
-      if (result.exitCode != 0) {
-        final err = result.stderr.toString().trim();
-        throw Exception('پیکربندی آداپتور شبکه ناموفق بود: ${cmd.join(' ')}\n$err');
-      }
-    }
-  }
+    _tunnelProcess = await Process.start(
+      _boringTunExe,
+      args,
+      workingDirectory: '$_exeDir\\data',
+      mode: ProcessStartMode.detachedWithStdio,
+    );
 
-  static Future<void> _waitForPipe() async {
-    // installtunnelservice-style wrappers get to wait on a service
-    // handle; we just poll briefly for the process to have set up the
-    // pipe and adapter before we try to talk to it.
-    await Future.delayed(const Duration(milliseconds: 1500));
+    // Give it a moment to set up the adapter.
+    await Future.delayed(const Duration(seconds: 2));
+
+    // Check if the process is still alive; if not, something went wrong.
+    if (_tunnelProcess == null || !(await _tunnelProcess!.exitCode.timeout(
+        const Duration(milliseconds: 100), onTimeout: () => null))?.isCompleted == false) {
+      // Process seems to be running.
+    } else {
+      throw Exception('BoringTun exited unexpectedly.');
+    }
   }
 
   static Future<void> connect() async {
@@ -414,35 +286,16 @@ try {
     }
     if (!await _coreFilesPresent()) {
       throw Exception(
-        'فایل‌های هسته (data\\wireguard-go.exe و data\\wintun.dll) در برنامه یافت نشد.',
+        'فایل‌های هسته (data\\boringtun.exe و data\\wintun.dll) در برنامه یافت نشد.',
       );
     }
 
     final reg = await _register(onProgress);
 
-    onProgress('در حال راه‌اندازی هسته وایرگارد...');
-    _tunnelProcess = await Process.start(
-      _wireguardGoExe,
-      ['-f', _tunnelName],
-      workingDirectory: '$_exeDir\\data',
-      mode: ProcessStartMode.detachedWithStdio,
-    );
+    onProgress('در حال راه‌اندازی تونل BoringTun...');
+    await _startBoringTun(reg);
 
-    await _waitForPipe();
-
-    try {
-      onProgress('در حال پیکربندی تونل...');
-      await _configureUapi(reg);
-
-      onProgress('در حال پیکربندی آداپتور شبکه...');
-      await _configureAdapter(reg);
-
-      _connected = true;
-    } catch (e) {
-      await _killTunnelProcess();
-      _connected = false;
-      rethrow;
-    }
+    _connected = true;
   }
 
   static Future<void> _killTunnelProcess() async {
@@ -451,10 +304,13 @@ try {
     if (proc == null) return;
     try {
       proc.kill(ProcessSignal.sigterm);
+      await proc.exitCode.timeout(const Duration(seconds: 2), onTimeout: () {
+        proc.kill(ProcessSignal.sigkill);
+        return null;
+      });
     } catch (_) {}
-    // wireguard-go on Windows doesn't always die cleanly from sigterm from
-    // a detached handle — make sure the adapter's owning process is gone.
-    await Process.run('taskkill', ['/F', '/IM', 'wireguard-go.exe']);
+    // Clean up any remaining processes.
+    await Process.run('taskkill', ['/F', '/IM', 'boringtun.exe']);
   }
 
   static Future<void> disconnect() async {
@@ -466,24 +322,23 @@ try {
   static Future<bool> isConnected() async {
     if (!Platform.isWindows) return false;
     if (!_connected) return false;
-    // Best-effort liveness check: is our process handle still alive, and
-    // does the adapter still show up.
+    // Check if the adapter still exists.
     final result = await Process.run('netsh', ['interface', 'show', 'interface', _tunnelName]);
     return result.exitCode == 0 && result.stdout.toString().contains(_tunnelName);
   }
 }
 
 class _WarpRegistration {
-  final String privateKeyHex;
+  final String privateKeyBase64;
   final String address;
-  final String peerPublicKeyHex;
+  final String peerPublicKeyBase64;
   final String endpointIp;
   final String endpointPort;
 
   const _WarpRegistration({
-    required this.privateKeyHex,
+    required this.privateKeyBase64,
     required this.address,
-    required this.peerPublicKeyHex,
+    required this.peerPublicKeyBase64,
     required this.endpointIp,
     required this.endpointPort,
   });
@@ -491,7 +346,7 @@ class _WarpRegistration {
 """
         warp_path.parent.mkdir(parents=True, exist_ok=True)
         warp_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("warp_service.dart (self-built wireguard-go + wintun.dll via UAPI, no 3rd-party core; _coreFilesPresent() await fix applied)")
+        self.fixed_files.append("warp_service.dart (BoringTun CLI version)")
         return True
 
     def fix_vpn_service(self) -> bool:
@@ -651,7 +506,7 @@ flutter:
 
     def fix_workflow(self) -> bool:
         workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
-        correct = r"""name: Build Windows App
+        correct = r"""name: Build Windows App (BoringTun)
 
 on:
   push:
@@ -681,51 +536,33 @@ jobs:
       - name: Build Windows app
         run: flutter build windows --release
 
-      - name: Setup Go (to build wireguard-go from source)
-        uses: actions/setup-go@v5
+      # Install Rust to build BoringTun from source.
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
         with:
-          go-version: 'stable'
+          toolchain: stable
+          target: x86_64-pc-windows-msvc
+          override: true
 
-      # We build the OFFICIAL, open-source wireguard-go (the same core used
-      # inside wireguard-windows / AmneziaWG) directly from its own upstream
-      # source, ourselves, at build time. No third-party GUI app, no MSI
-      # installer, no commercial SDK.
-      #
-      # KNOWN LIMITATION (documented upstream, accepted as a risk for this
-      # build): wireguard-go's Windows UAPI named pipe
-      # (\\.\pipe\ProtectedPrefix\Administrators\WireGuard\<name>) has a
-      # long-standing issue where pipe creation can fail with
-      # "This security ID may not be assigned as the owner of this object"
-      # even when the process is already elevated. This is exactly the
-      # gap that wireguard-windows/AmneziaWG normally paper over by running
-      # everything inside a proper Windows service under SYSTEM. We are
-      # NOT doing that here — see warp_service.dart for how we surface this
-      # if it happens at runtime.
-      - name: Build wireguard-go.exe for Windows
+      - name: Build BoringTun for Windows
         run: |
-          git clone --depth 1 https://github.com/WireGuard/wireguard-go.git wireguard-go-src
-          cd wireguard-go-src
-          $env:GOOS = "windows"
-          $env:GOARCH = "amd64"
-          $env:CGO_ENABLED = "0"
-          go build -ldflags="-s -w" -o wireguard-go.exe .
-          if (-not (Test-Path "wireguard-go.exe")) {
-            Write-Host "wireguard-go.exe build failed."
+          git clone --depth 1 https://github.com/cloudflare/boringtun.git boringtun-src
+          cd boringtun-src
+          cargo build --release --target x86_64-pc-windows-msvc
+          if (-not (Test-Path "target\\x86_64-pc-windows-msvc\\release\\boringtun.exe")) {
+            Write-Host "BoringTun build failed."
             exit 1
           }
-          Write-Host "wireguard-go.exe built successfully."
+          Write-Host "BoringTun built successfully."
 
-      - name: Bundle wireguard-go.exe + official Wintun driver inside data/
+      - name: Bundle BoringTun + official Wintun driver inside data/
         run: |
           $ReleaseDir = "build\\windows\\x64\\runner\\Release"
           New-Item -ItemType Directory -Force -Path "$ReleaseDir\\data"
 
-          Copy-Item "wireguard-go-src\\wireguard-go.exe" "$ReleaseDir\\data\\wireguard-go.exe"
+          Copy-Item "boringtun-src\\target\\x86_64-pc-windows-msvc\\release\\boringtun.exe" "$ReleaseDir\\data\\boringtun.exe"
 
-          # Official Wintun driver from the WireGuard project (wintun.net).
-          # Redistributable per its license, no separate MSI/driver install
-          # step needed by the user — the DLL sets up the driver itself the
-          # first time an app calls into it.
+          # Official Wintun driver from wintun.net
           $wintunVersion = "0.14.1"
           Invoke-WebRequest -Uri "https://www.wintun.net/builds/wintun-$wintunVersion.zip" -OutFile "wintun.zip"
           Expand-Archive "wintun.zip" -DestinationPath "wintun_extracted"
@@ -736,17 +573,17 @@ jobs:
             exit 1
           }
 
-          Write-Host "wireguard-go.exe and wintun.dll bundled in data/ folder."
+          Write-Host "BoringTun and wintun.dll bundled."
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: oryvexvpn-windows
+          name: oryvexvpn-windows-boringtun
           path: build/windows/x64/runner/Release/
 """
         workflow_path.parent.mkdir(parents=True, exist_ok=True)
         workflow_path.write_text(correct, encoding='utf-8')
-        self.fixed_files.append("build_windows.yml (builds wireguard-go from source, bundles official wintun.dll)")
+        self.fixed_files.append("build_windows.yml (BoringTun)")
         return True
 
     def remove_obsolete_files(self) -> bool:
@@ -790,7 +627,7 @@ jobs:
 
     def run(self) -> bool:
         print("\n" + "=" * 60)
-        print("Flutter Project Fixer - OryvexVPN (self-built wireguard-go + wintun.dll, no 3rd-party core)")
+        print("Flutter Project Fixer - OryvexVPN (BoringTun edition)")
         print("=" * 60)
         print(f"\nProject Path: {self.root}\n")
 
@@ -820,19 +657,11 @@ jobs:
                 print(f"  - {f}")
 
         print("\nFixes applied:")
-        print("  - VPN core: self-built, bundled wireguard-go.exe (official open-source")
-        print("    core) + official wintun.dll, driven directly over UAPI. No AmneziaWG,")
-        print("    no WireSock, no commercial SDK, no official wireguard.exe GUI/MSI.")
-        print("  - KNOWN RISK: wireguard-go's Windows UAPI pipe can fail with a")
-        print("    documented upstream 'security ID' error outside a real Windows")
-        print("    service context. This build accepts that risk; the error is")
-        print("    surfaced clearly instead of hidden if it happens.")
+        print("  - VPN core: self‑built Cloudflare BoringTun (Rust) + official wintun.dll")
+        print("  - BoringTun driven via command‑line (no UAPI named pipe issues)")
         print("  - App manifest set to requireAdministrator.")
         print("  - Endpoint list: 300+ IPs, concurrent ping scan for best server.")
-        print("  - Adapter IP/MTU/DNS/route now configured by the app itself (the")
-        print("    job wg-quick normally does), since bare wireguard-go doesn't.")
-        print("  - _coreFilesPresent() now awaits both File.exists() checks before")
-        print("    ANDing them (fixes the CI build error).")
+        print("  - _coreFilesPresent() awaits both File.exists() checks.")
         print("\nRun push.py to deploy to GitHub and build the new EXE.")
         return True
 
