@@ -46,7 +46,7 @@ class VPNService extends ChangeNotifier {
       final config = await WarpService.generateConfig(_updateStatus);
 
       _stage = VpnStage.installingTunnel;
-      _updateStatus('در حال درخواست مجوز ادمین برای نصب تونل...');
+      _updateStatus('در حال نصب تونل...');
 
       await WarpService.connect(config);
 
@@ -69,9 +69,15 @@ class VPNService extends ChangeNotifier {
     _stage = VpnStage.disconnecting;
     _updateStatus('در حال قطع اتصال...');
 
-    await WarpService.disconnect();
-
-    _stage = VpnStage.idle;
-    _updateStatus('قطع شد');
+    try {
+      await WarpService.disconnect();
+      _stage = VpnStage.idle;
+      _updateStatus('قطع شد');
+    } catch (e) {
+      _stage = VpnStage.error;
+      _lastError = e.toString().replaceFirst('Exception: ', '');
+      _updateStatus('قطع اتصال ناموفق بود');
+    }
+    notifyListeners();
   }
 }

@@ -3,7 +3,7 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 .git
   COMMIT_EDITMSG
-    OryvexVPN: Clean CMake build architecture and manifest patched
+    OryvexVPN: Fix 'Access is denied' tunnel install via forced elevation
 
 
 
@@ -1227,6 +1227,12 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
       2ea15f6df7bb516093b39b2f65562f1854534eb3 2c35c80410d246268940167a645cc10b81324b14 OryvexVPN <oryvex@demo.com> 1785585999 +0330	commit: OryvexVPN: Clean CMake build architecture and manifest patched
       2c35c80410d246268940167a645cc10b81324b14 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785585999 +0330	Branch: renamed refs/heads/main to refs/heads/main
       2c35c80410d246268940167a645cc10b81324b14 2c35c80410d246268940167a645cc10b81324b14 OryvexVPN <oryvex@demo.com> 1785585999 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      2c35c80410d246268940167a645cc10b81324b14 46852f6a781ec11cc8dd858a5e25aef4aa221825 OryvexVPN <oryvex@demo.com> 1785586812 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
+      46852f6a781ec11cc8dd858a5e25aef4aa221825 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785586812 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      46852f6a781ec11cc8dd858a5e25aef4aa221825 46852f6a781ec11cc8dd858a5e25aef4aa221825 OryvexVPN <oryvex@demo.com> 1785586812 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      46852f6a781ec11cc8dd858a5e25aef4aa221825 e149c80291a49ac8b51c042367b09e036a7507c6 OryvexVPN <oryvex@demo.com> 1785587364 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
+      e149c80291a49ac8b51c042367b09e036a7507c6 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785587364 +0330	Branch: renamed refs/heads/main to refs/heads/main
+      e149c80291a49ac8b51c042367b09e036a7507c6 e149c80291a49ac8b51c042367b09e036a7507c6 OryvexVPN <oryvex@demo.com> 1785587364 +0330	Branch: renamed refs/heads/main to refs/heads/main
 
 
 
@@ -1301,6 +1307,10 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
           2ea15f6df7bb516093b39b2f65562f1854534eb3 2ea15f6df7bb516093b39b2f65562f1854534eb3 OryvexVPN <oryvex@demo.com> 1785585672 +0330	Branch: renamed refs/heads/main to refs/heads/main
           2ea15f6df7bb516093b39b2f65562f1854534eb3 2c35c80410d246268940167a645cc10b81324b14 OryvexVPN <oryvex@demo.com> 1785585999 +0330	commit: OryvexVPN: Clean CMake build architecture and manifest patched
           2c35c80410d246268940167a645cc10b81324b14 2c35c80410d246268940167a645cc10b81324b14 OryvexVPN <oryvex@demo.com> 1785585999 +0330	Branch: renamed refs/heads/main to refs/heads/main
+          2c35c80410d246268940167a645cc10b81324b14 46852f6a781ec11cc8dd858a5e25aef4aa221825 OryvexVPN <oryvex@demo.com> 1785586812 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
+          46852f6a781ec11cc8dd858a5e25aef4aa221825 46852f6a781ec11cc8dd858a5e25aef4aa221825 OryvexVPN <oryvex@demo.com> 1785586812 +0330	Branch: renamed refs/heads/main to refs/heads/main
+          46852f6a781ec11cc8dd858a5e25aef4aa221825 e149c80291a49ac8b51c042367b09e036a7507c6 OryvexVPN <oryvex@demo.com> 1785587364 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced eleva...
+          e149c80291a49ac8b51c042367b09e036a7507c6 e149c80291a49ac8b51c042367b09e036a7507c6 OryvexVPN <oryvex@demo.com> 1785587364 +0330	Branch: renamed refs/heads/main to refs/heads/main
 
 
 
@@ -1775,6 +1785,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     19
+      78fdb85fee7ac4c7ccb250892dc984c416165c
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       95e3e32ce2d72b6905a3062fffedba2a451de2
         [Binary or unreadable file]
 
@@ -2170,6 +2193,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     31
+      00c12e5b26fc4330e86064bd5d7773cf6d79b5
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       71eb8712bed1b1ed9b4c7b71a81bcb8ed8b991
         [Binary or unreadable file]
 
@@ -2478,6 +2514,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    3b
+      8e6778be1a391b690dcb299ff8bd0c4044286f
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     3c
       1497c06b77d09d487c38e778332de181454b82
         [Binary or unreadable file]
@@ -2723,6 +2773,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     46
       2f61517263d9651f310e78e391cf6f2383f40a
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      852f6a781ec11cc8dd858a5e25aef4aa221825
         [Binary or unreadable file]
 
 
@@ -3101,6 +3164,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     59
+      0920ea0735b6c026993cf64bc9e72456762e38
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       73e1a06e91accbf5e8a08fbdd98cf3674ca5c4
         [Binary or unreadable file]
 
@@ -3212,6 +3288,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
       608d0fe5bff3a7a7e05d5a232944a1a8effe5f
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      7ba11c467d547b16f4b1a58d207f55b94fe2d6
         [Binary or unreadable file]
 
 
@@ -3402,6 +3491,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     6d
       a0652f05f28fc6950cec20ebdfbae89b665479
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      bfe41f94ac75b7a42e41825cc6c232745a5ad1
         [Binary or unreadable file]
 
 
@@ -3659,6 +3761,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    7e
+      4ff1d8c2560f6df3513c88f610935a9436f14b
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     7f
       6736164e77ce785ecc42b71089bc3ba783123c
         [Binary or unreadable file]
@@ -3821,6 +3937,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+      88a5345a27860160a6e8e181ef6069e8c08b47
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       b96927ed23fcebe83ea09040792196b674a46c
         [Binary or unreadable file]
 
@@ -3864,6 +3993,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
     8b
       030fa2221c5f52c2d5e34ac81510d57a33ce33
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+      64d2bb02145ecf98a8bb3cd8d32e049e47a7cf
         [Binary or unreadable file]
 
 
@@ -3930,6 +4072,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
       f765d3ab5537a1478cd23694a2d4ea354dcd75
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    8e
+      04b85a8002b56b81105814ae597c545993b5a9
         [Binary or unreadable file]
 
 
@@ -4121,6 +4277,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
       970d12c9846f8c4e1e76093b3278e33a4fadfc
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
+    9d
+      9797adab41cd2cdb191e031f60d3768d9fd79d
         [Binary or unreadable file]
 
 
@@ -4595,6 +4765,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     b5
+      075f488f144e311df1b88ab9029cdc0d59b2d2
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       3d6fab64ca5bd87618d204fcaac93cd70d37c5
         [Binary or unreadable file]
 
@@ -5251,6 +5434,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+      49c80291a49ac8b51c042367b09e036a7507c6
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       6488f3ea00bcef2f3cc9a1908bd87ca7876e8a
         [Binary or unreadable file]
 
@@ -5455,6 +5651,19 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
     eb
+      178e74ecb7760bd09a1fc3e0a49649d82826d8
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
       1a884071adaac3826f06264e1a79c8914ee969
         [Binary or unreadable file]
 
@@ -5644,6 +5853,20 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
 
 
 
+    f5
+      8247c15525d49d432af6f0e5ce10c50e8889a2
+        [Binary or unreadable file]
+
+
+
+
+
+
+
+
+
+
+
     f6
       506dc1733f99811e2e32edb4eadede2c72eecf
         [Binary or unreadable file]
@@ -5806,7 +6029,7 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
   refs
     heads
       main
-        2c35c80410d246268940167a645cc10b81324b14
+        e149c80291a49ac8b51c042367b09e036a7507c6
 
 
 
@@ -5939,7 +6162,13 @@ Directory structure for: C:\Users\nasle javan\Desktop\OryvexVPNFlutter\warp_vpn_
   /android/app/debug
   /android/app/profile
   /android/app/release
-  \n.env\n*.token\n*.secret\nkey.properties\n*.keystore\n*.jks\n
+  
+  .env
+  *.token
+  *.secret
+  key.properties
+  *.keystore
+  *.jks
 
 
 
@@ -6289,10 +6518,22 @@ fixer.py
   # -*- coding: utf-8 -*-
   
   """
-  fixer.py - OryvexVPN Auto-Fixer
-  Implements automatic Cloudflare WARP key generation, endpoint sweeping, 
-  real WireGuard connection via bundled data/wireguard.exe, Persian UI, 
-  forced Administrator privileges, and perfectly clean GitHub Actions CI.
+  fixer.py - OryvexVPN Auto-Fixer (Access Denied / Tunnel Install Fix)
+  
+  Fixes the "نصب تونل ناموفق بود ... Access is denied" error by:
+    1. Forcing REAL elevation for the wireguard.exe tunnel install/uninstall
+       via PowerShell Start-Process -Verb RunAs -Wait, instead of relying on
+       the parent process's own elevation state (which can silently fail to
+       propagate, especially for dev/debug builds that skip the manifest).
+    2. Removing runInShell:true from the direct wireguard.exe invocation,
+       which was routing the call through cmd.exe and risking bad quoting
+       on paths that contain spaces (e.g. "C:\\Users\\nasle javan\\...").
+    3. Capturing and surfacing the PowerShell/wireguard exit code + stderr
+       so future failures show the real Windows error instead of a vague
+       message.
+    4. Keeping the app manifest as requireAdministrator so the whole app
+       still gets a UAC prompt on launch (defense in depth), while the
+       tunnel install no longer depends on that alone.
   """
   
   import os
@@ -6301,6 +6542,7 @@ fixer.py
   import subprocess
   from pathlib import Path
   from typing import Optional
+  
   
   class FlutterProjectFixer:
       def __init__(self, project_root: Optional[str] = None):
@@ -6385,15 +6627,50 @@ fixer.py
           return True
   
       def fix_warp_service(self) -> bool:
+          """
+          THE ACTUAL BUG FIX.
+  
+          Previous version called:
+              Process.run(_wireguardExe, ['/installtunnelservice', path], runInShell: true)
+  
+          Problems:
+            - runInShell routes the call through cmd.exe, which can mangle a
+              path containing spaces (the user's profile path has one) and
+              does NOT guarantee the child inherits an elevated token in all
+              environments.
+            - If the parent Flutter process wasn't actually elevated for any
+              reason (dev run, manifest not re-embedded, etc.), the tunnel
+              service install fails with exactly "Access is denied" (Win32
+              error 5), because installing a Windows service always requires
+              an elevated token.
+  
+          Fix:
+            - Always force a *fresh* elevation for the specific wireguard.exe
+              call via `powershell Start-Process -Verb RunAs -Wait`, which
+              triggers its own UAC prompt if needed and does not depend on
+              the caller's elevation state at all.
+            - Never use runInShell for the actual binary call; quoting is
+              handled explicitly and safely for the PowerShell -ArgumentList.
+            - Capture real exit codes/stderr from PowerShell so failures are
+              diagnosable instead of a generic message.
+  
+          NOTE for maintainers: this Dart source is stored as a Python RAW
+          string (r\"\"\"...\"\"\") on purpose. Dart uses backslash escapes
+          (\\\\, \\n, \\$) and $ interpolation extensively; a *non-raw*
+          Python string would silently pre-process those before they ever
+          reach the .dart file (e.g. turning a real newline escape into an
+          actual line break mid-string, or leaving a stray backslash in
+          front of a $ that was meant to interpolate). Keep this raw.
+          """
           warp_path = self.root / "lib" / "services" / "warp_service.dart"
-          correct = """import 'dart:io';
+          correct = r"""import 'dart:io';
   import 'dart:convert';
   import 'package:http/http.dart' as http;
   import 'package:cryptography/cryptography.dart';
   
   class WarpService {
     static const _tunnelName = 'oryvexvpn';
-    
+  
     static const List<String> _endpoints = [
       "162.159.192.1", "162.159.193.1", "162.159.195.1",
       "188.114.96.1", "188.114.97.1", "188.114.98.1",
@@ -6404,7 +6681,7 @@ fixer.py
     static String get _wireguardExe {
       final exePath = Platform.resolvedExecutable;
       final exeDir = File(exePath).parent.path;
-      return '$exeDir\\\\data\\\\wireguard.exe';
+      return '$exeDir\\data\\wireguard.exe';
     }
   
     static Future<String> _findBestEndpoint(Function(String) onProgress) async {
@@ -6423,7 +6700,7 @@ fixer.py
   
       final results = await Future.wait(futures);
       results.sort((a, b) => (a['latency'] as int).compareTo(b['latency'] as int));
-      
+  
       final bestIp = results.first['latency'] != 9999 ? results.first['ip'] as String : _endpoints.first;
       return '$bestIp:2408';
     }
@@ -6479,12 +6756,47 @@ fixer.py
   
     static Future<File> _writeConfigFile(String config) async {
       final dir = Directory.systemTemp;
-      final file = File('${dir.path}\\\\$_tunnelName.conf');
+      final file = File('${dir.path}\\$_tunnelName.conf');
       return file.writeAsString(config);
     }
   
     static Future<bool> isWireGuardInstalled() async {
       return File(_wireguardExe).exists();
+    }
+  
+    /// Escapes a string for safe embedding inside a single-quoted
+    /// PowerShell string literal (doubles any embedded single quotes).
+    static String _psQuote(String value) => "'${value.replaceAll("'", "''")}'";
+  
+    /// Runs [exePath] with [args] fully elevated, regardless of whether
+    /// this Dart process itself is elevated. Uses PowerShell's
+    /// Start-Process -Verb RunAs -Wait so a UAC prompt is triggered if
+    /// needed, and waits for the launched process to actually finish
+    /// before returning its exit code.
+    static Future<int> _runElevated(String exePath, List<String> args) async {
+      final argList = args.map(_psQuote).join(',');
+      final psCommand =
+          "\$p = Start-Process -FilePath ${_psQuote(exePath)} "
+          "-ArgumentList $argList "
+          "-Verb RunAs -Wait -PassThru -WindowStyle Hidden; "
+          "exit \$p.ExitCode";
+  
+      final result = await Process.run(
+        'powershell.exe',
+        ['-NoProfile', '-NonInteractive', '-Command', psCommand],
+        runInShell: false,
+      );
+  
+      if (result.exitCode != 0) {
+        final stderrText = (result.stderr ?? '').toString().trim();
+        final stdoutText = (result.stdout ?? '').toString().trim();
+        final detail = [stderrText, stdoutText].where((s) => s.isNotEmpty).join(' | ');
+        final detailSuffix = detail.isNotEmpty ? '\nجزئیات: $detail' : '';
+        throw Exception(
+          'اجرای مجوز-بالا (Elevated) ناموفق بود. کد خطا: ${result.exitCode}$detailSuffix',
+        );
+      }
+      return result.exitCode;
     }
   
     static Future<void> connect(String config) async {
@@ -6496,36 +6808,32 @@ fixer.py
       }
   
       final file = await _writeConfigFile(config);
-      final result = await Process.run(
-        _wireguardExe,
-        ['/installtunnelservice', file.path],
-        runInShell: true,
-      );
   
-      if (result.exitCode != 0) {
+      try {
+        await _runElevated(_wireguardExe, ['/installtunnelservice', file.path]);
+      } catch (e) {
         throw Exception(
-          'نصب تونل ناموفق بود. خطای سیستمی ویندوز:\\n'
-          '${result.stderr}'
+          'نصب تونل ناموفق بود. اطمینان حاصل کنید که در پنجره UAC روی "بله" کلیک کرده‌اید.\n$e',
         );
       }
     }
   
     static Future<void> disconnect() async {
       if (!Platform.isWindows) return;
-      await Process.run(
-        _wireguardExe,
-        ['/uninstalltunnelservice', _tunnelName],
-        runInShell: true,
-      );
+      try {
+        await _runElevated(_wireguardExe, ['/uninstalltunnelservice', _tunnelName]);
+      } catch (_) {
+        // Best-effort: if the tunnel was already gone/never installed,
+        // don't block the UI from returning to idle state.
+      }
     }
   
     static Future<bool> isConnected() async {
       if (!Platform.isWindows) return false;
       try {
         final result = await Process.run(
-          'sc',
-          ['query', 'WireGuardTunnel\\$$_tunnelName'],
-          runInShell: true,
+          'sc.exe',
+          ['query', 'WireGuardTunnel\$' + _tunnelName],
         );
         return result.stdout.toString().contains('RUNNING');
       } catch (_) {
@@ -6536,7 +6844,7 @@ fixer.py
   """
           warp_path.parent.mkdir(parents=True, exist_ok=True)
           warp_path.write_text(correct, encoding='utf-8')
-          self.fixed_files.append("warp_service.dart")
+          self.fixed_files.append("warp_service.dart (real elevation fix for 'Access is denied')")
           return True
   
       def fix_vpn_service(self) -> bool:
@@ -6589,7 +6897,7 @@ fixer.py
         final config = await WarpService.generateConfig(_updateStatus);
   
         _stage = VpnStage.installingTunnel;
-        _updateStatus('در حال اجرای تونل وایرگارد...');
+        _updateStatus('در حال درخواست مجوز ادمین برای نصب تونل...');
   
         await WarpService.connect(config);
   
@@ -6611,7 +6919,7 @@ fixer.py
     Future<void> disconnect() async {
       _stage = VpnStage.disconnecting;
       _updateStatus('در حال قطع اتصال...');
-      
+  
       await WarpService.disconnect();
   
       _stage = VpnStage.idle;
@@ -6622,212 +6930,6 @@ fixer.py
           vpn_path.parent.mkdir(parents=True, exist_ok=True)
           vpn_path.write_text(correct, encoding='utf-8')
           self.fixed_files.append("vpn_service.dart")
-          return True
-  
-      def fix_home_screen(self) -> bool:
-          home_path = self.root / "lib" / "screens" / "home_screen.dart"
-          correct = """import 'package:flutter/material.dart';
-  import 'package:provider/provider.dart';
-  import '../services/vpn_service.dart';
-  
-  class HomeScreen extends StatefulWidget {
-    const HomeScreen({Key? key}) : super(key: key);
-  
-    @override
-    State<HomeScreen> createState() => _HomeScreenState();
-  }
-  
-  class _HomeScreenState extends State<HomeScreen> {
-    @override
-    void initState() {
-      super.initState();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.read<VPNService>().initStatus();
-      });
-    }
-  
-    @override
-    Widget build(BuildContext context) {
-      final vpn = context.watch<VPNService>();
-  
-      Color getStatusColor() {
-        if (vpn.isConnected) return const Color(0xFF00E5FF);
-        if (vpn.isConnecting) return const Color(0xFFFF9800);
-        if (vpn.stage == VpnStage.error) return const Color(0xFFFF3B30);
-        return Colors.white54;
-      }
-  
-      return Scaffold(
-        body: Stack(
-          children: [
-            Positioned.fill(
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0xFF09090B), Color(0xFF18181B)],
-                  ),
-                ),
-              ),
-            ),
-            SafeArea(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                    child: Row(
-                      children: [
-                        Icon(
-                          vpn.isConnected ? Icons.shield_rounded : Icons.shield_outlined,
-                          color: getStatusColor(),
-                          size: 32,
-                        ),
-                        const SizedBox(width: 12),
-                        const Text(
-                          'اورایوکس',
-                          style: TextStyle(
-                            fontFamily: 'Vazirmatn',
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  const Spacer(flex: 1),
-                  
-                  // Status Text
-                  Text(
-                    vpn.statusMessage,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Vazirmatn',
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: getStatusColor(),
-                    ),
-                  ),
-                  if (vpn.lastError != null) ...[
-                    const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFF3B30).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFFF3B30).withOpacity(0.3)),
-                        ),
-                        child: Text(
-                          vpn.lastError!,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontFamily: 'Vazirmatn',
-                            fontSize: 13,
-                            height: 1.5,
-                            color: Color(0xFFFF3B30),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                  
-                  const SizedBox(height: 50),
-  
-                  // Main Connect Button
-                  GestureDetector(
-                    onTap: vpn.isConnecting
-                        ? null
-                        : () => vpn.isConnected ? vpn.disconnect() : vpn.connect(),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 400),
-                      width: 220,
-                      height: 220,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFF18181B),
-                        boxShadow: [
-                          BoxShadow(
-                            color: getStatusColor().withOpacity(vpn.isConnected || vpn.isConnecting ? 0.4 : 0.0),
-                            blurRadius: vpn.isConnected || vpn.isConnecting ? 60 : 20,
-                            spreadRadius: vpn.isConnected || vpn.isConnecting ? 10 : 0,
-                          ),
-                        ],
-                        border: Border.all(
-                          color: getStatusColor().withOpacity(vpn.isConnected ? 1.0 : (vpn.isConnecting ? 0.8 : 0.1)),
-                          width: vpn.isConnected ? 6 : 2,
-                        ),
-                      ),
-                      child: Center(
-                        child: vpn.isConnecting
-                            ? const SizedBox(
-                                width: 60,
-                                height: 60,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 4,
-                                  color: Color(0xFFFF9800),
-                                ),
-                              )
-                            : Icon(
-                                Icons.power_settings_new_rounded,
-                                size: 90,
-                                color: getStatusColor(),
-                              ),
-                      ),
-                    ),
-                  ),
-  
-                  const Spacer(flex: 2),
-  
-                  // Bottom Status Card
-                  AnimatedOpacity(
-                    duration: const Duration(milliseconds: 400),
-                    opacity: vpn.isConnected ? 1.0 : 0.0,
-                    child: vpn.isConnected
-                        ? Padding(
-                            padding: const EdgeInsets.only(bottom: 40, left: 24, right: 24),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF18181B),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.3)),
-                              ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.security_rounded, color: Color(0xFF00E5FF), size: 22),
-                                  SizedBox(width: 12),
-                                  Text(
-                                    'تونل وایرگارد فعال و ایمن است',
-                                    style: TextStyle(
-                                      fontFamily: 'Vazirmatn',
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        : const SizedBox(height: 98),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-  }
-  """
-          home_path.parent.mkdir(parents=True, exist_ok=True)
-          home_path.write_text(correct, encoding='utf-8')
-          self.fixed_files.append("home_screen.dart")
           return True
   
       def fix_pubspec(self) -> bool:
@@ -6871,40 +6973,44 @@ fixer.py
           pubspec_path.write_text(correct, encoding='utf-8')
           self.fixed_files.append("pubspec.yaml")
           return True
-          
+  
       def fix_windows_main_cpp(self) -> bool:
           main_cpp_path = self.root / "windows" / "runner" / "main.cpp"
           if not main_cpp_path.exists():
               return False
           content = main_cpp_path.read_text(encoding='utf-8')
-          
+  
           content = content.replace("Win32Window::Size(1280, 720)", "Win32Window::Size(400, 700)")
           content = content.replace("Win32Window::Point(10, 10)", "Win32Window::Point(100, 100)")
-          
+  
           main_cpp_path.write_text(content, encoding='utf-8')
           self.fixed_files.append("windows/runner/main.cpp (Resized to 400x700)")
           return True
   
       def fix_windows_manifest(self) -> bool:
+          """
+          Keep requireAdministrator on the manifest as defense-in-depth (the
+          whole app still gets a UAC prompt on launch), but the actual tunnel
+          install no longer depends on this alone — see fix_warp_service().
+          """
           manifest_path = self.root / "windows" / "runner" / "runner.exe.manifest"
           if not manifest_path.exists():
               self.log("Manifest not found! Ensure initialization worked.", "ERROR")
               return False
-          
+  
           content = manifest_path.read_text(encoding='utf-8')
-          # This regex securely replaces asInvoker without breaking the rest of the XML formatting
           new_content = re.sub(r'level="asInvoker"', 'level="requireAdministrator"', content)
-          
+  
           if content != new_content:
               manifest_path.write_text(new_content, encoding='utf-8')
-              self.fixed_files.append("windows/runner/runner.exe.manifest (Forced UAC Shield Icon & Admin Privileges)")
+              self.fixed_files.append("windows/runner/runner.exe.manifest (requireAdministrator)")
               return True
-              
+  
           return False
   
       def fix_workflow(self) -> bool:
           workflow_path = self.root / ".github" / "workflows" / "build_windows.yml"
-          
+  
           correct = r"""name: Build Windows App
   
   on:
@@ -6958,7 +7064,7 @@ fixer.py
   """
           workflow_path.parent.mkdir(parents=True, exist_ok=True)
           workflow_path.write_text(correct, encoding='utf-8')
-          self.fixed_files.append("build_windows.yml (Clean CI Build - No C++ modifications in server)")
+          self.fixed_files.append("build_windows.yml (unchanged, clean CI build)")
           return True
   
       def remove_obsolete_files(self) -> bool:
@@ -6996,47 +7102,47 @@ fixer.py
           missing = [r for r in required if r not in existing]
           if missing:
               with gi_path.open('a', encoding='utf-8') as f:
-                  f.write("\\n" + "\\n".join(missing) + "\\n")
+                  f.write("\n" + "\n".join(missing) + "\n")
               self.fixed_files.append(".gitignore")
           return True
   
       def run(self) -> bool:
-          print("\\n" + "=" * 60)
-          print("🔧 Flutter Project Fixer - OryvexVPN (Admin Shield Icon & Build Fix)")
+          print("\n" + "=" * 60)
+          print("🔧 Flutter Project Fixer - OryvexVPN ('Access is denied' Tunnel Fix)")
           print("=" * 60)
-          print(f"\\nProject Path: {self.root}\\n")
+          print(f"\nProject Path: {self.root}\n")
   
           if not self.check_project():
               return False
   
-          # First initialize the full windows architecture LOCALLY
           self.initialize_windows()
-          
-          # Then patch them dynamically to ensure the Admin shield and sizing are applied without breaking XML
+  
           self.fix_windows_main_cpp()
           self.fix_windows_manifest()
   
-          # Update the Dart code and workflow
           self.fix_main_dart()
           self.fix_pubspec()
           self.fix_warp_service()
           self.fix_vpn_service()
-          self.fix_home_screen()
           self.fix_workflow()
           self.remove_obsolete_files()
           self.scrub_tokens()
           self.update_gitignore()
   
-          print("\\n" + "=" * 60)
+          print("\n" + "=" * 60)
           print("📊 Final Report")
           print("=" * 60)
           if self.fixed_files:
-              print("\\n📁 Modified/Added Files:")
+              print("\n📁 Modified/Added Files:")
               for f in self.fixed_files:
                   print(f"  ✓ {f}")
   
-          print("\\n✅ Local files perfectly initialized and patched. You can now execute push.py.")
+          print("\n✅ Fix applied: WireGuard tunnel install/uninstall now runs via a")
+          print("   forced elevated PowerShell Start-Process call, independent of the")
+          print("   app's own elevation state. You should now see a UAC prompt at the")
+          print("   moment of connecting — click 'Yes' on it. Run push.py to deploy.")
           return True
+  
   
   def main():
       try:
@@ -7048,11 +7154,12 @@ fixer.py
           success = fixer.run()
           sys.exit(0 if success else 1)
       except KeyboardInterrupt:
-          print("\\n⏹️ Operation cancelled by user.")
+          print("\n⏹️ Operation cancelled by user.")
           sys.exit(0)
       except Exception as e:
-          print(f"\\n❌ Unexpected error: {e}")
+          print(f"\n❌ Unexpected error: {e}")
           sys.exit(1)
+  
   
   if __name__ == "__main__":
       main()
@@ -7073,7 +7180,7 @@ folder_structure.txt
   
   .git
     COMMIT_EDITMSG
-      OryvexVPN: Clean CMake build architecture and manifest patched
+      OryvexVPN: Fix 'Access is denied' tunnel install via forced elevation
   
   
   
@@ -8297,6 +8404,12 @@ folder_structure.txt
         2ea15f6df7bb516093b39b2f65562f1854534eb3 2c35c80410d246268940167a645cc10b81324b14 OryvexVPN <oryvex@demo.com> 1785585999 +0330	commit: OryvexVPN: Clean CMake build architecture and manifest patc...
         2c35c80410d246268940167a645cc10b81324b14 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785585999 +0330	Branch: renamed refs/heads/main to refs/heads/main
         2c35c80410d246268940167a645cc10b81324b14 2c35c80410d246268940167a645cc10b81324b14 OryvexVPN <oryvex@demo.com> 1785585999 +0330	Branch: renamed refs/heads/main to refs/heads/main
+        2c35c80410d246268940167a645cc10b81324b14 46852f6a781ec11cc8dd858a5e25aef4aa221825 OryvexVPN <oryvex@demo.com> 1785586812 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced...
+        46852f6a781ec11cc8dd858a5e25aef4aa221825 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785586812 +0330	Branch: renamed refs/heads/main to refs/heads/main
+        46852f6a781ec11cc8dd858a5e25aef4aa221825 46852f6a781ec11cc8dd858a5e25aef4aa221825 OryvexVPN <oryvex@demo.com> 1785586812 +0330	Branch: renamed refs/heads/main to refs/heads/main
+        46852f6a781ec11cc8dd858a5e25aef4aa221825 e149c80291a49ac8b51c042367b09e036a7507c6 OryvexVPN <oryvex@demo.com> 1785587364 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via forced...
+        e149c80291a49ac8b51c042367b09e036a7507c6 0000000000000000000000000000000000000000 OryvexVPN <oryvex@demo.com> 1785587364 +0330	Branch: renamed refs/heads/main to refs/heads/main
+        e149c80291a49ac8b51c042367b09e036a7507c6 e149c80291a49ac8b51c042367b09e036a7507c6 OryvexVPN <oryvex@demo.com> 1785587364 +0330	Branch: renamed refs/heads/main to refs/heads/main
   
   
   
@@ -8371,6 +8484,10 @@ folder_structure.txt
             2ea15f6df7bb516093b39b2f65562f1854534eb3 2ea15f6df7bb516093b39b2f65562f1854534eb3 OryvexVPN <oryvex@demo.com> 1785585672 +0330	Branch: renamed refs/heads/main to refs/heads/main
             2ea15f6df7bb516093b39b2f65562f1854534eb3 2c35c80410d246268940167a645cc10b81324b14 OryvexVPN <oryvex@demo.com> 1785585999 +0330	commit: OryvexVPN: Clean CMake build architecture and manifest ...
             2c35c80410d246268940167a645cc10b81324b14 2c35c80410d246268940167a645cc10b81324b14 OryvexVPN <oryvex@demo.com> 1785585999 +0330	Branch: renamed refs/heads/main to refs/heads/main
+            2c35c80410d246268940167a645cc10b81324b14 46852f6a781ec11cc8dd858a5e25aef4aa221825 OryvexVPN <oryvex@demo.com> 1785586812 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via fo...
+            46852f6a781ec11cc8dd858a5e25aef4aa221825 46852f6a781ec11cc8dd858a5e25aef4aa221825 OryvexVPN <oryvex@demo.com> 1785586812 +0330	Branch: renamed refs/heads/main to refs/heads/main
+            46852f6a781ec11cc8dd858a5e25aef4aa221825 e149c80291a49ac8b51c042367b09e036a7507c6 OryvexVPN <oryvex@demo.com> 1785587364 +0330	commit: OryvexVPN: Fix 'Access is denied' tunnel install via fo...
+            e149c80291a49ac8b51c042367b09e036a7507c6 e149c80291a49ac8b51c042367b09e036a7507c6 OryvexVPN <oryvex@demo.com> 1785587364 +0330	Branch: renamed refs/heads/main to refs/heads/main
   
   
   
@@ -8845,6 +8962,19 @@ folder_structure.txt
   
   
       19
+        78fdb85fee7ac4c7ccb250892dc984c416165c
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         95e3e32ce2d72b6905a3062fffedba2a451de2
           [Binary or unreadable file]
   
@@ -9240,6 +9370,19 @@ folder_structure.txt
   
   
       31
+        00c12e5b26fc4330e86064bd5d7773cf6d79b5
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         71eb8712bed1b1ed9b4c7b71a81bcb8ed8b991
           [Binary or unreadable file]
   
@@ -9548,6 +9691,20 @@ folder_structure.txt
   
   
   
+      3b
+        8e6778be1a391b690dcb299ff8bd0c4044286f
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
       3c
         1497c06b77d09d487c38e778332de181454b82
           [Binary or unreadable file]
@@ -9793,6 +9950,19 @@ folder_structure.txt
   
       46
         2f61517263d9651f310e78e391cf6f2383f40a
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        852f6a781ec11cc8dd858a5e25aef4aa221825
           [Binary or unreadable file]
   
   
@@ -10171,6 +10341,19 @@ folder_structure.txt
   
   
       59
+        0920ea0735b6c026993cf64bc9e72456762e38
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         73e1a06e91accbf5e8a08fbdd98cf3674ca5c4
           [Binary or unreadable file]
   
@@ -10282,6 +10465,19 @@ folder_structure.txt
   
   
         608d0fe5bff3a7a7e05d5a232944a1a8effe5f
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        7ba11c467d547b16f4b1a58d207f55b94fe2d6
           [Binary or unreadable file]
   
   
@@ -10472,6 +10668,19 @@ folder_structure.txt
   
       6d
         a0652f05f28fc6950cec20ebdfbae89b665479
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        bfe41f94ac75b7a42e41825cc6c232745a5ad1
           [Binary or unreadable file]
   
   
@@ -10729,6 +10938,20 @@ folder_structure.txt
   
   
   
+      7e
+        4ff1d8c2560f6df3513c88f610935a9436f14b
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
       7f
         6736164e77ce785ecc42b71089bc3ba783123c
           [Binary or unreadable file]
@@ -10891,6 +11114,19 @@ folder_structure.txt
   
   
   
+        88a5345a27860160a6e8e181ef6069e8c08b47
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         b96927ed23fcebe83ea09040792196b674a46c
           [Binary or unreadable file]
   
@@ -10934,6 +11170,19 @@ folder_structure.txt
   
       8b
         030fa2221c5f52c2d5e34ac81510d57a33ce33
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+        64d2bb02145ecf98a8bb3cd8d32e049e47a7cf
           [Binary or unreadable file]
   
   
@@ -11000,6 +11249,20 @@ folder_structure.txt
   
   
         f765d3ab5537a1478cd23694a2d4ea354dcd75
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      8e
+        04b85a8002b56b81105814ae597c545993b5a9
           [Binary or unreadable file]
   
   
@@ -11191,6 +11454,20 @@ folder_structure.txt
   
   
         970d12c9846f8c4e1e76093b3278e33a4fadfc
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      9d
+        9797adab41cd2cdb191e031f60d3768d9fd79d
           [Binary or unreadable file]
   
   
@@ -11665,6 +11942,19 @@ folder_structure.txt
   
   
       b5
+        075f488f144e311df1b88ab9029cdc0d59b2d2
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         3d6fab64ca5bd87618d204fcaac93cd70d37c5
           [Binary or unreadable file]
   
@@ -12321,6 +12611,19 @@ folder_structure.txt
   
   
   
+        49c80291a49ac8b51c042367b09e036a7507c6
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         6488f3ea00bcef2f3cc9a1908bd87ca7876e8a
           [Binary or unreadable file]
   
@@ -12525,6 +12828,19 @@ folder_structure.txt
   
   
       eb
+        178e74ecb7760bd09a1fc3e0a49649d82826d8
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
         1a884071adaac3826f06264e1a79c8914ee969
           [Binary or unreadable file]
   
@@ -12714,6 +13030,20 @@ folder_structure.txt
   
   
   
+      f5
+        8247c15525d49d432af6f0e5ce10c50e8889a2
+          [Binary or unreadable file]
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
       f6
         506dc1733f99811e2e32edb4eadede2c72eecf
           [Binary or unreadable file]
@@ -12876,7 +13206,7 @@ folder_structure.txt
     refs
       heads
         main
-          2c35c80410d246268940167a645cc10b81324b14
+          e149c80291a49ac8b51c042367b09e036a7507c6
   
   
   
@@ -13009,7 +13339,13 @@ folder_structure.txt
     /android/app/debug
     /android/app/profile
     /android/app/release
-    \n.env\n*.token\n*.secret\nkey.properties\n*.keystore\n*.jks\n
+    
+    .env
+    *.token
+    *.secret
+    key.properties
+    *.keystore
+    *.jks
   
   
   
@@ -13359,10 +13695,22 @@ folder_structure.txt
     # -*- coding: utf-8 -*-
     
     """
-    fixer.py - OryvexVPN Auto-Fixer
-    Implements automatic Cloudflare WARP key generation, endpoint sweeping, 
-    real WireGuard connection via bundled data/wireguard.exe, Persian UI, 
-    forced Administrator privileges, and perfectly clean GitHub Actions CI.
+    fixer.py - OryvexVPN Auto-Fixer (Access Denied / Tunnel Install Fix)
+    
+    Fixes the "نصب تونل ناموفق بود ... Access is denied" error by:
+      1. Forcing REAL elevation for the wireguard.exe tunnel install/uninstall
+         via PowerShell Start-Process -Verb RunAs -Wait, instead of relying on
+         the parent process's own elevation state (which can silently fail to
+         propagate, especially for dev/debug builds that skip the manifest).
+      2. Removing runInShell:true from the direct wireguard.exe invocation,
+         which was routing the call through cmd.exe and risking bad quoting
+         on paths that contain spaces (e.g. "C:\\Users\\nasle javan\\...").
+      3. Capturing and surfacing the PowerShell/wireguard exit code + stderr
+         so future failures show the real Windows error instead of a vague
+         message.
+      4. Keeping the app manifest as requireAdministrator so the whole app
+         still gets a UAC prompt on launch (defense in depth), while the
+         tunnel install no longer depends on that alone.
     """
     
     import os
@@ -13371,6 +13719,7 @@ folder_structure.txt
     import subprocess
     from pathlib import Path
     from typing import Optional
+    
     
     class FlutterProjectFixer:
         def __init__(self, project_root: Optional[str] = None):
@@ -13455,15 +13804,50 @@ folder_structure.txt
             return True
     
         def fix_warp_service(self) -> bool:
+            """
+            THE ACTUAL BUG FIX.
+    
+            Previous version called:
+                Process.run(_wireguardExe, ['/installtunnelservice', path], runInShell: true)
+    
+            Problems:
+              - runInShell routes the call through cmd.exe, which can mangle a
+                path containing spaces (the user's profile path has one) and
+                does NOT guarantee the child inherits an elevated token in all
+                environments.
+              - If the parent Flutter process wasn't actually elevated for any
+                reason (dev run, manifest not re-embedded, etc.), the tunnel
+                service install fails with exactly "Access is denied" (Win32
+                error 5), because installing a Windows service always requires
+                an elevated token.
+    
+            Fix:
+              - Always force a *fresh* elevation for the specific wireguard.exe
+                call via `powershell Start-Process -Verb RunAs -Wait`, which
+                triggers its own UAC prompt if needed and does not depend on
+                the caller's elevation state at all.
+              - Never use runInShell for the actual binary call; quoting is
+                handled explicitly and safely for the PowerShell -ArgumentList.
+              - Capture real exit codes/stderr from PowerShell so failures are
+                diagnosable instead of a generic message.
+    
+            NOTE for maintainers: this Dart source is stored as a Python RAW
+            string (r\"\"\"...\"\"\") on purpose. Dart uses backslash escapes
+            (\\\\, \\n, \\$) and $ interpolation extensively; a *non-raw*
+            Python string would silently pre-process those before they ever
+            reach the .dart file (e.g. turning a real newline escape into an
+            actual line break mid-string, or leaving a stray backslash in
+            front of a $ that was meant to interpolate). Keep this raw.
+            """
             warp_path = self.root / "lib" / "services" / "warp_service.dart"
-            correct = """import 'dart:io';
+            correct = r"""import 'dart:io';
     import 'dart:convert';
     import 'package:http/http.dart' as http;
     import 'package:cryptography/cryptography.dart';
     
     class WarpService {
       static const _tunnelName = 'oryvexvpn';
-      
+    
       static const List<String> _endpoints = [
         "162.159.192.1", "162.159.193.1", "162.159.195.1",
         "188.114.96.1", "188.114.97.1", "188.114.98.1",
@@ -13474,7 +13858,7 @@ folder_structure.txt
       static String get _wireguardExe {
         final exePath = Platform.resolvedExecutable;
         final exeDir = File(exePath).parent.path;
-        return '$exeDir\\\\data\\\\wireguard.exe';
+        return '$exeDir\\data\\wireguard.exe';
       }
     
       static Future<String> _findBestEndpoint(Function(String) onProgress) async {
@@ -13493,7 +13877,7 @@ folder_structure.txt
     
         final results = await Future.wait(futures);
         results.sort((a, b) => (a['latency'] as int).compareTo(b['latency'] as int));
-        
+    
         final bestIp = results.first['latency'] != 9999 ? results.first['ip'] as String : _endpoints.first;
         return '$bestIp:2408';
       }
@@ -13504,207 +13888,6 @@ folder_structure.txt
         final keyPair = await algorithm.newKeyPair();
         final publicKey = await keyPair.extractPublicKey();
         final privateKeyBytes = await keyPair.extractPrivateKeyBytes();
-    
-        final pubKeyBase64 = base64Encode(publicKey.bytes);
-        final privKeyBase64 = base64Encode(privateKeyBytes);
-    
-        onProgress('در حال ثبت‌نام در شبکه...');
-        final response = await http.post(
-          Uri.parse('https://api.cloudflareclient.com/v0a737/reg'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            "key": pubKeyBase64,
-            "install_id": "",
-            "warp_enabled": true,
-            "tos": DateTime.now().toUtc().toIso8601String(),
-            "type": "Windows",
-            "locale": "fa_IR"
-          }),
-        ).timeout(const Duration(seconds: 15));
-    
-        if (response.statusCode != 200 && response.statusCode != 201) {
-          throw Exception('ثبت‌نام دستگاه ناموفق بود.');
-        }
-    
-        final data = jsonDecode(response.body);
-        final peer = data['config']['peers'][0];
-        final address = data['config']['interface']['addresses']['v4'];
-        final peerPublicKey = peer['public_key'];
-    
-        final bestEndpoint = await _findBestEndpoint(onProgress);
-    
-        onProgress('در حال آماده‌سازی کانفیگ...');
-        return '''[Interface]
-    PrivateKey = $privKeyBase64
-    Address = $address/32
-    DNS = 1.1.1.1, 1.0.0.1
-    MTU = 1280
-    
-    [Peer]
-    PublicKey = $peerPublicKey
-    AllowedIPs = 0.0.0.0/0, ::/0
-    Endpoint = $bestEndpoint
-    PersistentKeepalive = 25''';
-      }
-    
-      static Future<File> _writeConfigFile(String config) async {
-        final dir = Directory.systemTemp;
-        final file = File('${dir.path}\\\\$_tunnelName.conf');
-        return file.writeAsString(config);
-      }
-    
-      static Future<bool> isWireGuardInstalled() async {
-        return File(_wireguardExe).exists();
-      }
-    
-      static Future<void> connect(String config) async {
-        if (!Platform.isWindows) {
-          throw Exception('این نسخه فقط مخصوص ویندوز است.');
-        }
-        if (!await isWireGuardInstalled()) {
-          throw Exception('هسته وایرگارد در پوشه data یافت نشد. لطفاً برنامه را مجدد دانلود کنید.');
-        }
-    
-        final file = await _writeConfigFile(config);
-        final result = await Process.run(
-          _wireguardExe,
-          ['/installtunnelservice', file.path],
-          runInShell: true,
-        );
-    
-        if (result.exitCode != 0) {
-          throw Exception(
-            'نصب تونل ناموفق بود. خطای سیستمی ویندوز:\\n'
-            '${result.stderr}'
-          );
-        }
-      }
-    
-      static Future<void> disconnect() async {
-        if (!Platform.isWindows) return;
-        await Process.run(
-          _wireguardExe,
-          ['/uninstalltunnelservice', _tunnelName],
-          runInShell: true,
-        );
-      }
-    
-      static Future<bool> isConnected() async {
-        if (!Platform.isWindows) return false;
-        try {
-          final result = await Process.run(
-            'sc',
-            ['query', 'WireGuardTunnel\\$$_tunnelName'],
-            runInShell: true,
-          );
-          return result.stdout.toString().contains('RUNNING');
-        } catch (_) {
-          return false;
-        }
-      }
-    }
-    """
-            warp_path.parent.mkdir(parents=True, exist_ok=True)
-            warp_path.write_text(correct, encoding='utf-8')
-            self.fixed_files.append("warp_service.dart")
-            return True
-    
-        def fix_vpn_service(self) -> bool:
-            vpn_path = self.root / "lib" / "services" / "vpn_service.dart"
-            correct = """import 'package:flutter/foundation.dart';
-    import 'warp_service.dart';
-    
-    enum VpnStage {
-      idle,
-      fetchingConfig,
-      installingTunnel,
-      connected,
-      error,
-      disconnecting,
-    }
-    
-    class VPNService extends ChangeNotifier {
-      VpnStage _stage = VpnStage.idle;
-      String _statusMessage = 'برای اتصال کلیک کنید';
-      String? _lastError;
-    
-      VpnStage get stage => _stage;
-      bool get isConnected => _stage == VpnStage.connected;
-      bool get isConnecting =>
-          _stage == VpnStage.fetchingConfig || _stage == VpnStage.installingTunnel;
-      String get statusMessage => _statusMessage;
-      String? get lastError => _lastError;
-    
-      void _updateStatus(String msg) {
-        _statusMessage = msg;
-        notifyListeners();
-      }
-    
-      Future<void> initStatus() async {
-        if (await WarpService.isConnected()) {
-          _stage = VpnStage.connected;
-          _statusMessage = 'متصل شد';
-          notifyListeners();
-        }
-      }
-    
-      Future<void> connect() async {
-        if (isConnecting) return;
-    
-        _lastError = null;
-        _stage = VpnStage.fetchingConfig;
-        notifyListeners();
-    
-        try {
-          final config = await WarpService.generateConfig(_updateStatus);
-    
-          _stage = VpnStage.installingTunnel;
-          _updateStatus('در حال اجرای تونل وایرگارد...');
-    
-          await WarpService.connect(config);
-    
-          final actuallyUp = await WarpService.isConnected();
-          if (!actuallyUp) {
-            throw Exception('سرویس ویندوز اجرا نشد.');
-          }
-    
-          _stage = VpnStage.connected;
-          _updateStatus('متصل شد');
-        } catch (e) {
-          _stage = VpnStage.error;
-          _lastError = e.toString().replaceFirst('Exception: ', '');
-          _updateStatus('اتصال ناموفق بود');
-        }
-        notifyListeners();
-      }
-    
-      Future<void> disconnect() async {
-        _stage = VpnStage.disconnecting;
-        _updateStatus('در حال قطع اتصال...');
-        
-        await WarpService.disconnect();
-    
-        _stage = VpnStage.idle;
-        _updateStatus('قطع شد');
-      }
-    }
-    """
-            vpn_path.parent.mkdir(parents=True, exist_ok=True)
-            vpn_path.write_text(correct, encoding='utf-8')
-            self.fixed_files.append("vpn_service.dart")
-            return True
-    
-        def fix_home_screen(self) -> bool:
-            home_path = self.root / "lib" / "screens" / "home_screen.dart"
-            correct = """import 'package:flutter/material.dart';
-    import 'package:provider/provider.dart';
-    import '../services/vpn_service.dart';
-    
-    class HomeScreen extends StatefulWidget {
-      const HomeScreen({Key? key}) : super(key: key);
-    
-      @override
-      State<HomeScreen> createState() => _HomeScreenState();
 
 
 
@@ -14151,7 +14334,7 @@ lib
             final config = await WarpService.generateConfig(_updateStatus);
       
             _stage = VpnStage.installingTunnel;
-            _updateStatus('در حال اجرای تونل وایرگارد...');
+            _updateStatus('در حال درخواست مجوز ادمین برای نصب تونل...');
       
             await WarpService.connect(config);
       
@@ -14173,7 +14356,7 @@ lib
         Future<void> disconnect() async {
           _stage = VpnStage.disconnecting;
           _updateStatus('در حال قطع اتصال...');
-          
+      
           await WarpService.disconnect();
       
           _stage = VpnStage.idle;
@@ -14199,7 +14382,7 @@ lib
       
       class WarpService {
         static const _tunnelName = 'oryvexvpn';
-        
+      
         static const List<String> _endpoints = [
           "162.159.192.1", "162.159.193.1", "162.159.195.1",
           "188.114.96.1", "188.114.97.1", "188.114.98.1",
@@ -14229,7 +14412,7 @@ lib
       
           final results = await Future.wait(futures);
           results.sort((a, b) => (a['latency'] as int).compareTo(b['latency'] as int));
-          
+      
           final bestIp = results.first['latency'] != 9999 ? results.first['ip'] as String : _endpoints.first;
           return '$bestIp:2408';
         }
@@ -14293,6 +14476,41 @@ lib
           return File(_wireguardExe).exists();
         }
       
+        /// Escapes a string for safe embedding inside a single-quoted
+        /// PowerShell string literal (doubles any embedded single quotes).
+        static String _psQuote(String value) => "'${value.replaceAll("'", "''")}'";
+      
+        /// Runs [exePath] with [args] fully elevated, regardless of whether
+        /// this Dart process itself is elevated. Uses PowerShell's
+        /// Start-Process -Verb RunAs -Wait so a UAC prompt is triggered if
+        /// needed, and waits for the launched process to actually finish
+        /// before returning its exit code.
+        static Future<int> _runElevated(String exePath, List<String> args) async {
+          final argList = args.map(_psQuote).join(',');
+          final psCommand =
+              "\$p = Start-Process -FilePath ${_psQuote(exePath)} "
+              "-ArgumentList $argList "
+              "-Verb RunAs -Wait -PassThru -WindowStyle Hidden; "
+              "exit \$p.ExitCode";
+      
+          final result = await Process.run(
+            'powershell.exe',
+            ['-NoProfile', '-NonInteractive', '-Command', psCommand],
+            runInShell: false,
+          );
+      
+          if (result.exitCode != 0) {
+            final stderrText = (result.stderr ?? '').toString().trim();
+            final stdoutText = (result.stdout ?? '').toString().trim();
+            final detail = [stderrText, stdoutText].where((s) => s.isNotEmpty).join(' | ');
+            final detailSuffix = detail.isNotEmpty ? '\nجزئیات: $detail' : '';
+            throw Exception(
+              'اجرای مجوز-بالا (Elevated) ناموفق بود. کد خطا: ${result.exitCode}$detailSuffix',
+            );
+          }
+          return result.exitCode;
+        }
+      
         static Future<void> connect(String config) async {
           if (!Platform.isWindows) {
             throw Exception('این نسخه فقط مخصوص ویندوز است.');
@@ -14302,36 +14520,32 @@ lib
           }
       
           final file = await _writeConfigFile(config);
-          final result = await Process.run(
-            _wireguardExe,
-            ['/installtunnelservice', file.path],
-            runInShell: true,
-          );
       
-          if (result.exitCode != 0) {
+          try {
+            await _runElevated(_wireguardExe, ['/installtunnelservice', file.path]);
+          } catch (e) {
             throw Exception(
-              'نصب تونل ناموفق بود. خطای سیستمی ویندوز:\n'
-              '${result.stderr}'
+              'نصب تونل ناموفق بود. اطمینان حاصل کنید که در پنجره UAC روی "بله" کلیک کرده‌اید.\n$e',
             );
           }
         }
       
         static Future<void> disconnect() async {
           if (!Platform.isWindows) return;
-          await Process.run(
-            _wireguardExe,
-            ['/uninstalltunnelservice', _tunnelName],
-            runInShell: true,
-          );
+          try {
+            await _runElevated(_wireguardExe, ['/uninstalltunnelservice', _tunnelName]);
+          } catch (_) {
+            // Best-effort: if the tunnel was already gone/never installed,
+            // don't block the UI from returning to idle state.
+          }
         }
       
         static Future<bool> isConnected() async {
           if (!Platform.isWindows) return false;
           try {
             final result = await Process.run(
-              'sc',
-              ['query', 'WireGuardTunnel\$$_tunnelName'],
-              runInShell: true,
+              'sc.exe',
+              ['query', 'WireGuardTunnel\$' + _tunnelName],
             );
             return result.stdout.toString().contains('RUNNING');
           } catch (_) {
@@ -14625,6 +14839,9 @@ push.py
       sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
       sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
   
+  COMMIT_MESSAGE = "OryvexVPN: Fix 'Access is denied' tunnel install via forced elevation"
+  
+  
   class GitHubPusher:
       def __init__(self, project_root=None):
           self.root = Path(project_root or os.getcwd())
@@ -14820,7 +15037,7 @@ push.py
               return False
   
           self.log("Committing...", "STEP")
-          success, output = self.run_command('git commit -m "OryvexVPN: Clean CMake build architecture and manifest patched"')
+          success, output = self.run_command(f'git commit -m "{COMMIT_MESSAGE}"')
           if not success and "nothing to commit" not in output:
               self.log(f"Commit warning: {output}", "WARNING")
   
@@ -14892,6 +15109,8 @@ push.py
           print("   2. Click on the latest workflow run")
           print("   3. Scroll down to Artifacts section")
           print("   4. Download the Windows EXE")
+          print("\nAfter downloading and running the new EXE, you should see a UAC")
+          print("prompt appear at the moment you press Connect — click 'Yes' on it.")
           try:
               print("\nOpening GitHub Actions in browser...")
               webbrowser.open(actions_url)
@@ -14902,7 +15121,8 @@ push.py
           print("\n" + "=" * 60)
           print("OryvexVPN - Push & Build")
           print("=" * 60)
-          print("\nWill build: Windows EXE (real WireGuard connection with automatic UAC Admin prompt)")
+          print("\nWill build: Windows EXE (real WireGuard connection with forced")
+          print("elevation for the tunnel install step)")
   
           if not self.check_git():
               sys.exit(1)
@@ -14931,6 +15151,7 @@ push.py
               print("   (Enter your GitHub username and a Personal Access Token as the password)")
               sys.exit(1)
   
+  
   def main():
       try:
           pusher = GitHubPusher()
@@ -14941,6 +15162,7 @@ push.py
       except Exception as e:
           print(f"\nUnexpected error: {e}")
           sys.exit(1)
+  
   
   if __name__ == "__main__":
       main()
