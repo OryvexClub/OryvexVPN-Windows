@@ -1,4 +1,4 @@
-name: Build Windows App (AmneziaWG + UAC)
+name: Build Windows App (WireGuard + Real-time Stats)
 
 on:
   push:
@@ -48,30 +48,37 @@ jobs:
       - name: Build Windows app
         run: flutter build windows --release
 
-      - name: Download and extract AmneziaWG
+      - name: Download WireGuard
         run: |
-          $wgVersion = "2.0.2"
-          $msiUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/$wgVersion/amneziawg-amd64-$wgVersion.msi"
-          Invoke-WebRequest -Uri $msiUrl -OutFile "amneziawg.msi"
+          $wgVersion = "0.5.3"
+          $msiUrl = "https://download.wireguard.com/windows-client/wireguard-amd64-$wgVersion.msi"
 
-          $extractDir = "$PWD\amneziawg_extracted"
+          Write-Host "Downloading WireGuard v$wgVersion..."
+          Invoke-WebRequest -Uri $msiUrl -OutFile "wireguard.msi"
+
+          $extractDir = "$PWD\wireguard_extracted"
           New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
 
-          $msiExecArgs = @("/a", "`"$PWD\amneziawg.msi`"", "/qn", "TARGETDIR=`"$extractDir`"")
+          Write-Host "Extracting WireGuard MSI..."
+          $msiExecArgs = @("/a", "`"$PWD\wireguard.msi`"", "/qn", "TARGETDIR=`"$extractDir`"")
           Start-Process msiexec.exe -ArgumentList $msiExecArgs -Wait -NoNewWindow
 
-          $wgExe = Get-ChildItem -Path $extractDir -Filter "amneziawg.exe" -Recurse | Select-Object -First 1
+          $wgExe = Get-ChildItem -Path $extractDir -Filter "wireguard.exe" -Recurse | Select-Object -First 1
           if (-not $wgExe) {
-            Write-Host "Failed to extract amneziawg.exe from MSI."
+            Write-Host "Failed to extract wireguard.exe from MSI."
             exit 1
           }
-          Copy-Item $wgExe.FullName "$PWD\amneziawg.exe"
 
-      - name: Bundle AmneziaWG binary inside data/
+          Copy-Item $wgExe.FullName "$PWD\wireguard.exe"
+          Write-Host "WireGuard extracted successfully: $($wgExe.FullName)"
+
+      - name: Bundle WireGuard binary inside data/
         run: |
           $ReleaseDir = "build\windows\x64\runner\Release"
           New-Item -ItemType Directory -Force -Path "$ReleaseDir\data" | Out-Null
-          Copy-Item "$PWD\amneziawg.exe" "$ReleaseDir\data\amneziawg.exe"
+          Copy-Item "$PWD\wireguard.exe" "$ReleaseDir\data\wireguard.exe"
+
+          Write-Host "WireGuard bundled successfully in $ReleaseDir\data\"
 
       - name: Install Inno Setup
         run: choco install innosetup -y
