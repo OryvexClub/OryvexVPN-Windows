@@ -15,7 +15,7 @@ if sys.platform == 'win32':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
-COMMIT_MESSAGE = "OryvexVPN: Fix empty/broken files, missing pubspec deps"
+COMMIT_MESSAGE = "Complete VPN fixes: Real monitoring, Persian UI, config manager, stability improvements"
 
 class GitHubPusher:
     def __init__(self, project_root=None):
@@ -131,7 +131,7 @@ class GitHubPusher:
         import json
         data = json.dumps({
             "name": self.repo_name,
-            "description": "OryvexVPN - Windows WireGuard dashboard with automatic UAC Admin prompt",
+            "description": "OryvexVPN - Professional Windows VPN Client with Full Persian UI powered by WireGuard",
             "private": False,
             "auto_init": False,
         }).encode('utf-8')
@@ -366,14 +366,20 @@ class GitHubPusher:
         print("=" * 60)
         print(f"\nRepository: https://github.com/{self.username}/{self.repo_name}")
         print(f"Actions: {actions_url}")
-        print("\nBuilds will start automatically (takes 3-5 minutes)")
+        print("\nBuilds will start automatically (takes 5-10 minutes)")
         print("\nDownload will be available as an artifact after build:")
         print("   1. Go to Actions tab")
         print("   2. Click on the latest workflow run")
         print("   3. Scroll down to Artifacts section")
-        print("   4. Download the Windows EXE")
-        print("\nAfter downloading and running the new EXE, you should see a UAC")
-        print("prompt appear at the moment you press Connect — click 'Yes' on it.")
+        print("   4. Download 'OryvexVPN-Windows-Build.zip'")
+        print("   5. Extract and run 'warp_vpn_app.exe' as Administrator")
+        print("\n✅ What's Fixed:")
+        print("   • Real VPN connection status (not fake)")
+        print("   • Real statistics (speed, ping, IP)")
+        print("   • No hanging on close")
+        print("   • Full Persian language with RTL")
+        print("   • Configuration management")
+        print("   • Better stability and error handling")
 
         try:
             print("\nOpening GitHub Actions in browser...")
@@ -385,7 +391,12 @@ class GitHubPusher:
         print("\n" + "=" * 60)
         print("OryvexVPN - Push & Build")
         print("=" * 60)
-        print("\nWill run fixer.py first, verify the fix, then build: Windows EXE")
+        print("\nThis will:")
+        print("  1. Check for issues (if fixer.py exists)")
+        print("  2. Stage all changes")
+        print("  3. Commit with message")
+        print("  4. Push to GitHub")
+        print("  5. GitHub Actions will build automatically")
 
         if not self.check_git():
             sys.exit(1)
