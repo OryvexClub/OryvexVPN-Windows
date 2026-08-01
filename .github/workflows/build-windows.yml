@@ -34,69 +34,51 @@ jobs:
 
     - name: Download WireGuard
       run: |
-        $wgUrl = "https://download.wireguard.com/windows-client/wireguard-installer.exe"
-        $installerPath = "$env:TEMP\wireguard-installer.exe"
+        $ErrorActionPreference = "Stop"
 
-        Write-Host "Downloading WireGuard from official source..."
-        Invoke-WebRequest -Uri $wgUrl -OutFile $installerPath -UseBasicParsing
+        $wgMsi = "$env:TEMP\wireguard-amd64.msi"
+        $extractDir = "$env:TEMP\wireguard-payload"
 
-        Write-Host "Installing WireGuard silently..."
-        Start-Process -FilePath $installerPath -ArgumentList "/S" -Wait -NoNewWindow
+        Write-Host "Downloading WireGuard MSI from official source..."
+        Invoke-WebRequest -Uri "https://download.wireguard.com/windows-client/wireguard-amd64-0.5.3.msi" -OutFile $wgMsi -UseBasicParsing
 
-        Start-Sleep -Seconds 3
+        Write-Host "Extracting WireGuard payload (msiexec administrative install)..."
+        New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
+        Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$wgMsi`" /qn TARGETDIR=`"$extractDir`"" -Wait -NoNewWindow
 
-        $wgPath = "C:\Program Files\WireGuard\wireguard.exe"
-        if (Test-Path $wgPath) {
-          Copy-Item $wgPath -Destination "data\wireguard.exe" -Force
-          Write-Host "SUCCESS: wireguard.exe copied"
-          $size = (Get-Item 'data\wireguard.exe').Length / 1MB
-          Write-Host "  Size: $size MB"
-        } else {
-          Write-Host "ERROR: WireGuard not found at expected location"
-          Write-Host "Checking alternative locations..."
+        # Administrative install extracts wg.exe and wireguard.exe under <TARGETDIR>\WireGuard\
+        $srcDir = "$extractDir\WireGuard"
 
-          $altPaths = @(
-            "C:\Program Files (x86)\WireGuard\wireguard.exe",
-            "$env:ProgramFiles\WireGuard\wireguard.exe"
-          )
-
-          $found = $false
-          foreach ($altPath in $altPaths) {
-            if (Test-Path $altPath) {
-              Copy-Item $altPath -Destination "data\wireguard.exe" -Force
-              Write-Host "SUCCESS: Found and copied from: $altPath"
-              $found = $true
-              break
-            }
-          }
-
-          if (-not $found) {
-            Write-Host "ERROR: Could not find WireGuard executable"
-            exit 1
-          }
+        if (-not (Test-Path "$srcDir\wireguard.exe")) {
+          Write-Host "ERROR: wireguard.exe not found in extracted payload at: $srcDir"
+          exit 1
         }
 
-        $wgExe = "C:\Program Files\WireGuard\wg.exe"
-        if (Test-Path $wgExe) {
-          Copy-Item $wgExe -Destination "data\wg.exe" -Force
-          Write-Host "SUCCESS: wg.exe copied"
-        }
+        Copy-Item "$srcDir\wg.exe"        -Destination "data\wg.exe"        -Force
+        Copy-Item "$srcDir\wireguard.exe" -Destination "data\wireguard.exe" -Force
 
         if (Test-Path "data\wireguard.exe") {
           Write-Host ""
           Write-Host "=== WireGuard Setup Complete ==="
-          $wgSize = (Get-Item 'data\wireguard.exe').Length
-          Write-Host "wireguard.exe: $wgSize bytes"
-          if (Test-Path "data\wg.exe") {
-            $wgExeSize = (Get-Item 'data\wg.exe').Length
-            Write-Host "wg.exe: $wgExeSize bytes"
-          }
+          Write-Host "wireguard.exe: $((Get-Item 'data\wireguard.exe').Length) bytes"
+          Write-Host "wg.exe:        $((Get-Item 'data\wg.exe').Length) bytes"
         } else {
-          Write-Host "ERROR: Failed to copy WireGuard executables"
+          Write-Host "ERROR: Failed to copy WireGuard executables into data\"
           exit 1
         }
       shell: powershell
       continue-on-error: false
+
+    - name: Bundle app resources (tray icon)
+      run: |
+        $ErrorActionPreference = "Continue"
+        if (Test-Path "windows\runner\resources\app_icon.ico") {
+          Copy-Item "windows\runner\resources\app_icon.ico" -Destination "data\app_icon.ico" -Force
+          Write-Host "Tray icon bundled: $((Get-Item 'data\app_icon.ico').Length) bytes"
+        } else {
+          Write-Host "WARNING: app_icon.ico not found at windows\runner\resources"
+        }
+      shell: powershell
 
     - name: Get Flutter dependencies
       run: flutter pub get

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -41,7 +42,12 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
     super.initState();
     windowManager.addListener(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      TrayService.instance.init();
+      final tray = TrayService.instance;
+      // Wire the tray menu actions so Connect/Disconnect/Quit actually work.
+      tray.onConnectRequested = () => context.read<VPNService>().connect();
+      tray.onDisconnectRequested = () => context.read<VPNService>().disconnect();
+      tray.onQuitRequested = () => WindowManagerService.quit();
+      tray.init();
     });
   }
 
@@ -98,8 +104,14 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       TrayService.instance.dispose();
     } catch (_) {}
 
-    // Force immediate window destruction - DO NOT AWAIT
+    // destroy() is required because setPreventClose(true) blocks a normal
+    // close. Do NOT await it - we want the window gone immediately.
     windowManager.destroy();
+
+    // The Dart VM keeps running after the window is destroyed (the tray /
+    // event loop stay alive), which leaves a frozen/zombie process behind.
+    // Terminate it explicitly so closing the app actually quits.
+    exit(0);
   }
 
   @override

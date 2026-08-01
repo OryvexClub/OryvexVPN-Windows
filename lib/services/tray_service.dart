@@ -30,7 +30,13 @@ class TrayService with TrayListener {
     trayManager.addListener(this);
 
     try {
-      await trayManager.setIcon('windows/runner/resources/app_icon.ico');
+      // Resolve the icon relative to the running executable. The relative
+      // path 'windows/runner/resources/...' only works from a source checkout,
+      // never from the installed app. The icon is shipped inside the bundled
+      // data/ folder by the build pipeline.
+      final iconPath =
+          '${File(Platform.resolvedExecutable).parent.path}\\data\\app_icon.ico';
+      await trayManager.setIcon(iconPath);
     } catch (_) {
       // Icon path can vary by build layout; failing to set it should never
       // crash the app - the tray entry will just use a default icon.

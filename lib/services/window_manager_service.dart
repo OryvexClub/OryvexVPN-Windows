@@ -47,6 +47,10 @@ class WindowManagerService {
     if (!Platform.isWindows) {
       exit(0);
     }
-    await windowManager.close(); // ارجاع به Listener برای خروج تمیز
+    // close() fires onWindowClose in main.dart, which performs the VPN
+    // cleanup and fully terminates the process. Closing via destroy() directly
+    // (as the old close button did) skips cleanup and leaves the Dart/tray
+    // runtime alive, which shows up as a frozen/zombie app.
+    await windowManager.close();
   }
 }

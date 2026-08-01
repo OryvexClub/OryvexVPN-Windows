@@ -158,9 +158,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           IconButton(
             icon: const Icon(Icons.close, color: Colors.white54, size: 20),
-            onPressed: () async {
-              // Force immediate close without waiting
-              await windowManager.destroy();
+            onPressed: () {
+              // Route through quit() so onWindowClose runs the VPN cleanup and
+              // the process fully terminates. destroy() alone leaves a zombie.
+              WindowManagerService.quit();
             },
             hoverColor: Colors.redAccent.withValues(alpha: 0.5),
             splashRadius: 20,
