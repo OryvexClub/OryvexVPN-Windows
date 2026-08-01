@@ -1,68 +1,107 @@
 import 'package:flutter/foundation.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'warp_generator.dart';
+import 'wireguard_service.dart';
+
+enum VpnStage {
+  idle,
+  fetchingConfig,
+  installingTunnel,
+  connected,
+  error,
+  disconnecting,
+}
 
 class VPNService extends ChangeNotifier {
-  bool _isConnected = false;
-  bool _isConnecting = false;
+  VpnStage _stage = VpnStage.idle;
   String _statusMessage = 'برای اتصال کلیک کنید';
-  Map<String, dynamic>? _serverInfo;
-  String? _generatedConfig;
+  String? _lastError;
+  String _serverUrl = '';
+  String _token = '';
 
-  bool get isConnected => _isConnected;
-  bool get isConnecting => _isConnecting;
+  VpnStage get stage => _stage;
+  bool get isConnected => _stage == VpnStage.connected;
+  bool get isConnecting =>
+      _stage == VpnStage.fetchingConfig || _stage == VpnStage.installingTunnel;
   String get statusMessage => _statusMessage;
-  Map<String, dynamic>? get serverInfo => _serverInfo;
-  String? get generatedConfig => _generatedConfig;
+  String? get lastError => _lastError;
+  String get serverUrl => _serverUrl;
 
-  Future<void> connect() async {
-    if (_isConnecting) return;
-    
-    _isConnecting = true;
-    _statusMessage = 'در حال انتخاب بهترین سرور...';
-    notifyListeners();
+  Future<void> loadSettings() async {
+    final s = await WireGuardService.loadServerSettings();
+    _serverUrl = s['url'] ?? '';
+    _token = s['token'] ?? '';
 
-    try {
-      final configData = await WARPGenerator.generateFullConfig();
-      _generatedConfig = configData['config'];
-      
-      _statusMessage = 'دریافت اطلاعات VPS...';
-      notifyListeners();
-
-      try {
-        final response = await http.get(Uri.parse('https://ipapi.co/${configData['ip']}/json/')).timeout(const Duration(seconds: 5));
-        if (response.statusCode == 200) {
-          _serverInfo = json.decode(response.body);
-        } else {
-          throw Exception('API Error');
-        }
-      } catch (_) {
-        _serverInfo = {
-          'ip': configData['ip'], 
-          'city': 'Cloudflare Edge', 
-          'org': 'WARP Network',
-          'country_name': 'Global Anycast'
-        };
-      }
-
-      _isConnected = true;
-      _isConnecting = false;
-      _statusMessage = 'متصل شد';
-      notifyListeners();
-      
-    } catch (e) {
-      _isConnecting = false;
-      _statusMessage = 'خطا در ارتباط';
+    // وضعیت واقعی سرویس ویندوز را چک می‌کنیم تا اگر تانل از قبل بالا بود
+    // رابط کاربری با واقعیت هماهنگ باشد (نه صرفاً یک متغیر محلی).
+    if (await WireGuardService.isConnected()) {
+      _stage = VpnStage.connected;
+      _statusMessage = 'متصل';
       notifyListeners();
     }
   }
 
-  void disconnect() {
-    _isConnected = false;
-    _serverInfo = null;
-    _generatedConfig = null;
-    _statusMessage = 'ارتباط قطع شد';
+  Future<void> saveSettings(String url, String token) async {
+    _serverUrl = url;
+    _token = token;
+    await WireGuardService.saveServerSettings(url, token);
+    notifyListeners();
+  }
+
+  Future<void> connect() async {
+    if (isConnecting) return;
+
+    if (_serverUrl.trim().isEmpty) {
+      _lastError = 'ابتدا آدرس سرور VPS را در تنظیمات وارد کنید';
+      _stage = VpnStage.error;
+      _statusMessage = 'اتصال ناموفق بود';
+      notifyListeners();
+      return;
+    }
+
+    _lastError = null;
+    _stage = VpnStage.fetchingConfig;
+    _statusMessage = 'در حال دریافت کانفیگ از سرور...';
+    notifyListeners();
+
+    try {
+      final config = await WireGuardService.fetchConfig(
+        serverUrl: _serverUrl,
+        token: _token,
+      );
+
+      _stage = VpnStage.installingTunnel;
+      _statusMessage = 'در حال برقراری تانل WireGuard...';
+      notifyListeners();
+
+      await WireGuardService.connect(config);
+
+      // هرگز صرفاً بر اساس موفقیت فراخوانی ادعای اتصال نمی‌کنیم؛ از خود
+      // ویندوز می‌پرسیم که سرویس واقعاً در حال اجراست یا نه.
+      final actuallyUp = await WireGuardService.isConnected();
+      if (!actuallyUp) {
+        throw Exception(
+          'تانل نصب شد ولی سرویس ویندوز آن را «در حال اجرا» گزارش نمی‌دهد',
+        );
+      }
+
+      _stage = VpnStage.connected;
+      _statusMessage = 'متصل';
+    } catch (e) {
+      _stage = VpnStage.error;
+      _lastError = e.toString().replaceFirst('Exception: ', '');
+      _statusMessage = 'اتصال ناموفق بود';
+    }
+    notifyListeners();
+  }
+
+  Future<void> disconnect() async {
+    _stage = VpnStage.disconnecting;
+    _statusMessage = 'در حال قطع اتصال...';
+    notifyListeners();
+
+    await WireGuardService.disconnect();
+
+    _stage = VpnStage.idle;
+    _statusMessage = 'قطع شد';
     notifyListeners();
   }
 }

@@ -13,15 +13,15 @@ class MyApp extends StatelessWidget {
     create: (_) => VPNService(),
     child: MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Oryvex Dashboard',
+      title: 'OryvexVPN',
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF111111),
+        scaffoldBackgroundColor: const Color(0xFF0D0D12),
         primaryColor: const Color(0xFF00E5FF),
         fontFamily: 'Vazirmatn',
         colorScheme: const ColorScheme.dark(
           primary: Color(0xFF00E5FF),
-          surface: Color(0xFF1A1A1A),
+          surface: Color(0xFF1A1A22),
         ),
       ),
       home: const HomeScreen(),

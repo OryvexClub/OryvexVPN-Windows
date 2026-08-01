@@ -14,6 +14,7 @@ if sys.platform == 'win32':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
+
 class GitHubPusher:
     def __init__(self, project_root=None):
         self.root = Path(project_root or os.getcwd())
@@ -125,7 +126,7 @@ class GitHubPusher:
         import json
         data = json.dumps({
             "name": self.repo_name,
-            "description": "OryvexVPN Demo - VPN Dashboard UI/UX Demo",
+            "description": "OryvexVPN - Windows WireGuard dashboard connecting to your own VPS",
             "private": False,
             "auto_init": False,
         }).encode('utf-8')
@@ -159,7 +160,6 @@ class GitHubPusher:
         success, diff = self.run_command('git diff --cached', ignore_error=True)
         if not success:
             return False
-        # الگوی دقیق توکن گیت‌هاب
         pattern = re.compile(r'ghp_[A-Za-z0-9_]{36,}')
         if pattern.search(diff):
             self.log("توکن گیت‌هاب در فایل‌های stage شده پیدا شد!", "ERROR")
@@ -216,7 +216,7 @@ class GitHubPusher:
             return False
 
         self.log("Committing...", "STEP")
-        success, output = self.run_command('git commit -m "Auto‑fix and security update"')
+        success, output = self.run_command('git commit -m "OryvexVPN: real WireGuard connection + UI update"')
         if not success and "nothing to commit" not in output:
             self.log(f"Commit warning: {output}", "WARNING")
 
@@ -228,12 +228,6 @@ class GitHubPusher:
         self.log("Pushing to GitHub...", "STEP")
         print("\nPushing... this may take a moment...\n")
 
-        askpass_script = self.root / ".git_askpass_temp.py"
-        askpass_script.write_text(
-            "import sys\n"
-            "print(sys.argv[1] if 'Username' not in sys.argv[1] else '')\n",
-            encoding='utf-8'
-        )
         push_complete = [False]
         push_result = [None]
 
@@ -252,9 +246,6 @@ class GitHubPusher:
             except Exception as e:
                 push_complete[0] = True
                 push_result[0] = e
-            finally:
-                if askpass_script.exists():
-                    askpass_script.unlink()
 
         push_thread = threading.Thread(target=do_push)
         push_thread.daemon = True
@@ -292,11 +283,11 @@ class GitHubPusher:
         print(f"\nRepository: https://github.com/{self.username}/{self.repo_name}")
         print(f"Actions: {actions_url}")
         print("\nBuilds will start automatically (takes 3-5 minutes)")
-        print("\nDownloads will be available as artifacts after build:")
+        print("\nDownload will be available as an artifact after build:")
         print("   1. Go to Actions tab")
         print("   2. Click on the latest workflow run")
         print("   3. Scroll down to Artifacts section")
-        print("   4. Download APK and Windows EXE")
+        print("   4. Download the Windows EXE")
         try:
             print("\nOpening GitHub Actions in browser...")
             webbrowser.open(actions_url)
@@ -307,7 +298,7 @@ class GitHubPusher:
         print("\n" + "=" * 60)
         print("OryvexVPN - Push & Build")
         print("=" * 60)
-        print("\nWill build: Android APK + Windows EXE")
+        print("\nWill build: Windows EXE (real WireGuard connection to your own VPS)")
 
         if not self.check_git():
             sys.exit(1)
@@ -336,6 +327,7 @@ class GitHubPusher:
             print("   (Enter your GitHub username and a Personal Access Token as the password)")
             sys.exit(1)
 
+
 def main():
     try:
         pusher = GitHubPusher()
@@ -346,6 +338,7 @@ def main():
     except Exception as e:
         print(f"\nUnexpected error: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
