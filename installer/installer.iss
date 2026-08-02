@@ -35,7 +35,7 @@ ShowLanguageDialog=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
-Name: "farsi"; MessagesFile: "compiler:Languages\Farsi.isl"
+; Name: "farsi"; MessagesFile: "compiler:Languages\\Farsi.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
