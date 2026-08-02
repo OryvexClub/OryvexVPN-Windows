@@ -5,15 +5,13 @@ import 'package:path_provider/path_provider.dart';
 import 'endpoints.dart';
 import 'vpn_core.dart';
 import 'warp_registration.dart';
+import 'vpn_service.dart';
 
 /// Drives the VPN connection lifecycle.
 ///
 /// The heavy lifting (tunnel install, stats, handshake) lives in [VpnCore];
 /// this class coordinates: register with WARP -> pick endpoint -> build conf
-/// -> install tunnel -> wait for a real handshake.
-///
-/// Uses a dual-config strategy: tries AmneziaWG config first (for DPI bypass
-/// in Iran), then falls back to standard WireGuard if the handshake fails.
+/// -> install tunnel -> verify connection.
 class WireGuardService {
   static VpnEndpoint? _endpoint;
   static int _totalRx = 0;
@@ -33,9 +31,12 @@ class WireGuardService {
     return confDir.path;
   }
 
-  static Future<void> connectWithProgress(Function(String) onProgress) async {
+  static Future<void> connectWithProgress({
+    required void Function(String msg, VpnStage stage) onProgress,
+  }) async {
     VpnLogger.info(_tag, '=== connectWithProgress START ===');
 
+    // Step 1: Check core files
     if (!await VpnCore.coreFilesPresent()) {
       final missing = await VpnCore.missingFiles();
       VpnLogger.error(_tag, 'Core files missing: $missing');
@@ -44,7 +45,8 @@ class WireGuardService {
       );
     }
 
-    onProgress('Finding fastest server...');
+    // Step 2: Find fastest endpoint
+    onProgress('Finding fastest server...', VpnStage.fetchingConfig);
     VpnLogger.info(_tag, 'Picking fastest endpoint...');
     final endpoint = await pickFastestEndpoint();
     if (endpoint == null) {
@@ -53,7 +55,8 @@ class WireGuardService {
     }
     VpnLogger.info(_tag, 'Selected endpoint: ${endpoint.hostPort}');
 
-    onProgress('Registering with Cloudflare WARP...');
+    // Step 3: Register with Cloudflare WARP
+    onProgress('Registering with Cloudflare WARP...', VpnStage.fetchingConfig);
     VpnLogger.info(_tag, 'Registering with WARP...');
     final reg = await WarpRegistrationService.register(
       resolveEndpoint: () async => endpoint,
@@ -64,24 +67,39 @@ class WireGuardService {
     VpnLogger.info(_tag, 'Address v6: ${reg.addressV6}');
     VpnLogger.info(_tag, 'Peer public key: ${reg.peerPublicKey}');
 
+    // Step 4: Write config
+    onProgress('Creating AmneziaWG config...', VpnStage.installingTunnel);
     final confDir = await _confDir();
-
-    // Write AmneziaWG config
-    VpnLogger.info(_tag, 'Writing AmneziaWG config...');
     final confFile = File('$confDir\\${VpnCore.tunnelName}.conf');
     final amneziaConf = reg.buildConf();
     await confFile.writeAsString(amneziaConf);
     VpnLogger.info(_tag, 'Config written to ${confFile.path}');
 
-    onProgress('Starting secure tunnel...');
+    // Step 5: Install tunnel
+    onProgress('Installing secure tunnel...', VpnStage.installingTunnel);
     if (await VpnCore.serviceExists()) {
       VpnLogger.info(_tag, 'Stale tunnel exists, removing...');
       await VpnCore.uninstallTunnel();
     }
-
-    // Install tunnel — if this succeeds, we're connected
     await VpnCore.installTunnel(confFile.path);
+
+    // Step 6: Flush DNS
+    onProgress('Configuring DNS...', VpnStage.installingTunnel);
     await VpnCore.flushDns();
+
+    // Step 7: Verify tunnel is running
+    onProgress('Verifying connection...', VpnStage.installingTunnel);
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    final isRunning = await VpnCore.serviceRunning();
+    if (!isRunning) {
+      VpnLogger.warn(_tag, 'Service not running after install, waiting...');
+      await Future.delayed(const Duration(seconds: 2));
+      final retryRunning = await VpnCore.serviceRunning();
+      if (!retryRunning) {
+        throw Exception('Tunnel failed to start. Please try again.');
+      }
+    }
 
     VpnLogger.info(_tag, '=== TUNNEL INSTALLED ===');
     final showOutput = await VpnCore.readShow();
@@ -89,7 +107,9 @@ class WireGuardService {
     VpnLogger.info(_tag, '=== connectWithProgress END ===');
   }
 
-  static Future<void> connect() async => await connectWithProgress((_) {});
+  static Future<void> connect() async {
+    await connectWithProgress(onProgress: (_, __) {});
+  }
 
   static Future<void> disconnect() async {
     VpnLogger.info(_tag, '=== disconnect START ===');
@@ -102,7 +122,6 @@ class WireGuardService {
   }
 
   /// True when the tunnel service is running.
-  /// No handshake check — the tunnel itself being alive is sufficient.
   static Future<bool> isConnected() async {
     if (!Platform.isWindows) return false;
     final running = await VpnCore.serviceRunning();

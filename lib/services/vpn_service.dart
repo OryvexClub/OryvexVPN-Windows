@@ -142,9 +142,13 @@ class VPNService extends ChangeNotifier {
     _stopConnectionMonitoring();
     try {
       await WireGuardService.disconnect();
-      await WireGuardService.connectWithProgress((msg) {
-        _statusMessage = msg;
-      });
+      await WireGuardService.connectWithProgress(
+        onProgress: (msg, stage) {
+          _stage = stage;
+          _statusMessage = msg;
+          notifyListeners();
+        },
+      );
       final ok = await WireGuardService.isConnected();
       if (ok) {
         VpnLogger.info(_tag, 'Auto-reconnect SUCCESS');
@@ -223,15 +227,17 @@ class VPNService extends ChangeNotifier {
     _lastError = null;
     _reconnectAttempts = 0;
     _stage = VpnStage.fetchingConfig;
-    _statusMessage = 'Fetching config...';
+    _statusMessage = 'Finding fastest server...';
     notifyListeners();
 
     try {
-      await WireGuardService.connectWithProgress((msg) {
-        _stage = VpnStage.installingTunnel;
-        AppLogger.info(msg, 'VPN');
-        _updateStatus(msg);
-      });
+      await WireGuardService.connectWithProgress(
+        onProgress: (msg, stage) {
+          _stage = stage;
+          AppLogger.info(msg, 'VPN');
+          _updateStatus(msg);
+        },
+      );
 
       // Tunnel installed successfully — mark as connected
       _stage = VpnStage.connected;
