@@ -141,47 +141,52 @@ const List<VpnEndpoint> kProbeEndpoints = [
   VpnEndpoint('2606:4700:d0::a29f:c000', 2408),
 ];
 
-/// Determines whether a raw socket can reach an endpoint within [timeout].
-/// Used to rank endpoints by latency without needing the tunnel up.
-Future<bool> _probeHost(String ip, int port, Duration timeout) async {
+/// Measures actual latency to an endpoint by timing a socket connection.
+/// Returns latency in milliseconds, or null if unreachable.
+Future<int?> _measureLatency(String ip, int port, Duration timeout) async {
   try {
+    final stopwatch = Stopwatch()..start();
     final socket = await Socket.connect(ip, port, timeout: timeout);
+    stopwatch.stop();
     socket.destroy();
-    return true;
+    return stopwatch.elapsedMilliseconds;
   } catch (_) {
-    return false;
+    return null;
   }
 }
 
 /// Finds the reachable endpoint with the lowest latency from [candidates].
 /// Returns `null` if none are reachable.
+/// Uses parallel latency testing for faster results.
 Future<VpnEndpoint?> pickFastestEndpoint({
   List<VpnEndpoint>? candidates,
   Duration timeout = const Duration(seconds: 2),
 }) async {
   final list = candidates ?? kEndpoints;
 
-  // First try the small probe set in parallel for speed.
-  final probeResults = <VpnEndpoint, bool>{};
+  // Test probe endpoints in parallel with actual latency measurement
+  final probeResults = <VpnEndpoint, int?>{};
   await Future.wait(
     kProbeEndpoints.map((e) async {
-      probeResults[e] = await _probeHost(e.ip, e.port, timeout);
+      probeResults[e] = await _measureLatency(e.ip, e.port, timeout);
     }),
   );
 
-  final reachableProbes = kProbeEndpoints.where((e) => probeResults[e] == true);
+  // Filter reachable endpoints and sort by latency
+  final reachableProbes = probeResults.entries
+      .where((entry) => entry.value != null)
+      .toList()
+    ..sort((a, b) => a.value!.compareTo(b.value!));
+
   if (reachableProbes.isNotEmpty) {
-    // Of the reachable probes, pick the first (they're already ordered by
-    // preference). If none of the ordered probes answer, fall through to the
-    // full list.
-    for (final e in reachableProbes) {
-      return e;
-    }
+    // Return the endpoint with the lowest latency
+    return reachableProbes.first.key;
   }
 
-  // Fallback: scan the full list until one answers.
+  // Fallback: scan the full list sequentially until one answers
   for (final e in list) {
-    if (await _probeHost(e.ip, e.port, timeout)) {
+    final latency = await _measureLatency(e.ip, e.port, timeout);
+    if (latency != null) {
       return e;
     }
   }

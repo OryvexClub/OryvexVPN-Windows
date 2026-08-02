@@ -23,6 +23,17 @@ class AppConfig {
   static const Duration processShutdownGrace = Duration(seconds: 2);
   static const Duration registerTimeout = Duration(seconds: 15);
 
+  // ---- AmneziaWG junk packet obfuscation (Iran-optimized) -----------------------------------------------------
+  static const int junkPacketCount = 4;
+  static const int junkPacketMinSize = 3;
+  static const int junkPacketMaxSize = 8;
+  static const int initPacketJunkSize = 5;
+  static const int responsePacketJunkSize = 5;
+  static const int initPacketMagicHeader = 7;
+  static const int responsePacketMagicHeader = 11;
+  static const int underloadPacketMagicHeader = 13;
+  static const int transportPacketMagicHeader = 17;
+
   // ---- Window -----------------------------------------------------
   static const double windowWidth = 400;
   static const double windowHeight = 700;

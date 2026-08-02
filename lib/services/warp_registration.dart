@@ -22,9 +22,12 @@ class WarpRegistration {
     required this.endpoint,
   });
 
-  /// Produces the WireGuard configuration text in the canonical format.
+  /// Produces the AmneziaWG configuration text with junk packet obfuscation.
   String buildConf() {
     final b = StringBuffer();
+    b.writeln('# AmneziaWG WARP Config - Optimized for Iran');
+    b.writeln('# Generated: ${DateTime.now().toIso8601String()}');
+    b.writeln('');
     b.writeln('[Interface]');
     b.writeln('PrivateKey = $privateKey');
     b.writeln(
@@ -32,6 +35,18 @@ class WarpRegistration {
     );
     b.writeln('DNS = 1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001');
     b.writeln('MTU = ${AppConfig.mtu}');
+
+    // AmneziaWG junk packet parameters (Iran-optimized)
+    b.writeln('Jc = ${AppConfig.junkPacketCount}');
+    b.writeln('Jmin = ${AppConfig.junkPacketMinSize}');
+    b.writeln('Jmax = ${AppConfig.junkPacketMaxSize}');
+    b.writeln('S1 = ${AppConfig.initPacketJunkSize}');
+    b.writeln('S2 = ${AppConfig.responsePacketJunkSize}');
+    b.writeln('H1 = ${AppConfig.initPacketMagicHeader}');
+    b.writeln('H2 = ${AppConfig.responsePacketMagicHeader}');
+    b.writeln('H3 = ${AppConfig.underloadPacketMagicHeader}');
+    b.writeln('H4 = ${AppConfig.transportPacketMagicHeader}');
+
     b.writeln('');
     b.writeln('[Peer]');
     b.writeln('PublicKey = $peerPublicKey');
