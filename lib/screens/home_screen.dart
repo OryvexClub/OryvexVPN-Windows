@@ -143,8 +143,8 @@ class _HomeScreenState extends State<HomeScreen>
           ),
           IconButton(
             icon: const Icon(Icons.close, color: Colors.white54, size: 18),
-            onPressed: () => WindowManagerService.quit(),
-            tooltip: 'خروج',
+            onPressed: () => windowManager.close(),
+            tooltip: 'بستن',
             splashRadius: 18,
           ),
         ],

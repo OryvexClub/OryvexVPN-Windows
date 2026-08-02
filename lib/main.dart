@@ -14,6 +14,8 @@ import 'services/vpn_service.dart';
 import 'services/wireguard_service.dart';
 import 'l10n/app_localizations.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await WindowManagerService.init();
@@ -44,9 +46,9 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final tray = TrayService.instance;
       // Wire the tray menu actions so Connect/Disconnect/Quit actually work.
-      tray.onConnectRequested = () => context.read<VPNService>().connect();
-      tray.onDisconnectRequested = () => context.read<VPNService>().disconnect();
-      tray.onQuitRequested = () => WindowManagerService.quit();
+      tray.onConnectRequested = () => navigatorKey.currentContext!.read<VPNService>().connect();
+      tray.onDisconnectRequested = () => navigatorKey.currentContext!.read<VPNService>().disconnect();
+      tray.onQuitRequested = () => _performQuit();
       tray.init();
     });
   }
@@ -59,33 +61,29 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
     super.dispose();
   }
 
-  @override
-  void onWindowClose() async {
+  Future<void> _performQuit() async {
     bool isDisconnecting = false;
+    final context = navigatorKey.currentContext;
 
     try {
-      // Get VPN service
-      final vpnService = context.read<VPNService>();
-
-      // Only try to disconnect if connected
-      if (vpnService.isConnected || vpnService.isConnecting) {
-        isDisconnecting = true;
-        print('Disconnecting VPN before closing...');
-
-        // Try to disconnect with timeout
-        await vpnService.disconnect().timeout(
-          const Duration(seconds: 2),
-          onTimeout: () {
-            print('VPN disconnect timeout, forcing close');
-          },
-        );
+      if (context != null) {
+        final vpnService = context.read<VPNService>();
+        if (vpnService.isConnected || vpnService.isConnecting) {
+          isDisconnecting = true;
+          print('Disconnecting VPN before closing...');
+          await vpnService.disconnect().timeout(
+            const Duration(seconds: 2),
+            onTimeout: () {
+              print('VPN disconnect timeout, forcing close');
+            },
+          );
+        }
       }
     } catch (e) {
       print('Error during VPN cleanup: $e');
     }
 
     try {
-      // Force cleanup WireGuard
       if (!isDisconnecting) {
         await WireGuardService.disconnect().timeout(
           const Duration(seconds: 1),
@@ -95,28 +93,64 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
     } catch (_) {}
 
     try {
-      // Stop network manager
       NetworkManager.instance.dispose();
     } catch (_) {}
 
     try {
-      // Cleanup tray
       TrayService.instance.dispose();
     } catch (_) {}
 
-    // destroy() is required because setPreventClose(true) blocks a normal
-    // close. Do NOT await it - we want the window gone immediately.
     windowManager.destroy();
-
-    // The Dart VM keeps running after the window is destroyed (the tray /
-    // event loop stay alive), which leaves a frozen/zombie process behind.
-    // Terminate it explicitly so closing the app actually quits.
     exit(0);
+  }
+
+  @override
+  void onWindowClose() async {
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF141414),
+          title: const Text('بستن برنامه', style: TextStyle(color: Colors.white)),
+          content: const Text(
+            'آیا می‌خواهید برنامه به طور کامل بسته شود یا در پس‌زمینه (سینی سیستم) فعال بماند؟',
+            style: TextStyle(color: Colors.white70),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                windowManager.hide();
+              },
+              child: const Text('پنهان در پس‌زمینه', style: TextStyle(color: Color(0xFF00E5FF))),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                _performQuit();
+              },
+              child: const Text('خروج کامل', style: TextStyle(color: Color(0xFFFF3366))),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: const Text('لغو', style: TextStyle(color: Colors.white54)),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Fallback
+      await _performQuit();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
       locale: const Locale('fa', 'IR'),
