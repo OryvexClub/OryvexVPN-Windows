@@ -38,32 +38,30 @@ jobs:
 
         Write-Host "Downloading AmneziaWG from GitHub releases..."
 
-        # Use a more reliable download method with retries
-        $amneziaUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/v1.0.20230424/amneziawg-amd64.msi"
+        # Try multiple release versions in order
+        $versions = @("2.0.2", "2.0.1", "2.0.0", "1.0.2")
+        $downloaded = $false
         $amneziaMsi = "$env:TEMP\amneziawg-amd64.msi"
 
-        $maxRetries = 3
-        $retryCount = 0
-        $downloaded = $false
+        foreach ($version in $versions) {
+          $amneziaUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/$version/amneziawg-amd64-$version.msi"
+          Write-Host "Trying version $version..."
 
-        while (-not $downloaded -and $retryCount -lt $maxRetries) {
           try {
-            Write-Host "Download attempt $($retryCount + 1) of $maxRetries..."
             [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
             $webClient = New-Object System.Net.WebClient
             $webClient.DownloadFile($amneziaUrl, $amneziaMsi)
             $downloaded = $true
-            Write-Host "Download successful"
+            Write-Host "Successfully downloaded version $version"
+            break
           } catch {
-            $retryCount++
-            if ($retryCount -lt $maxRetries) {
-              Write-Host "Download failed, retrying in 5 seconds..."
-              Start-Sleep -Seconds 5
-            } else {
-              Write-Host "ERROR: Failed to download after $maxRetries attempts"
-              throw
-            }
+            Write-Host "Version $version not available, trying next..."
           }
+        }
+
+        if (-not $downloaded) {
+          Write-Host "ERROR: Failed to download AmneziaWG from any release version"
+          exit 1
         }
 
         Write-Host "Extracting AmneziaWG payload..."
