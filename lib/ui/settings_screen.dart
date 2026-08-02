@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
 import '../services/vpn_service.dart';
 import '../l10n/app_localizations.dart';
-import '../l10n/locale_provider.dart';
 import 'package:provider/provider.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -40,8 +39,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final localeProvider = context.watch<LocaleProvider>();
-    final currentLang = localeProvider.locale.languageCode;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -89,29 +86,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 leading: const Icon(Icons.minimize),
                 title: Text(l10n.startMinimized),
                 description: Text(l10n.startMinimizedDesc, style: const TextStyle(fontSize: 12)),
-              ),
-            ],
-          ),
-          SettingsSection(
-            title: Text(l10n.language),
-            tiles: <SettingsTile>[
-              SettingsTile(
-                leading: const Icon(Icons.language),
-                title: Text(l10n.language),
-                value: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      currentLang == 'en' ? 'English' : 'فارسی',
-                      style: const TextStyle(color: AppTheme.primary),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.swap_horiz, color: Colors.white54, size: 18),
-                  ],
-                ),
-                onPressed: (context) {
-                  localeProvider.toggleLocale();
-                },
               ),
             ],
           ),

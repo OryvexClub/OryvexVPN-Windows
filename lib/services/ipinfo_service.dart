@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class IPInfoModel {
@@ -52,7 +53,7 @@ class IPInfoService {
   static Future<IPInfoModel> getIPInfo() async {
     try {
       final response = await http.get(Uri.parse(_apiUrl)).timeout(
-        const Duration(seconds: 10),
+        const Duration(seconds: 5),
       );
 
       if (response.statusCode == 200) {
@@ -62,25 +63,19 @@ class IPInfoService {
         return IPInfoModel.unknown();
       }
     } catch (e) {
-      print('Error fetching IP info: $e');
       return IPInfoModel.unknown();
     }
   }
 
-  static Future<int> measurePing(String host) async {
+  /// Measure ping using raw TCP socket connect (faster and more reliable than HTTP).
+  static Future<int> measurePing(String host, {int port = 443}) async {
     try {
       final stopwatch = Stopwatch()..start();
-
-      final response = await http.head(Uri.parse('https://$host')).timeout(
-        const Duration(seconds: 5),
-      );
-
+      final socket = await Socket.connect(host, port,
+          timeout: const Duration(seconds: 3));
       stopwatch.stop();
-
-      if (response.statusCode < 500) {
-        return stopwatch.elapsedMilliseconds;
-      }
-      return -1;
+      socket.destroy();
+      return stopwatch.elapsedMilliseconds;
     } catch (e) {
       return -1;
     }

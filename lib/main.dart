@@ -14,7 +14,6 @@ import 'services/vpn_core.dart';
 import 'services/vpn_service.dart';
 import 'services/wireguard_service.dart';
 import 'l10n/app_localizations.dart';
-import 'l10n/locale_provider.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -27,7 +26,6 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => VPNService()),
-        ChangeNotifierProvider(create: (_) => LocaleProvider()),
       ],
       child: const OryvexVPNApp(),
     ),
@@ -180,53 +178,40 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LocaleProvider>(
-      builder: (context, localeProvider, _) {
-        return MaterialApp(
-          navigatorKey: navigatorKey,
-          title: AppConfig.appName,
-          debugShowCheckedModeBanner: false,
-          locale: localeProvider.locale,
-          supportedLocales: const [
-            Locale('en'),
-            Locale('fa'),
-          ],
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          localeResolutionCallback: (locale, supportedLocales) {
-            for (var supportedLocale in supportedLocales) {
-              if (supportedLocale.languageCode == locale?.languageCode) {
-                return supportedLocale;
-              }
-            }
-            return supportedLocales.first;
-          },
-          builder: (context, child) {
-            final isRtl = localeProvider.isRtl;
-            return Directionality(
-              textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
-              child: child!,
-            );
-          },
-          theme: ThemeData(
-            brightness: Brightness.dark,
-            scaffoldBackgroundColor: const Color(0xFF0A0A0A),
-            useMaterial3: true,
-            colorScheme: ColorScheme.dark(
-              primary: const Color(0xFF00E5FF),
-              secondary: const Color(0xFF00FFCC),
-              error: const Color(0xFFFF3366),
-              background: const Color(0xFF0A0A0A),
-              surface: const Color(0xFF141414),
-            ),
-          ),
-          home: const HomeScreen(),
+    return MaterialApp(
+      navigatorKey: navigatorKey,
+      title: AppConfig.appName,
+      debugShowCheckedModeBanner: false,
+      locale: const Locale('fa', 'IR'),
+      supportedLocales: const [
+        Locale('fa', 'IR'),
+      ],
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      builder: (context, child) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: child!,
         );
       },
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF0A0A0A),
+        fontFamily: 'Vazirmatn',
+        useMaterial3: true,
+        colorScheme: ColorScheme.dark(
+          primary: const Color(0xFF00E5FF),
+          secondary: const Color(0xFF00FFCC),
+          error: const Color(0xFFFF3366),
+          background: const Color(0xFF0A0A0A),
+          surface: const Color(0xFF141414),
+        ),
+      ),
+      home: const HomeScreen(),
     );
   }
 }

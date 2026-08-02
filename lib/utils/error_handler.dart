@@ -61,45 +61,45 @@ class ErrorHandler {
     if (errorStr.contains('SocketException') ||
         errorStr.contains('Connection refused') ||
         errorStr.contains('Failed host lookup')) {
-      return 'Network connection error. Please check your internet connection.';
+      return 'خطای اتصال شبکه. لطفا اینترنت خود را بررسی کنید.';
     }
 
     // Timeout errors
     if (errorStr.contains('TimeoutException') || errorStr.contains('timeout')) {
-      return 'Connection timed out. Please try again.';
+      return 'زمان اتصال تمام شد. لطفا دوباره تلاش کنید.';
     }
 
     // WireGuard specific errors
     if (errorStr.contains('WireGuard')) {
       if (errorStr.contains('not found')) {
-        return 'WireGuard files not found. Please reinstall the app.';
+        return 'فایل‌های WireGuard یافت نشد. لطفا برنامه را دوباره نصب کنید.';
       }
       if (errorStr.contains('service')) {
-        return 'Failed to start VPN service. Please run as administrator.';
+        return 'خطا در راه‌اندازی سرویس VPN. لطفا با دسترسی مدیریت اجرا کنید.';
       }
       if (errorStr.contains('tunnel')) {
-        return 'Failed to create VPN tunnel. Please try again.';
+        return 'خطا در ایجاد تونل VPN. لطفا دوباره تلاش کنید.';
       }
     }
 
     // Registration errors
     if (errorStr.contains('Registration failed') || errorStr.contains('401') || errorStr.contains('403')) {
-      return 'Registration failed. Please try again later.';
+      return 'ثبت‌نام ناموفق بود. لطفا بعدا تلاش کنید.';
     }
 
     // Permission errors
     if (errorStr.contains('permission') || errorStr.contains('access denied')) {
-      return 'Permission denied. Please run as administrator.';
+      return 'خطای دسترسی. لطفا برنامه را با دسترسی مدیریت اجرا کنید.';
     }
 
     // Generic connection errors
     if (errorStr.contains('Connection') || errorStr.contains('connect')) {
-      return 'VPN connection failed. Please try again.';
+      return 'اتصال VPN ناموفق بود. لطفا دوباره تلاش کنید.';
     }
 
     // Fallback
     if (errorStr.length > 100) {
-      return 'An unknown error occurred. Please try again.';
+      return 'خطای ناشناخته. لطفا دوباره تلاش کنید.';
     }
 
     return errorStr.replaceFirst('Exception: ', '');

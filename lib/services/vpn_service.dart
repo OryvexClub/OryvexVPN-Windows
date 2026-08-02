@@ -85,7 +85,7 @@ class VPNService extends ChangeNotifier {
 
   void _startStatsMonitoring() {
     _statsTimer?.cancel();
-    _statsTimer = Timer.periodic(const Duration(seconds: 2), (_) async {
+    _statsTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
       await _updateStats();
     });
     _updateStats();
@@ -166,6 +166,9 @@ class VPNService extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Counter to avoid fetching IP every cycle
+  int _statsCycleCount = 0;
+
   Future<void> _updateStats() async {
     if (!isConnected) return;
 
@@ -197,12 +200,19 @@ class VPNService extends ChangeNotifier {
     }
     _lastStatsUpdate = now;
 
-    // IP + ping.
-    final ipInfo = await ErrorHandler.tryCatch(
-      () => IPInfoService.getIPInfo(),
-      fallback: _stats.ipInfo,
-      context: 'Get IP Info',
-    );
+    // Fetch IP info only every 10 cycles (~30 seconds) to avoid rate limiting
+    _statsCycleCount++;
+    IPInfoModel ipInfo = _stats.ipInfo;
+    if (_statsCycleCount >= 10 || _stats.ipInfo.ip == 'N/A') {
+      _statsCycleCount = 0;
+      ipInfo = await ErrorHandler.tryCatch(
+        () => IPInfoService.getIPInfo(),
+        fallback: _stats.ipInfo,
+        context: 'Get IP Info',
+      ) ?? _stats.ipInfo;
+    }
+
+    // Ping always updates
     final ping = await ErrorHandler.tryCatch(
       () => IPInfoService.measurePing('1.1.1.1'),
       fallback: _stats.ping,
@@ -213,7 +223,7 @@ class VPNService extends ChangeNotifier {
       ping: (ping ?? 0) > 0 ? ping! : 0,
       downloadSpeed: downloadSpeed > 0 ? downloadSpeed : 0.0,
       uploadSpeed: uploadSpeed > 0 ? uploadSpeed : 0.0,
-      ipInfo: ipInfo ?? _stats.ipInfo,
+      ipInfo: ipInfo,
       timestamp: now,
     );
     notifyListeners();

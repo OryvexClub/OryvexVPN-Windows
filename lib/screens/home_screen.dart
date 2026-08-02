@@ -5,7 +5,6 @@ import 'package:window_manager/window_manager.dart';
 import '../services/vpn_service.dart';
 import '../widgets/stats_card.dart';
 import '../l10n/app_localizations.dart';
-import '../l10n/locale_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -111,10 +110,6 @@ class _HomeScreenState extends State<HomeScreen>
   // ---- Title bar ---------------------------------------------------------
 
   Widget _buildTitleBar(VPNService vpn, Color color) {
-    final localeProvider = context.watch<LocaleProvider>();
-    final isRtl = localeProvider.isRtl;
-    final currentLang = localeProvider.locale.languageCode;
-
     return Container(
       height: 50,
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -140,36 +135,16 @@ class _HomeScreenState extends State<HomeScreen>
               child: const SizedBox(height: double.infinity),
             ),
           ),
-          // Language toggle
-          GestureDetector(
-            onTap: () => localeProvider.toggleLocale(),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                currentLang == 'en' ? 'EN' : 'FA',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
           IconButton(
             icon: const Icon(Icons.remove, color: Colors.white54, size: 18),
             onPressed: () => windowManager.minimize(),
-            tooltip: isRtl ? 'کوچک‌سازی' : 'Minimize',
+            tooltip: 'کوچک‌سازی',
             splashRadius: 18,
           ),
           IconButton(
             icon: const Icon(Icons.close, color: Colors.white54, size: 18),
             onPressed: () => windowManager.close(),
-            tooltip: isRtl ? 'بستن' : 'Close',
+            tooltip: 'بستن',
             splashRadius: 18,
           ),
         ],
