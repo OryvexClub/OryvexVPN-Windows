@@ -24,9 +24,9 @@ class AppConfig {
   static const Duration registerTimeout = Duration(seconds: 15);
 
   // ---- AmneziaWG junk packet obfuscation (Iran-optimized for WARP) -----------------------------------------------------
-  static const int junkPacketCount = 4;
-  static const int junkPacketMinSize = 40;
-  static const int junkPacketMaxSize = 70;
+  static const int junkPacketCount = 120;
+  static const int junkPacketMinSize = 23;
+  static const int junkPacketMaxSize = 911;
   static const int initPacketJunkSize = 0;
   static const int responsePacketJunkSize = 0;
   static const int initPacketMagicHeader = 1;

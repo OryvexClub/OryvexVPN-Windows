@@ -184,10 +184,11 @@ Future<VpnEndpoint?> pickFastestEndpoint({
 
   // If TCP probes fail (common for UDP VPNs on filtered networks),
   // DO NOT sequentially scan 600+ endpoints. It takes 20+ minutes and hangs the UI.
-  // Instead, randomly pick an endpoint from the specific curated list.
-  final fallbackList = [...kSpecificEndpoints];
+  // Instead, randomly pick an endpoint from the entire list to spread the load
+  // and increase the chance of finding an unblocked IP.
+  final fallbackList = [...list];
   fallbackList.shuffle();
 
-  // Return a random endpoint from the curated list without waiting
+  // Return a random endpoint from the full list without waiting
   return fallbackList.first;
 }

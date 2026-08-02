@@ -64,7 +64,7 @@ class WireGuardService {
 
     onProgress('در حال تایید اتصال...');
     final handshakeOk = await _waitForHandshake(
-      timeout: const Duration(seconds: 10),
+      timeout: const Duration(seconds: 15),
     );
     if (!handshakeOk) {
       // Tunnel service may be up but no handshake yet - still report connected

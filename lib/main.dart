@@ -72,7 +72,7 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
           isDisconnecting = true;
           print('Disconnecting VPN before closing...');
           await vpnService.disconnect().timeout(
-            const Duration(seconds: 2),
+            const Duration(seconds: 5),
             onTimeout: () {
               print('VPN disconnect timeout, forcing close');
             },
@@ -86,7 +86,7 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
     try {
       if (!isDisconnecting) {
         await WireGuardService.disconnect().timeout(
-          const Duration(seconds: 1),
+          const Duration(seconds: 4),
           onTimeout: () {},
         );
       }
@@ -98,6 +98,12 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
 
     try {
       TrayService.instance.dispose();
+    } catch (_) {}
+
+    try {
+      // Force kill any lingering amneziawg processes to ensure a clean exit
+      Process.runSync('taskkill', ['/F', '/IM', 'amneziawg.exe'], runInShell: true);
+      Process.runSync('taskkill', ['/F', '/IM', 'awg.exe'], runInShell: true);
     } catch (_) {}
 
     windowManager.destroy();
