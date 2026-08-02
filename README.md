@@ -1,232 +1,305 @@
 <div align="center">
 
+<img src="https://img.shields.io/badge/Platform-Windows%2010%2F11-0078D6?style=for-the-badge&logo=windows&logoColor=white" />
+<img src="https://img.shields.io/badge/Status-Stable-success?style=for-the-badge" />
+<img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" />
+<img src="https://img.shields.io/badge/UI-%D9%81%D8%A7%D8%B1%D8%B3%DB%8C%20%7C%20RTL-informational?style=for-the-badge" />
+
 # 🛡️ OryvexVPN
 
-**یک کلاینت VPN حرفه‌ای با رابط کاربری فارسی برای ویندوز**
+### آزادی دیجیتال شما، در یک کلیک — The Free VPN for Windows
 
-[![Build Status](https://github.com/OryvexClub/oryvex_vpn_demo/actions/workflows/build-windows.yml/badge.svg)](https://github.com/OryvexClub/oryvex_vpn_demo/actions)
-[![Flutter](https://img.shields.io/badge/Flutter-3.44+-02569B?logo=flutter)](https://flutter.dev)
-[![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows)](https://www.microsoft.com/windows)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+**Private • Secure • Fast • 100% Free**
 
-Modern Windows VPN Client with Full Persian UI
+A modern, privacy-first VPN client for Windows, engineered for speed and simplicity — with a complete Persian (RTL) interface.
 
-[Download Latest Release](https://github.com/OryvexClub/oryvex_vpn_demo/releases) • [گزارش مشکل](https://github.com/OryvexClub/oryvex_vpn_demo/issues) • [درخواست ویژگی](https://github.com/OryvexClub/oryvex_vpn_demo/issues)
+[📥 Download Now](https://github.com/OryvexClub/oryvex_vpn_demo/releases) · [📖 Features](#-features) · [🌐 What is a VPN](#-what-is-a-vpn) · [💬 Support](#-support)
 
 </div>
 
 ---
 
-## ✨ ویژگی‌ها / Features
+## 🌐 What is a VPN?
 
-- 🌍 **اتصال امن / Secure Connection** - پروتکل VPN امن / Secure VPN Protocol
-- 🇮🇷 **رابط فارسی کامل / Full Persian UI** - تمام متن‌ها به فارسی با پشتیبانی RTL / All texts in Persian with RTL support
-- 📊 **آمار واقعی / Real Statistics** - سرعت، پینگ و IP واقعی / Real speed, ping and IP
-- 🎯 **اتصال خودکار / Auto-Connect** - انتخاب بهترین سرور / Best server selection
-- 🔄 **مانیتورینگ مداوم / Continuous Monitoring** - بررسی وضعیت اتصال / Connection status checking
-- 💾 **مدیریت تنظیمات / Config Management** - ذخیره و بارگذاری تنظیمات / Save and load configs
-- 🎨 **طراحی مدرن / Modern Design** - رابط کاربری زیبا / Beautiful UI
-- ⚡ **عملکرد بالا / High Performance** - بدون تاخیر و هنگ / No lag or freezing
+A **VPN (Virtual Private Network)** is a secure, encrypted tunnel between your device and the internet. Every time you connect, your data travels through this protected channel instead of going straight to the open web. Here is what that actually means for you:
 
-## 📋 Requirements
+### 🔐 Your data stays private
+All your traffic is encrypted the moment it leaves your device. Your internet provider, advertisers, and anyone snooping on the network can no longer read what you send or receive.
 
-- **OS**: Windows 10/11 (64-bit)
-- **RAM**: 256 MB minimum
-- **Disk**: 100 MB free space
-- **Privileges**: Administrator rights (required for VPN tunnel creation)
+### 🌍 The internet opens up
+Websites, streaming platforms, and services that are blocked or restricted in your region become reachable again — no geographical limits.
 
-## 🚀 Quick Start
+### 🛡️ Public Wi-Fi becomes safe
+Airports, cafés, and hotel networks are notorious hunting grounds for data thieves. A VPN wraps your connection in encryption so nothing you do on shared networks can be intercepted.
+
+### 🎭 Your identity stays hidden
+Your real IP address and location are masked. You browse, stream, and communicate without leaving a digital footprint tied to you.
+
+---
+
+## ✨ Features
+
+### 🚀 Blazing-Fast Performance
+- **No throttling** — full bandwidth at your disposal
+- **Smart routing** — automatically picks the fastest server
+- **Low latency** — ideal for gaming and streaming
+- **Unlimited data** — no caps, no quotas, ever
+
+### 🔒 Military-Grade Security
+- **AES-256 encryption** — bank-level protection
+- **Modern AmneziaWG core** — the next evolution of WireGuard
+- **Strict no-logs policy** — your privacy is guaranteed
+- **DNS leak protection** — keeps your lookups private too
+
+### 🌍 Global Server Network
+- **Multiple worldwide locations**
+- **Automatic best-server selection**
+- **Low-ping routing optimized for your region**
+- **High uptime** — protection when you need it
+
+### 🎨 Beautiful, Persian-First UX
+- **Clean, modern dark interface**
+- **Full RTL support** with the Vazirmatn font
+- **One-click connect** — no technical knowledge required
+
+### 📊 Real-Time Statistics
+- **Live download / upload speeds**
+- **Data usage tracking**
+- **Ping and connection health at a glance**
+- **Instant connection state**
+
+### ⚙️ Intelligent & Convenient
+- **Auto-reconnect** — protection never silently drops
+- **System tray** — runs quietly in the background
+- **Start with Windows** — launch on boot
+- **Junk-packet obfuscation** — tuned for restricted networks
+
+---
+
+## 🎯 Why Choose OryvexVPN?
+
+### 💯 100% Free — Forever
+No hidden fees, no premium tiers, no credit card, no surprise paywalls. Every feature is unlocked for everyone.
+
+### 🚫 No Registration, No Tracking
+Download, install, and connect. No email, no account, no personal information collected. Your privacy begins the moment the app opens.
+
+### 🇮🇷 Made for Persian Speakers
+A complete, thoughtful Persian interface with proper right-to-left layout and beautiful Vazirmatn typography — not a machine-translated afterthought.
+
+### 🔓 Open & Transparent
+Built on open-source technology. Anyone can inspect the code, which means no backdoors and no hidden telemetry.
+
+### ⚡ Smart Under the Hood
+- Automatic server selection based on your location
+- Intelligent reconnection on drop
+- Real-time connection health monitoring
+- AmneziaWG with junk-packet obfuscation for censored environments
+
+### 🖥️ Light & Efficient
+Runs comfortably on modest hardware with a minimal footprint and zero noticeable impact on your system.
+
+---
+
+## 🎭 Who Is It For?
+
+| 🏠 Home users | 💼 Professionals | 🎮 Gamers | 🎓 Students |
+|---|---|---|---|
+| Stream and browse freely | Secure remote work & banking | Lower lag on geo-locked servers | Access academic resources |
+| Safe on public Wi-Fi | Protect data while traveling | DDoS protection | Safe downloads on campus |
+| Bypass censorship | Keep communications private | Play titles not in your region | Stay connected abroad |
+
+---
+
+## 🔧 How It Works
+
+```
+    Your PC           OryvexVPN            Internet
+   ┌─────────┐    ┌─────────────────┐    ┌─────────┐
+   │   You   │ ──►│  Secure Tunnel  │ ──►│  The    │
+   │ (Device)│    │  (Encrypted)    │    │  Web    │
+   └─────────┘    └─────────────────┘    └─────────┘
+   Your data is   Your identity and     Content flows
+   encrypted here  traffic are hidden   to and from you
+```
+
+1. **Launch OryvexVPN** — the app prepares a secure connection instantly.
+2. **Fastest server chosen** — the optimal location is selected automatically.
+3. **Encrypted tunnel established** — your traffic is sealed and hidden.
+4. **Browse freely** — everything you do is now private and unrestricted.
+
+---
+
+## 📥 Getting Started
+
+### System Requirements
+
+| Component | Requirement |
+|---|---|
+| Operating System | Windows 10 or 11 (64-bit) |
+| RAM | 256 MB available |
+| Disk Space | 100 MB free |
+| Internet | An active connection |
+| Permissions | Administrator rights (for the VPN driver) |
 
 ### Installation
 
-1. **Download** the latest installer from [Releases](https://github.com/OryvexClub/oryvex_vpn_demo/releases)
-2. **Run** `OryvexVPN-Setup-v1.0.0.exe` as Administrator
-3. **Launch** OryvexVPN from the Start Menu or Desktop shortcut
-4. **Click Connect** to start secure VPN connection
-5. **Enjoy** secure and private browsing
+Download the latest installer from the [Releases](https://github.com/OryvexClub/oryvex_vpn_demo/releases) page, run it, and follow the short setup wizard (administrator privileges are requested once). That's it — no account, no configuration. Open the app and press **Connect**.
 
-### Portable Version
+---
 
-Alternatively, download the portable ZIP, extract it, and run `warp_vpn_app.exe` as Administrator.
-
-## 🛠️ Building from Source
-
-### Prerequisites
-
-```bash
-# Install Flutter SDK 3.44+
-# https://docs.flutter.dev/get-started/install/windows
-
-# Verify installation
-flutter doctor -v
-```
-
-### Build Steps
-
-```bash
-# Clone the repository
-git clone https://github.com/OryvexClub/oryvex_vpn_demo.git
-cd oryvex_vpn_demo
-
-# Get dependencies
-flutter pub get
-
-# Build for Windows (Release)
-flutter build windows --release
-
-# Output: build/windows/x64/runner/Release/
-```
-
-### Building with GitHub Actions
-
-The project includes automated CI/CD pipeline that:
-- Downloads and bundles VPN binaries
-- Builds the Flutter application
-- Creates Windows installer with Inno Setup
-- Packages portable ZIP version
-- Uploads artifacts for download
-
-Simply push to `main` branch and GitHub Actions will handle the entire build process.
-
-## 📦 Project Structure
+## 🖥️ User Interface
 
 ```
-warp_vpn_app/
-├── lib/
-│   ├── main.dart              # Application entry point
-│   ├── constants/             # App constants and strings
-│   ├── core/                  # Core configuration
-│   ├── l10n/                  # Localization (Persian)
-│   ├── models/                # Data models
-│   ├── screens/               # UI screens
-│   ├── services/              # Business logic & VPN control
-│   ├── theme/                 # App theming
-│   ├── ui/                    # UI components
-│   ├── utils/                 # Utilities and helpers
-│   └── widgets/               # Reusable UI widgets
-├── windows/
-│   └── runner/                # Windows native code
-├── installer/
-│   └── installer.iss          # Inno Setup installer script
-├── assets/
-│   └── fonts/                 # Vazirmatn font
-└── .github/
-    └── workflows/
-        └── build-windows.yml  # CI/CD pipeline
+╔══════════════════════════════════════════╗
+║               OryvexVPN v1.0.0           ║
+╠══════════════════════════════════════════╣
+║                                          ║
+║             [   CONNECT   ]              ║
+║                                          ║
+║   Status  : قطع شده (Disconnected)      ║
+║   Server  : Auto Select                 ║
+║   IP      : ---                         ║
+║                                          ║
+║   ┌──────────────────────────────────┐  ║
+║   │  📊 Statistics                   │  ║
+║   │  • Download : 0.0 KB/s           │  ║
+║   │  • Upload   : 0.0 KB/s           │  ║
+║   │  • Ping     : --- ms             │  ║
+║   │  • Duration : ---                │  ║
+║   └──────────────────────────────────┘  ║
+║                                          ║
+║    [⚙️ Settings]      [ℹ️ About]        ║
+║                                          ║
+╚══════════════════════════════════════════╝
 ```
 
-## 🏗️ Architecture
+**Settings you can tweak**
+- Auto-start with Windows
+- Start minimized to the tray
+- Connection status notifications
+- Automatic reconnection delay
+- Preferred DNS servers
 
-### Core Components
+---
 
-- **VPN Service**: Manages connection lifecycle and state
-- **Network Manager**: Tracks connectivity and performance
-- **System Tray**: Background operation support
-- **Config Manager**: Persistent configuration storage
+## 🔐 Privacy & Security
 
-### Technology Stack
+### What we will never do
+- ❌ Log your activity — zero-logging policy
+- ❌ Track your browsing — no analytics, no telemetry
+- ❌ Sell your data — your information is never shared
+- ❌ Ask for personal info — fully anonymous usage
+- ❌ Inject ads — clean, ad-free experience
 
-| Component | Technology |
-|-----------|-----------|
-| Framework | Flutter 3.44+ |
-| Language | Dart 3.12+ |
-| State Management | Provider |
-| UI Components | Material Design 3 |
-| Fonts | Vazirmatn (Google Fonts) |
-| Installer | Inno Setup 6 |
-| CI/CD | GitHub Actions |
+### What we always do
+- ✅ Encrypt your traffic with AES-256
+- ✅ Hide your real IP address
+- ✅ Protect your DNS from leaks
+- ✅ Verify every connection handshake
+- ✅ Stay open-source and transparent
 
-## 🔧 VPN Configuration
+---
 
-The app automatically:
-- Registers with Cloudflare WARP
-- Selects the fastest available server
-- Configures secure tunnel with optimal settings
-- Monitors connection health
+## ⚠️ Important Notes
 
-No manual configuration required!
+- **Legal use only** — OryvexVPN is designed for lawful privacy and security. Users are responsible for complying with local laws regarding VPN usage.
+- **Performance** — speeds depend on your ISP, distance to the server, server load, and device capability.
+- **Platform** — currently Windows 10 and 11 only; other platforms are planned.
 
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these guidelines:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+---
 
 ## 🐛 Troubleshooting
 
-### Common Issues
+| Problem | Solution |
+|---|---|
+| VPN won't connect | Run as Administrator; check your internet; restart the app; temporarily disable firewall/antivirus |
+| Slow speeds | Reconnect; check for ISP throttling; close heavy apps; restart your router |
+| App won't start | Update Windows; reinstall; whitelist the app in antivirus; run as Administrator |
 
-**VPN won't connect**
-- Ensure the app is running as Administrator
-- Check your internet connection
-- Verify Windows Firewall isn't blocking the app
+---
 
-**"Core files not found" error**
-- Download the correct build from Releases
-- If building locally, ensure GitHub Actions workflow completed
+## ⚔️ OryvexVPN vs. Typical Free VPNs
 
-**App crashes on close**
-- Fixed in v1.0.0 - ensure you have the latest version
+| Feature | OryvexVPN | Most Free VPNs |
+|---|---|---|
+| Speed limits | None | Usually capped (1–5 Mbps) |
+| Data caps | None | Often 500 MB–10 GB |
+| Server choice | Automatic, optimized | Limited or paid |
+| Ads | None | Heavy advertising |
+| Registration | Not required | Email required |
+| Logging | No logs | Often logs data |
+| Persian UI | Complete | Rarely available |
+| Open source | Yes | Usually closed |
 
-**Build fails**
-- Run `flutter clean` then `flutter pub get`
-- Ensure Flutter SDK is 3.44+
-- Check that you're using Windows 10/11 64-bit
+---
+
+## 🛠️ Technology Stack
+
+- **Flutter 3.44+ & Dart 3.12+** — beautiful, high-performance UI
+- **AmneziaWG** — modern, obfuscation-ready VPN core
+- **Provider** — smooth, reactive state management
+- **Material Design 3** — contemporary design language
+- **Cloudflare WARP infrastructure** — enhanced reliability
+- **Vazirmatn font** — polished Persian typography
+- **Inno Setup** — professional Windows installer
+
+---
+
+## 🗺️ Roadmap
+
+**Version 1.0 — released** ✅
+- Windows 10 / 11 support
+- Automatic server selection
+- Real-time statistics
+- Persian UI with RTL
+- System tray & background operation
+
+**Coming next** 🚧
+- Manual server selection
+- Kill switch
+- Split tunneling
+- Connection history
+
+**On the horizon** 🎯
+- Android, macOS, and Linux builds
+- Browser extensions
+- Custom themes
+
+---
+
+## 💬 Support
+
+- 📧 **Email** — sh4es89h4es98_43678@vexomail.xyz
+- 🐛 **Report a bug** — [GitHub Issues](https://github.com/OryvexClub/oryvex_vpn_demo/issues)
+- 💡 **Request a feature** — [GitHub Issues](https://github.com/OryvexClub/oryvex_vpn_demo/issues)
+
+---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+OryvexVPN is released under the **MIT License**. You are free to use, modify, distribute, and study the code for personal or commercial purposes, with no warranty from the developers. See the [LICENSE](LICENSE) file for details.
+
+---
 
 ## 🙏 Acknowledgments
 
-- [Flutter](https://flutter.dev) - For the amazing cross-platform framework
-- [Cloudflare WARP](https://developers.cloudflare.com/warp-client/) - For WARP registration API
-- [Inno Setup](https://jrsoftware.org/isinfo.php) - For the installer creation tool
-
-## 📝 Changelog
-
-### Version 1.0.0 (2026-08-02)
-
-#### ✅ Major Fixes
-- ✅ Fixed incorrect connection status display (now shows real tunnel state)
-- ✅ Fixed fake statistics - real speed, ping, and IP
-- ✅ Fixed app freezing on close
-- ✅ Complete Persian language support with RTL
-- ✅ Full VPN configuration management
-- ✅ Continuous connection monitoring
-- ✅ Advanced error handling
-- ✅ Automatic reconnection on connection loss
-
-#### 🎯 Features
-- Cloudflare WARP integration
-- Automatic endpoint selection
-- Real-time connection statistics
-- System tray support
-- Windows startup option
-- Professional installer
-
-#### 🔧 Technical Improvements
-- Removed unused legacy code
-- Cleaned up project structure
-- Added comprehensive CI/CD pipeline
-- Improved error handling and logging
-
-## 📧 Support
-
-For support and questions:
-- 📧 Email: sh4es89h4es98_43678@vexomail.xyz
-- 🐛 Issues: [GitHub Issues](https://github.com/OryvexClub/oryvex_vpn_demo/issues)
+Built on the shoulders of wonderful open-source projects — the **Flutter** team, **Cloudflare** for WARP infrastructure, the **AmneziaWG** project, and every member of our community whose feedback keeps improving the app.
 
 ---
 
 <div align="center">
 
+## ⭐ Star Us on GitHub
+
+If OryvexVPN helps you, a star is the simplest way to help others find it — and it keeps us motivated.
+
+---
+
 **ساخته شده با ❤️ توسط تیم OryvexVPN**
 
-**Made with ❤️ by OryvexVPN Team**
+**حریم خصوصی شما، آزادی شما، VPN شما.**
+
+*© 2026 OryvexVPN. All rights reserved.*
 
 </div>

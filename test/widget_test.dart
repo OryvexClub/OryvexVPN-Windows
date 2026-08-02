@@ -1,30 +1,22 @@
-// This is a basic Flutter widget test.
+// Basic smoke test for OryvexVPN.
 //
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// Note: OryvexVPNApp depends on platform channels (window_manager, tray_manager,
+// and the AmneziaWG core) that are unavailable in a headless test environment,
+// so we validate the app's static configuration instead of pumping the full UI.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:warp_vpn_app/main.dart';
+import 'package:warp_vpn_app/core/config.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  test('AppConfig exposes expected app metadata', () {
+    expect(AppConfig.appName, 'OryvexVPN');
+    expect(AppConfig.appVersion, isNotEmpty);
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  test('VPN tunnel defaults are sane', () {
+    expect(AppConfig.defaultEndpointPort, isNotEmpty);
+    expect(AppConfig.mtu, greaterThan(0));
+    expect(AppConfig.persistentKeepaliveSeconds, greaterThan(0));
+    expect(AppConfig.tunnelInterfaceName, isNotEmpty);
   });
 }

@@ -154,15 +154,49 @@ jobs:
 
     - name: Install Inno Setup
       run: |
+        $ErrorActionPreference = "Stop"
         Write-Host "Installing Inno Setup..."
-        $innoUrl = "https://jrsoftware.org/download.php/is.exe"
-        $innoInstaller = "$env:TEMP\innosetup.exe"
 
+        # Prefer winget when available: it downloads, verifies, and installs
+        # Inno Setup reliably from an official source.
+        if (Get-Command winget -ErrorAction SilentlyContinue) {
+          Write-Host "Using winget to install Inno Setup..."
+          winget install --id JRSoftware.InnoSetup --exact --silent --accept-package-agreements --accept-source-agreements --disable-interactivity
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Inno Setup installed via winget"
+            exit 0
+          }
+          Write-Host "winget install failed (exit $LASTEXITCODE), falling back to direct download"
+        }
+
+        # Fallback: jrsoftware.org/download.php serves an HTML redirect to a
+        # mirror, unless a browser-like User-Agent is sent. The older
+        # System.Net.WebClient downloads that HTML as the .exe, which is why the
+        # installer was "corrupted and unreadable". Use Invoke-WebRequest with a
+        # User-Agent and verify the result is a real PE file.
+        Write-Host "Downloading Inno Setup from jrsoftware.org..."
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        $webClient = New-Object System.Net.WebClient
-        $webClient.DownloadFile($innoUrl, $innoInstaller)
+        $innoInstaller = "$env:TEMP\innosetup.exe"
+        Invoke-WebRequest -Uri "https://jrsoftware.org/download.php/is.exe" `
+          -OutFile $innoInstaller `
+          -Headers @{ "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" } `
+          -UseBasicParsing
+
+        # Sanity check: a real Windows exe begins with "MZ" and is not a few KB
+        # of HTML from a failed redirect.
+        $bytes = [System.IO.File]::ReadAllBytes($innoInstaller)
+        $isPe = $bytes.Length -ge 2 -and $bytes[0] -eq 0x4D -and $bytes[1] -eq 0x5A
+        if (-not $isPe) {
+          Write-Host "ERROR: downloaded Inno Setup installer is not a valid executable ($($bytes.Length) bytes)"
+          exit 1
+        }
+        Write-Host "Downloaded valid installer ($([math]::Round($bytes.Length / 1MB, 2)) MB)"
 
         Start-Process -FilePath $innoInstaller -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-" -Wait -NoNewWindow
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "ERROR: Inno Setup installer exited with code $LASTEXITCODE"
+          exit $LASTEXITCODE
+        }
         Write-Host "Inno Setup installed successfully"
       shell: powershell
 
