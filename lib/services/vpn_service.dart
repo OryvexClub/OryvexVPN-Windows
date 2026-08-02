@@ -118,6 +118,11 @@ class VPNService extends ChangeNotifier {
     }
 
     // Tunnel dropped unexpectedly. Try to auto-recover a few times.
+    // Ensure we are waiting at least 15 seconds since connected before testing dropping connection
+    if (_connectedAt != null && DateTime.now().difference(_connectedAt!).inSeconds < 15) {
+      return; // Give it some time to establish and report status properly
+    }
+
     _reconnectAttempts++;
     VpnLogger.warn(_tag,
         'Connection dropped! Attempt $_reconnectAttempts/$_maxReconnectAttempts');

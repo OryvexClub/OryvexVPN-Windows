@@ -86,6 +86,17 @@ class VpnCore {
           VpnLogger.warn(_tag, 'Service state: ${stateMatch.group(2)}');
         }
       }
+
+      // AmneziaWG sometimes doesn't report correctly in sc query or has a different service name internally,
+      // but if the network interface exists, it means the tunnel is up.
+      if (!running) {
+        final interfaceResult = await Process.run('netsh', ['interface', 'show', 'interface', 'name=$tunnelName']);
+        if (interfaceResult.exitCode == 0 && interfaceResult.stdout.toString().contains('Connected')) {
+           VpnLogger.debug(_tag, 'serviceRunning: sc says false but netsh interface is Connected. Reporting TRUE.');
+           return true;
+        }
+      }
+
       return running;
     } catch (e) {
       VpnLogger.error(_tag, 'serviceRunning exception: $e');
