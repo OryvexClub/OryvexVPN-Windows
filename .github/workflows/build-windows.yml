@@ -1,4 +1,4 @@
-name: Build Windows VPN App
+name: Build Windows VPN App with AmneziaWG
 
 on:
   push:
@@ -32,40 +32,53 @@ jobs:
         echo "Data directory created"
       shell: powershell
 
-    - name: Download WireGuard
+    - name: Download AmneziaWG
       run: |
         $ErrorActionPreference = "Stop"
 
-        $wgMsi = "$env:TEMP\wireguard-amd64.msi"
-        $extractDir = "$env:TEMP\wireguard-payload"
+        Write-Host "Downloading AmneziaWG from GitHub releases..."
 
-        Write-Host "Downloading WireGuard MSI from official source..."
-        Invoke-WebRequest -Uri "https://download.wireguard.com/windows-client/wireguard-amd64-0.5.3.msi" -OutFile $wgMsi -UseBasicParsing
+        # Try latest release first
+        $amneziaUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/latest/download/amneziawg-amd64.msi"
+        $amneziaMsi = "$env:TEMP\amneziawg-amd64.msi"
 
-        Write-Host "Extracting WireGuard payload (msiexec administrative install)..."
+        try {
+          Invoke-WebRequest -Uri $amneziaUrl -OutFile $amneziaMsi -UseBasicParsing -ErrorAction Stop
+          Write-Host "Downloaded from latest release"
+        } catch {
+          Write-Host "Latest release not available, trying specific version..."
+          $amneziaUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/v1.0.20230424/amneziawg-amd64.msi"
+          Invoke-WebRequest -Uri $amneziaUrl -OutFile $amneziaMsi -UseBasicParsing
+        }
+
+        Write-Host "Extracting AmneziaWG payload..."
+        $extractDir = "$env:TEMP\amneziawg-payload"
         New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
-        Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$wgMsi`" /qn TARGETDIR=`"$extractDir`"" -Wait -NoNewWindow
+        Start-Process -FilePath "msiexec.exe" -ArgumentList "/a `"$amneziaMsi`" /qn TARGETDIR=`"$extractDir`"" -Wait -NoNewWindow
 
-        # Administrative install extracts wg.exe and wireguard.exe under <TARGETDIR>\WireGuard\
-        $srcDir = "$extractDir\WireGuard"
+        # Find AmneziaWG directory and executables
+        Write-Host "Searching for AmneziaWG executables..."
+        $amneziaExe = Get-ChildItem -Path $extractDir -Recurse -Filter "amneziawg.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+        $awgExe = Get-ChildItem -Path $extractDir -Recurse -Filter "awg.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
 
-        if (-not (Test-Path "$srcDir\wireguard.exe")) {
-          Write-Host "ERROR: wireguard.exe not found in extracted payload at: $srcDir"
-          exit 1
-        }
-
-        Copy-Item "$srcDir\wg.exe"        -Destination "data\wg.exe"        -Force
-        Copy-Item "$srcDir\wireguard.exe" -Destination "data\wireguard.exe" -Force
-
-        if (Test-Path "data\wireguard.exe") {
-          Write-Host ""
-          Write-Host "=== WireGuard Setup Complete ==="
-          Write-Host "wireguard.exe: $((Get-Item 'data\wireguard.exe').Length) bytes"
-          Write-Host "wg.exe:        $((Get-Item 'data\wg.exe').Length) bytes"
+        if ($amneziaExe) {
+          Copy-Item $amneziaExe.FullName -Destination "data\amneziawg.exe" -Force
+          Write-Host "amneziawg.exe copied: $((Get-Item 'data\amneziawg.exe').Length) bytes"
         } else {
-          Write-Host "ERROR: Failed to copy WireGuard executables into data\"
+          Write-Host "ERROR: amneziawg.exe not found in MSI payload"
           exit 1
         }
+
+        if ($awgExe) {
+          Copy-Item $awgExe.FullName -Destination "data\awg.exe" -Force
+          Write-Host "awg.exe copied: $((Get-Item 'data\awg.exe').Length) bytes"
+        } else {
+          Write-Host "WARNING: awg.exe not found, using amneziawg.exe for stats"
+          Copy-Item "data\amneziawg.exe" -Destination "data\awg.exe" -Force
+        }
+
+        Write-Host ""
+        Write-Host "=== AmneziaWG Setup Complete ==="
       shell: powershell
       continue-on-error: false
 
@@ -99,27 +112,6 @@ jobs:
       shell: powershell
       continue-on-error: false
 
-    - name: Install WireSock (best effort)
-      run: |
-        $ErrorActionPreference = "Continue"
-        Write-Host "Attempting WireSock via winget (non-fatal)..."
-        winget install --id NTKERNEL.WireSockVPNClient --silent --accept-package-agreements --accept-source-agreements 2>&1 | Out-Host
-        Start-Sleep -Seconds 3
-        $candidates = @(
-          "C:\Program Files\WireSock\WireSock\wiresock.exe",
-          "C:\Program Files\WireSock Secure Connect\wiresock.exe",
-          "$env:LOCALAPPDATA\Programs\WireSock\wiresock.exe"
-        )
-        $found = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-        if ($found) {
-          Copy-Item $found -Destination "data\wiresock.exe" -Force
-          Write-Host "WireSock bundled from: $found"
-        } else {
-          Write-Host "WARNING: WireSock not found after install - official WireGuard fallback will be used."
-        }
-      shell: powershell
-      continue-on-error: true
-
     - name: Get Flutter dependencies
       run: flutter pub get
 
@@ -134,9 +126,6 @@ jobs:
       run: |
         $releaseData = "build\windows\x64\runner\Release\data"
         if (Test-Path "data") {
-          # Flutter already creates Release\data (app.so, flutter_assets...).
-          # Copy the *contents* (data\*) so our files land directly inside it;
-          # copying the folder itself would nest it as data\data\.
           if (-not (Test-Path $releaseData)) {
             New-Item -ItemType Directory -Force -Path $releaseData | Out-Null
           }
@@ -153,6 +142,7 @@ jobs:
           "commit_sha" = "${{ github.sha }}"
           "branch" = "${{ github.ref_name }}"
           "flutter_version" = (flutter --version | Select-String -Pattern "Flutter (\d+\.\d+\.\d+)" | ForEach-Object { $_.Matches.Groups[1].Value })
+          "vpn_core" = "AmneziaWG"
         }
         $buildInfo | ConvertTo-Json | Out-File -FilePath "build\windows\x64\runner\Release\build_info.json"
       shell: powershell
@@ -160,7 +150,7 @@ jobs:
     - name: Package application
       run: |
         $releaseDir = "build\windows\x64\runner\Release"
-        $outputZip = "OryvexVPN-Windows-x64.zip"
+        $outputZip = "OryvexVPN-AmneziaWG-Windows-x64.zip"
 
         # Create zip package
         Compress-Archive -Path "$releaseDir\*" -DestinationPath $outputZip -Force
@@ -172,19 +162,13 @@ jobs:
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
       with:
-        name: OryvexVPN-Windows-Build
-        path: OryvexVPN-Windows-x64.zip
+        name: OryvexVPN-AmneziaWG-Windows-Build
+        path: OryvexVPN-AmneziaWG-Windows-x64.zip
         retention-days: 30
 
     - name: Upload release directory
       uses: actions/upload-artifact@v4
       with:
-        name: OryvexVPN-Windows-Release-Files
+        name: OryvexVPN-AmneziaWG-Release-Files
         path: build/windows/x64/runner/Release/
         retention-days: 7
-
-    # Removed automatic release creation
-    # To create a release manually:
-    # 1. Go to GitHub Releases
-    # 2. Create a new release
-    # 3. Attach the OryvexVPN-Windows-x64.zip from artifacts

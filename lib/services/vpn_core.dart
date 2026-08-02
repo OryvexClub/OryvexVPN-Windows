@@ -6,29 +6,24 @@ class VpnCore {
 
   static String get _exeDir => File(Platform.resolvedExecutable).parent.path;
   static String get _dataDir => '$_exeDir\\data';
-  static String get wiresockExe => '$_dataDir\\wiresock.exe';
-  static String get wireguardExe => '$_dataDir\\wireguard.exe';
-  static String get wgExe => '$_dataDir\\wg.exe';
+  static String get amneziaWgExe => '$_dataDir\\amneziawg.exe';
+  static String get awgExe => '$_dataDir\\awg.exe';
   static String get wintunDll => '$_dataDir\\wintun.dll';
 
   static const String tunnelName = 'oryvexvpn';
   static const String serviceName = 'WireGuardTunnel\$$tunnelName';
 
-  /// Which backend is available, in priority order.
-  static Future<String?> detectCore() async {
-    if (await File(wiresockExe).exists()) return 'wiresock';
-    if (await File(wireguardExe).exists()) return 'wireguard';
-    return null;
+  /// Check if AmneziaWG core is available.
+  static Future<bool> coreAvailable() async {
+    return await File(amneziaWgExe).exists();
   }
 
-  /// Path to the core executable that drives `/installtunnelservice`.
-  static Future<String> coreExe() async =>
-      (await detectCore()) == 'wiresock' ? wiresockExe : wireguardExe;
+  /// Path to the AmneziaWG core executable.
+  static Future<String> coreExe() async => amneziaWgExe;
 
-  /// True when the required pieces are present: a core exe + wintun driver.
+  /// True when the required pieces are present: AmneziaWG exe + wintun driver.
   static Future<bool> coreFilesPresent() async {
-    final core = await detectCore();
-    if (core == null) return false;
+    if (!await File(amneziaWgExe).exists()) return false;
     return await File(wintunDll).exists();
   }
 
@@ -36,9 +31,11 @@ class VpnCore {
   static Future<List<String>> missingFiles() async {
     final missing = <String>[];
     if (!await File(wintunDll).exists()) missing.add('wintun.dll');
-    if (!await File(wiresockExe).exists() &&
-        !await File(wireguardExe).exists()) {
-      missing.add('core engine (wiresock.exe / wireguard.exe)');
+    if (!await File(amneziaWgExe).exists()) {
+      missing.add('amneziawg.exe');
+    }
+    if (!await File(awgExe).exists()) {
+      missing.add('awg.exe (stats tool)');
     }
     return missing;
   }
@@ -61,23 +58,12 @@ class VpnCore {
   }
 
   static Future<void> installTunnel(String confPath) async {
-    final preferred = await coreExe();
+    final exe = await coreExe();
     final result = await Process.run(
-        preferred, ['/installtunnelservice', confPath]);
-    if (result.exitCode == 0) {
-      await Future.delayed(const Duration(milliseconds: 1500));
-      return;
-    }
-
-    // The preferred core failed (e.g. a WireSock build without the
-    // tunnel-service command). Fall back to the other backend so a bad
-    // wiresock.exe never breaks the working WireGuard path.
-    final fallback = preferred == wiresockExe ? wireguardExe : wiresockExe;
-    final fbResult = await Process.run(
-        fallback, ['/installtunnelservice', confPath]);
-    if (fbResult.exitCode != 0) {
+        exe, ['/installtunnelservice', confPath]);
+    if (result.exitCode != 0) {
       throw Exception(
-        'Failed to install tunnel service: ${fbResult.stderr}',
+        'Failed to install AmneziaWG tunnel service: ${result.stderr}',
       );
     }
     await Future.delayed(const Duration(milliseconds: 1500));
@@ -95,10 +81,7 @@ class VpnCore {
     final result = await Process.run(exe, ['/uninstalltunnelservice', tunnelName])
         .timeout(const Duration(seconds: 4));
     if (result.exitCode != 0) {
-      // Try the other backend.
-      final fallback = exe == wiresockExe ? wireguardExe : wiresockExe;
-      await Process.run(fallback, ['/uninstalltunnelservice', tunnelName])
-          .timeout(const Duration(seconds: 4));
+      throw Exception('Failed to uninstall AmneziaWG tunnel: ${result.stderr}');
     }
     await Future.delayed(const Duration(milliseconds: 400));
   }
@@ -115,8 +98,8 @@ class VpnCore {
 
   // ---- Statistics --------------------------------------------------------
 
-  /// Returns `{ 'rx': int, 'tx': int }` from `wg show <name> transfer`.
-  /// Works with both the official `wg.exe` and the WireSock drop-in.
+  /// Returns `{ 'rx': int, 'tx': int }` from `awg show <name> transfer`.
+  /// Uses AmneziaWG's awg.exe stats tool.
   static Future<Map<String, int>> readTransfer() async {
     final reader = _statsReaderPath();
     if (reader == null) return {'rx': 0, 'tx': 0};
@@ -151,11 +134,11 @@ class VpnCore {
     }
   }
 
-  /// Preferred stats reader: `wg.exe` for official, `wiresock.exe` for the
-  /// WireSock drop-in.
+  /// Stats reader: awg.exe (AmneziaWG stats tool).
   static String? _statsReaderPath() {
-    if (Platform.isWindows && File(wgExe).existsSync()) return wgExe;
-    if (Platform.isWindows && File(wiresockExe).existsSync()) return wiresockExe;
+    if (Platform.isWindows && File(awgExe).existsSync()) return awgExe;
+    // Fallback to main executable if awg.exe not available
+    if (Platform.isWindows && File(amneziaWgExe).existsSync()) return amneziaWgExe;
     return null;
   }
 
