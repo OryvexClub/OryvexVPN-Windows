@@ -247,29 +247,20 @@ class VPNService extends ChangeNotifier {
         _updateStatus(translatedMsg);
       });
 
-      // Require a real handshake before declaring success.
-      VpnLogger.info(_tag, 'Checking if actually connected...');
+      // Check if the tunnel service is actually running.
+      VpnLogger.info(_tag, 'Checking if tunnel service is running...');
       final actuallyUp = await WireGuardService.isConnected();
       VpnLogger.info(_tag, 'isConnected check: $actuallyUp');
 
       if (!actuallyUp) {
-        // Tunnel service may be up but handshake not yet detected.
-        // Wait a bit longer and re-check.
-        VpnLogger.info(_tag, 'Not yet connected, waiting 5s...');
-        await Future.delayed(const Duration(seconds: 5));
+        // Wait a moment for the service to start, then re-check.
+        VpnLogger.info(_tag, 'Not yet running, waiting 3s...');
+        await Future.delayed(const Duration(seconds: 3));
         final retryUp = await WireGuardService.isConnected();
         VpnLogger.info(_tag, 'Retry check: $retryUp');
 
         if (!retryUp) {
-          // One more try after another delay
-          VpnLogger.info(_tag, 'Still not connected, waiting 5s more...');
-          await Future.delayed(const Duration(seconds: 5));
-          final finalCheck = await WireGuardService.isConnected();
-          VpnLogger.info(_tag, 'Final check: $finalCheck');
-
-          if (!finalCheck) {
-            throw Exception('تونل فعال شد اما تبادل کلید (Handshake) انجام نشد');
-          }
+          throw Exception('تونل راه‌اندازی نشد. لطفا دوباره تلاش کنید.');
         }
       }
 

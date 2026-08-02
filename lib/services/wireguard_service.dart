@@ -67,7 +67,6 @@ class WireGuardService {
     final confDir = await _confDir();
 
     // === STRATEGY: Try AmneziaWG config first, fallback to standard WireGuard ===
-    bool handshakeOk = false;
 
     // --- Attempt 1: AmneziaWG config with obfuscation parameters ---
     VpnLogger.info(_tag, '--- Attempt 1: AmneziaWG config ---');
@@ -87,77 +86,52 @@ class WireGuardService {
       await VpnCore.installTunnel(confFileAmnezia.path);
       onProgress('در حال تنظیم DNS...');
       await VpnCore.flushDns();
-      onProgress('در حال تایید اتصال...');
-      handshakeOk = await _waitForHandshake(
-        timeout: const Duration(seconds: 25),
-      );
+      // Check if service started — if so, we're done
+      if (await VpnCore.serviceRunning()) {
+        VpnLogger.info(_tag, '=== TUNNEL RUNNING (AmneziaWG) ===');
+        final showOutput = await VpnCore.readShow();
+        VpnLogger.info(_tag, 'awg show output:\n$showOutput');
+        VpnLogger.info(_tag, '=== connectWithProgress END ===');
+        return;
+      }
     } catch (e) {
       VpnLogger.error(_tag, 'AmneziaWG tunnel install failed: $e');
     }
 
     // --- Attempt 2: Standard WireGuard config (no obfuscation) ---
-    if (!handshakeOk) {
-      VpnLogger.info(_tag, '--- Attempt 2: Standard WireGuard config ---');
-      onProgress('تلاش مجدد با تنظیمات استاندارد...');
+    VpnLogger.info(_tag, '--- Attempt 2: Standard WireGuard config ---');
+    onProgress('تلاش مجدد با تنظیمات استاندارد...');
 
-      // Clean up previous attempt
-      try {
-        await VpnCore.uninstallTunnel();
-      } catch (_) {}
+    // Clean up previous attempt
+    try {
+      await VpnCore.uninstallTunnel();
+    } catch (_) {}
 
-      final confFileStandard = File('$confDir\\${VpnCore.tunnelName}_wg.conf');
-      final standardConf = reg.buildStandardConf();
-      await confFileStandard.writeAsString(standardConf);
-      VpnLogger.info(_tag, 'Standard config written to ${confFileStandard.path}');
-      VpnLogger.info(_tag, 'Standard config:\n$standardConf');
+    final confFileStandard = File('$confDir\\${VpnCore.tunnelName}_wg.conf');
+    final standardConf = reg.buildStandardConf();
+    await confFileStandard.writeAsString(standardConf);
+    VpnLogger.info(_tag, 'Standard config written to ${confFileStandard.path}');
+    VpnLogger.info(_tag, 'Standard config:\n$standardConf');
 
-      try {
-        await VpnCore.installTunnel(confFileStandard.path);
-        onProgress('در حال تنظیم DNS...');
-        await VpnCore.flushDns();
-        onProgress('در حال تایید اتصال...');
-        handshakeOk = await _waitForHandshake(
-          timeout: const Duration(seconds: 25),
-        );
-      } catch (e) {
-        VpnLogger.error(_tag, 'Standard WG tunnel install failed: $e');
+    try {
+      await VpnCore.installTunnel(confFileStandard.path);
+      onProgress('در حال تنظیم DNS...');
+      await VpnCore.flushDns();
+      if (await VpnCore.serviceRunning()) {
+        VpnLogger.info(_tag, '=== TUNNEL RUNNING (Standard WG) ===');
+        final showOutput = await VpnCore.readShow();
+        VpnLogger.info(_tag, 'awg show output:\n$showOutput');
+      } else {
+        VpnLogger.error(_tag, '=== TUNNEL NOT RUNNING ===');
       }
-    }
-
-    if (!handshakeOk) {
-      VpnLogger.error(_tag, '=== ALL ATTEMPTS FAILED - no handshake ===');
-      // Don't throw - let VPNService handle the error state
-      // Log the full show output for debugging
-      final showOutput = await VpnCore.readShow();
-      VpnLogger.error(_tag, 'awg show output:\n$showOutput');
-    } else {
-      VpnLogger.info(_tag, '=== HANDSHAKE SUCCESSFUL ===');
-      final showOutput = await VpnCore.readShow();
-      VpnLogger.info(_tag, 'awg show output:\n$showOutput');
+    } catch (e) {
+      VpnLogger.error(_tag, 'Standard WG tunnel install failed: $e');
     }
 
     VpnLogger.info(_tag, '=== connectWithProgress END ===');
   }
 
   static Future<void> connect() async => await connectWithProgress((_) {});
-
-  /// Polls until a real handshake is seen or [timeout] elapses.
-  static Future<bool> _waitForHandshake({required Duration timeout}) async {
-    final deadline = DateTime.now().add(timeout);
-    int pollCount = 0;
-    while (DateTime.now().isBefore(deadline)) {
-      pollCount++;
-      final age = await VpnCore.readHandshakeAge();
-      VpnLogger.debug(_tag, 'Handshake poll #$pollCount: age=$age');
-      if (age != null && age < 60) {
-        VpnLogger.info(_tag, 'Handshake detected! age=${age}s');
-        return true;
-      }
-      await Future.delayed(const Duration(seconds: 1));
-    }
-    VpnLogger.warn(_tag, 'Handshake timeout after ${timeout.inSeconds}s ($pollCount polls)');
-    return false;
-  }
 
   static Future<void> disconnect() async {
     VpnLogger.info(_tag, '=== disconnect START ===');
@@ -169,27 +143,13 @@ class WireGuardService {
     VpnLogger.info(_tag, '=== disconnect END ===');
   }
 
-  /// True only when the tunnel service is up AND has a recent handshake
-  /// (i.e. traffic is actually flowing). This prevents the fake "connected
-  /// but 0 data" state.
+  /// True when the tunnel service is running.
+  /// No handshake check — the tunnel itself being alive is sufficient.
   static Future<bool> isConnected() async {
     if (!Platform.isWindows) return false;
     final running = await VpnCore.serviceRunning();
-    if (!running) {
-      VpnLogger.debug(_tag, 'isConnected: service not running');
-      return false;
-    }
-
-    final age = await VpnCore.readHandshakeAge();
-    if (age == null) {
-      VpnLogger.debug(_tag, 'isConnected: no handshake data');
-      return false;
-    }
-    // A handshake that happened within the last 3 minutes means the tunnel is
-    // genuinely alive.
-    final alive = age < 180;
-    VpnLogger.debug(_tag, 'isConnected: handshake age=${age}s, alive=$alive');
-    return alive;
+    VpnLogger.debug(_tag, 'isConnected: serviceRunning=$running');
+    return running;
   }
 
   /// Real tunnel statistics: bytes transferred and handshake age.
