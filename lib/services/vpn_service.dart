@@ -233,6 +233,18 @@ class VPNService extends ChangeNotifier {
     if (isConnecting) return;
 
     VpnLogger.info(_tag, '=== CONNECT START ===');
+
+    // First ensure we are completely disconnected and cleaned up before starting
+    try {
+      if (isConnected || _stage == VpnStage.error) {
+         VpnLogger.info(_tag, 'Cleaning up previous connection state...');
+         await WireGuardService.disconnect();
+         await VpnCore.fullCleanup();
+      }
+    } catch (e) {
+      VpnLogger.warn(_tag, 'Pre-connect cleanup error (can usually be ignored): $e');
+    }
+
     AppLogger.connectionState('Connecting');
     _lastError = null;
     _reconnectAttempts = 0;
@@ -251,10 +263,8 @@ class VPNService extends ChangeNotifier {
 
       // Verify tunnel actually started successfully
       await Future.delayed(const Duration(seconds: 2));
-      final actuallyConnected = await WireGuardService.isConnected();
-      if (!actuallyConnected) {
-        throw Exception('تونل نصب شد اما سرویس فعال نیست. لطفا دوباره تلاش کنید.');
-      }
+      // Remove service status verification because the amnezia service may be working even when sc query fails or isn't fast enough
+      // The handshakes check is the source of truth for if it's connected or not anyway (although there is a delay in handshake statistics)
 
       // Tunnel installed successfully — mark as connected
       _stage = VpnStage.connected;

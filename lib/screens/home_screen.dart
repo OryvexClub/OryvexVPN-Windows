@@ -305,7 +305,7 @@ class _HomeScreenState extends State<HomeScreen>
             Expanded(
               child: StatsCard(
                 icon: Icons.south_rounded,
-                label: l10n.download,
+                label: 'دانلود', // Using Persian text since sometimes l10n getter causes issues
                 value: '${_fmtSpeed(s.downloadSpeed)} KB/s',
                 color: const Color(0xFF00E676),
               ),
@@ -314,7 +314,7 @@ class _HomeScreenState extends State<HomeScreen>
             Expanded(
               child: StatsCard(
                 icon: Icons.north_rounded,
-                label: l10n.upload,
+                label: 'آپلود',
                 value: '${_fmtSpeed(s.uploadSpeed)} KB/s',
                 color: const Color(0xFF00C853),
               ),
@@ -327,7 +327,7 @@ class _HomeScreenState extends State<HomeScreen>
             Expanded(
               child: StatsCard(
                 icon: Icons.speed_rounded,
-                label: l10n.ping,
+                label: 'پینگ',
                 value: s.ping > 0 ? '${s.ping} ms' : '—',
                 color: const Color(0xFFFFB800),
               ),
@@ -336,7 +336,7 @@ class _HomeScreenState extends State<HomeScreen>
             Expanded(
               child: StatsCard(
                 icon: Icons.language_rounded,
-                label: l10n.ipAddress,
+                label: 'آی‌پی',
                 value: s.ipInfo.ip,
                 color: const Color(0xFF00E676),
                 valueSize: 13,
@@ -350,7 +350,7 @@ class _HomeScreenState extends State<HomeScreen>
             Expanded(
               child: StatsCard(
                 icon: Icons.south_rounded,
-                label: l10n.totalDownload,
+                label: 'مجموع دانلود',
                 value: _fmtBytes(vpn.totalDownload),
                 color: const Color(0xFF00C853),
                 valueSize: 15,
@@ -360,7 +360,7 @@ class _HomeScreenState extends State<HomeScreen>
             Expanded(
               child: StatsCard(
                 icon: Icons.north_rounded,
-                label: l10n.totalUpload,
+                label: 'مجموع آپلود',
                 value: _fmtBytes(vpn.totalUpload),
                 color: const Color(0xFF69F0AE),
                 valueSize: 15,
