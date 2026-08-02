@@ -112,14 +112,34 @@ class VPNService extends ChangeNotifier {
     if (_stage != VpnStage.connected) return;
 
     final alive = await WireGuardService.isConnected();
-    if (alive) {
+
+    // Validate if connection actually has handshakes instead of just checking if the service is running.
+    // Cloudflare WARP drops packets if the endpoint doesn't work, so it will show up as connected
+    // but handshakes will fail and traffic will be 0.
+    bool validHandshake = true;
+    try {
+      final stats = await WireGuardService.getTunnelStats();
+      final handshakeAge = stats['handshake_age'] as int?;
+      // If there's no handshake after 25 seconds, or if the handshake is very old (> 120s), we consider it dropped
+      if (handshakeAge == null) {
+        if (_connectedAt != null && DateTime.now().difference(_connectedAt!).inSeconds > 25) {
+          validHandshake = false;
+        }
+      } else if (handshakeAge > 120) {
+        validHandshake = false;
+      }
+    } catch (e) {
+      VpnLogger.warn(_tag, 'Failed to verify handshake: $e');
+    }
+
+    if (alive && validHandshake) {
       _reconnectAttempts = 0;
       return;
     }
 
     // Tunnel dropped unexpectedly. Try to auto-recover a few times.
-    // Ensure we are waiting at least 15 seconds since connected before testing dropping connection
-    if (_connectedAt != null && DateTime.now().difference(_connectedAt!).inSeconds < 15) {
+    // Ensure we are waiting at least 25 seconds since connected before testing dropping connection
+    if (_connectedAt != null && DateTime.now().difference(_connectedAt!).inSeconds < 25) {
       return; // Give it some time to establish and report status properly
     }
 

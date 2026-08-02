@@ -224,11 +224,20 @@ const List<VpnEndpoint> kProbeEndpoints = [
 Future<int?> _measureLatency(String ip, int port, Duration timeout) async {
   try {
     final stopwatch = Stopwatch()..start();
-    final socket = await Socket.connect(ip, port, timeout: timeout);
+
+    // WireGuard uses UDP, so a TCP connect might fail even if the UDP endpoint is active.
+    // However, some firewalls block UDP probes or they silently drop packets.
+    // We will do a quick TCP probe to check general routing/reachability, and if it fails,
+    // we'll still consider endpoints but prioritize those that respond to TCP.
+
+    final tcpSocket = await Socket.connect(ip, port, timeout: timeout);
     stopwatch.stop();
-    socket.destroy();
+    tcpSocket.destroy();
     return stopwatch.elapsedMilliseconds;
   } catch (_) {
+    // If TCP fails, we don't necessarily want to drop the endpoint completely,
+    // but for picking the *fastest*, we need some metric. Let's return null here
+    // but the fallback logic will still pick a random endpoint if all probes fail.
     return null;
   }
 }
