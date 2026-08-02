@@ -80,6 +80,46 @@ jobs:
         }
       shell: powershell
 
+    - name: Download wintun driver
+      run: |
+        $ErrorActionPreference = "Stop"
+        $zip = "$env:TEMP\wintun.zip"
+        $out = "$env:TEMP\wintun-extract"
+        Write-Host "Downloading wintun virtual adapter driver..."
+        Invoke-WebRequest -Uri "https://www.wintun.net/builds/wintun-0.14.1.zip" -OutFile $zip -UseBasicParsing
+        Expand-Archive -Path $zip -DestinationPath $out -Force
+        $dll = Get-ChildItem -Path $out -Recurse -Filter "wintun.dll" | Where-Object { $_.FullName -match "amd64" } | Select-Object -First 1
+        if (-not $dll) { $dll = Get-ChildItem -Path $out -Recurse -Filter "wintun.dll" | Select-Object -First 1 }
+        if (-not $dll) {
+          Write-Host "ERROR: wintun.dll not found in archive"
+          exit 1
+        }
+        Copy-Item $dll.FullName -Destination "data\wintun.dll" -Force
+        Write-Host "wintun.dll bundled: $((Get-Item 'data\wintun.dll').Length) bytes"
+      shell: powershell
+      continue-on-error: false
+
+    - name: Install WireSock (best effort)
+      run: |
+        $ErrorActionPreference = "Continue"
+        Write-Host "Attempting WireSock via winget (non-fatal)..."
+        winget install --id NTKERNEL.WireSockVPNClient --silent --accept-package-agreements --accept-source-agreements 2>&1 | Out-Host
+        Start-Sleep -Seconds 3
+        $candidates = @(
+          "C:\Program Files\WireSock\WireSock\wiresock.exe",
+          "C:\Program Files\WireSock Secure Connect\wiresock.exe",
+          "$env:LOCALAPPDATA\Programs\WireSock\wiresock.exe"
+        )
+        $found = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if ($found) {
+          Copy-Item $found -Destination "data\wiresock.exe" -Force
+          Write-Host "WireSock bundled from: $found"
+        } else {
+          Write-Host "WARNING: WireSock not found after install - official WireGuard fallback will be used."
+        }
+      shell: powershell
+      continue-on-error: true
+
     - name: Get Flutter dependencies
       run: flutter pub get
 

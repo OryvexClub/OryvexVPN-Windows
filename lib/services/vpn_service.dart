@@ -21,10 +21,18 @@ class VPNService extends ChangeNotifier {
   Timer? _statsTimer;
   Timer? _connectionCheckTimer;
 
-  // Previous stats for speed calculation
-  int _previousTxBytes = 0;
+  DateTime? _connectedAt;
+  int _totalDownload = 0;
+  int _totalUpload = 0;
+
+  // Previous stats for speed calculation.
   int _previousRxBytes = 0;
+  int _previousTxBytes = 0;
   DateTime _lastStatsUpdate = DateTime.now();
+
+  // Auto-recovery bookkeeping.
+  int _reconnectAttempts = 0;
+  static const int _maxReconnectAttempts = 3;
 
   VpnStage get stage => _stage;
   bool get isConnected => _stage == VpnStage.connected;
@@ -33,6 +41,22 @@ class VPNService extends ChangeNotifier {
   String get statusMessage => _statusMessage;
   String? get lastError => _lastError;
   ConnectionStats get stats => _stats;
+  DateTime? get connectedAt => _connectedAt;
+  int get totalDownload => _totalDownload;
+  int get totalUpload => _totalUpload;
+  String get currentEndpoint => WireGuardService.currentEndpoint?.hostPort ?? '—';
+
+  /// Human-readable connection duration, or '—' when not connected.
+  String get connectedDuration {
+    final at = _connectedAt;
+    if (at == null) return '—';
+    final d = DateTime.now().difference(at);
+    final h = d.inHours;
+    final m = d.inMinutes.remainder(60);
+    final s = d.inSeconds.remainder(60);
+    if (h > 0) return '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    return '$m:${s.toString().padLeft(2, '0')}';
+  }
 
   void _updateStatus(String msg) {
     _statusMessage = msg;
@@ -40,19 +64,18 @@ class VPNService extends ChangeNotifier {
   }
 
   Future<void> initStatus() async {
-    // Check actual connection status on startup
     final actuallyConnected = await WireGuardService.isConnected();
     if (actuallyConnected) {
       _stage = VpnStage.connected;
+      _connectedAt = DateTime.now();
       _statusMessage = 'متصل شد';
       _startStatsMonitoring();
       _startConnectionMonitoring();
-      notifyListeners();
     } else {
       _stage = VpnStage.idle;
       _statusMessage = 'برای اتصال کلیک کنید';
-      notifyListeners();
     }
+    notifyListeners();
   }
 
   void _startStatsMonitoring() {
@@ -60,15 +83,12 @@ class VPNService extends ChangeNotifier {
     _statsTimer = Timer.periodic(const Duration(seconds: 2), (_) async {
       await _updateStats();
     });
-    _updateStats(); // Initial update
+    _updateStats();
   }
 
   void _stopStatsMonitoring() {
     _statsTimer?.cancel();
     _statsTimer = null;
-    _stats = ConnectionStats.initial();
-    _previousTxBytes = 0;
-    _previousRxBytes = 0;
   }
 
   void _startConnectionMonitoring() {
@@ -86,83 +106,102 @@ class VPNService extends ChangeNotifier {
   Future<void> _checkConnectionStatus() async {
     if (_stage != VpnStage.connected) return;
 
+    final alive = await WireGuardService.isConnected();
+    if (alive) {
+      _reconnectAttempts = 0;
+      return;
+    }
+
+    // Tunnel dropped unexpectedly. Try to auto-recover a few times.
+    _reconnectAttempts++;
+    if (_reconnectAttempts <= _maxReconnectAttempts) {
+      _statusMessage = 'اتصال قطع شد، در حال تلاش مجدد ($_reconnectAttempts/$_maxReconnectAttempts)...';
+      notifyListeners();
+      await _reconnect();
+    } else {
+      _reconnectAttempts = 0;
+      _stage = VpnStage.error;
+      _lastError = 'اتصال به طور غیرمنتظره قطع شد';
+      _statusMessage = 'قطع شد';
+      _stopStatsMonitoring();
+      _stopConnectionMonitoring();
+      notifyListeners();
+    }
+  }
+
+  Future<void> _reconnect() async {
+    _stopStatsMonitoring();
+    _stopConnectionMonitoring();
     try {
-      final actuallyConnected = await WireGuardService.isConnected();
-      if (!actuallyConnected) {
-        // Connection was lost unexpectedly
-        _stage = VpnStage.error;
-        _lastError = 'اتصال به طور غیرمنتظره قطع شد';
-        _statusMessage = 'قطع شد';
-        _stopStatsMonitoring();
-        _stopConnectionMonitoring();
-        notifyListeners();
+      await WireGuardService.disconnect();
+      await WireGuardService.connectWithProgress((msg) {
+        _statusMessage = msg;
+      });
+      final ok = await WireGuardService.isConnected();
+      if (ok) {
+        _stage = VpnStage.connected;
+        _connectedAt = DateTime.now();
+        _statusMessage = 'متصل شد';
+        _startStatsMonitoring();
+        _startConnectionMonitoring();
       }
     } catch (e) {
-      print('Error checking connection status: $e');
+      print('Auto-reconnect failed: $e');
     }
+    notifyListeners();
   }
 
   Future<void> _updateStats() async {
     if (!isConnected) return;
 
-    try {
-      // Get IP info
-      final ipInfo = await ErrorHandler.tryCatch(
-        () => IPInfoService.getIPInfo(),
-        fallback: IPInfoModel.unknown(),
-        context: 'Get IP Info',
-      );
+    final tunnelStats = await ErrorHandler.tryCatch(
+      () => WireGuardService.getTunnelStats(),
+      fallback: {'rx_bytes': 0, 'tx_bytes': 0, 'handshake_age': null},
+      context: 'Get Tunnel Stats',
+    );
 
-      // Measure ping to Cloudflare
-      final ping = await ErrorHandler.tryCatch(
-        () => IPInfoService.measurePing('1.1.1.1'),
-        fallback: -1,
-        context: 'Measure Ping',
-      );
+    final rxBytes = (tunnelStats?['rx_bytes'] as int?) ?? 0;
+    final txBytes = (tunnelStats?['tx_bytes'] as int?) ?? 0;
+    _totalDownload = rxBytes;
+    _totalUpload = txBytes;
 
-      // Get connection statistics
-      final networkStats = await ErrorHandler.tryCatch(
-        () => WireGuardService.getConnectionStats(),
-        fallback: {'tx_bytes': 0, 'rx_bytes': 0},
-        context: 'Get Network Stats',
-      );
+    final now = DateTime.now();
+    final timeDiff = now.difference(_lastStatsUpdate).inSeconds;
 
-      final now = DateTime.now();
-      final timeDiff = now.difference(_lastStatsUpdate).inSeconds;
-
-      double downloadSpeed = 0.0;
-      double uploadSpeed = 0.0;
-
-      if (timeDiff > 0 && networkStats != null) {
-        final txBytes = networkStats['tx_bytes'] as int;
-        final rxBytes = networkStats['rx_bytes'] as int;
-
-        // Calculate speeds in KB/s
-        if (_previousRxBytes > 0 && rxBytes > _previousRxBytes) {
-          downloadSpeed = (rxBytes - _previousRxBytes) / timeDiff / 1024;
-        }
-        if (_previousTxBytes > 0 && txBytes > _previousTxBytes) {
-          uploadSpeed = (txBytes - _previousTxBytes) / timeDiff / 1024;
-        }
-
-        _previousRxBytes = rxBytes;
-        _previousTxBytes = txBytes;
+    double downloadSpeed = 0.0;
+    double uploadSpeed = 0.0;
+    if (timeDiff > 0) {
+      if (rxBytes > 0 && rxBytes >= _previousRxBytes) {
+        downloadSpeed = (rxBytes - _previousRxBytes) / timeDiff / 1024;
       }
-
-      _lastStatsUpdate = now;
-
-      _stats = ConnectionStats(
-        ping: (ping ?? -1) > 0 ? ping! : 0,
-        downloadSpeed: downloadSpeed > 0 ? downloadSpeed : 0.0,
-        uploadSpeed: uploadSpeed > 0 ? uploadSpeed : 0.0,
-        ipInfo: ipInfo ?? IPInfoModel.unknown(),
-        timestamp: now,
-      );
-
-      notifyListeners();
-    } catch (e) {
-      AppLogger.error('Error updating stats', e);
+      if (txBytes > 0 && txBytes >= _previousTxBytes) {
+        uploadSpeed = (txBytes - _previousTxBytes) / timeDiff / 1024;
+      }
+      _previousRxBytes = rxBytes;
+      _previousTxBytes = txBytes;
     }
+    _lastStatsUpdate = now;
+
+    // IP + ping.
+    final ipInfo = await ErrorHandler.tryCatch(
+      () => IPInfoService.getIPInfo(),
+      fallback: _stats.ipInfo,
+      context: 'Get IP Info',
+    );
+    final ping = await ErrorHandler.tryCatch(
+      () => IPInfoService.measurePing('1.1.1.1'),
+      fallback: _stats.ping,
+      context: 'Measure Ping',
+    );
+
+    _stats = ConnectionStats(
+      ping: (ping ?? 0) > 0 ? ping! : 0,
+      downloadSpeed: downloadSpeed > 0 ? downloadSpeed : 0.0,
+      uploadSpeed: uploadSpeed > 0 ? uploadSpeed : 0.0,
+      ipInfo: ipInfo ?? _stats.ipInfo,
+      timestamp: now,
+    );
+    notifyListeners();
   }
 
   Future<void> connect() async {
@@ -170,6 +209,7 @@ class VPNService extends ChangeNotifier {
 
     AppLogger.connectionState('Connecting');
     _lastError = null;
+    _reconnectAttempts = 0;
     _stage = VpnStage.fetchingConfig;
     _statusMessage = 'در حال دریافت تنظیمات...';
     notifyListeners();
@@ -177,36 +217,34 @@ class VPNService extends ChangeNotifier {
     try {
       await WireGuardService.connectWithProgress((msg) {
         _stage = VpnStage.installingTunnel;
-        // Translate progress messages
         String translatedMsg = msg;
-        if (msg.contains('Finding fastest server')) {
+        if (msg.contains('Finding fastest server') || msg.contains('سریع‌ترین')) {
           translatedMsg = 'در حال یافتن سریع‌ترین سرور...';
-        } else if (msg.contains('Registering')) {
+        } else if (msg.contains('Registering') || msg.contains('ثبت')) {
           translatedMsg = 'در حال ثبت‌نام با Cloudflare WARP...';
-        } else if (msg.contains('Starting secure tunnel')) {
+        } else if (msg.contains('Starting secure tunnel') || msg.contains('راه‌اندازی')) {
           translatedMsg = 'در حال راه‌اندازی تونل امن...';
-        } else if (msg.contains('Verifying')) {
+        } else if (msg.contains('DNS')) {
+          translatedMsg = 'در حال تنظیم DNS...';
+        } else if (msg.contains('Verifying') || msg.contains('تایید')) {
           translatedMsg = 'در حال تایید اتصال...';
         }
         AppLogger.info(translatedMsg, 'VPN');
         _updateStatus(translatedMsg);
       });
 
-      // Verify connection multiple times to ensure stability
-      await Future.delayed(const Duration(seconds: 1));
+      // Require a real handshake before declaring success.
       final actuallyUp = await WireGuardService.isConnected();
       if (!actuallyUp) {
-        throw Exception('تونل بعد از تنظیمات فعال نیست');
-      }
-
-      // Double-check after another second
-      await Future.delayed(const Duration(seconds: 1));
-      final stillUp = await WireGuardService.isConnected();
-      if (!stillUp) {
-        throw Exception('تونل بلافاصله بعد از اتصال قطع شد');
+        // Tunnel service is up but no handshake yet - wait a moment and retry.
+        await Future.delayed(const Duration(seconds: 3));
+        if (!await WireGuardService.isConnected()) {
+          throw Exception('تونل فعال شد اما تبادل کلید (Handshake) انجام نشد');
+        }
       }
 
       _stage = VpnStage.connected;
+      _connectedAt = DateTime.now();
       _updateStatus('متصل شد');
       AppLogger.connectionState('Connected');
       _startStatsMonitoring();
@@ -232,14 +270,18 @@ class VPNService extends ChangeNotifier {
     try {
       await WireGuardService.disconnect();
 
-      // Verify disconnection
-      await Future.delayed(const Duration(milliseconds: 500));
       final stillConnected = await WireGuardService.isConnected();
       if (stillConnected) {
         throw Exception('تونل هنوز فعال است');
       }
 
       _stage = VpnStage.idle;
+      _connectedAt = null;
+      _totalDownload = 0;
+      _totalUpload = 0;
+      _previousRxBytes = 0;
+      _previousTxBytes = 0;
+      _stats = ConnectionStats.initial();
       _updateStatus('قطع شد');
       _lastError = null;
       AppLogger.connectionState('Disconnected');
