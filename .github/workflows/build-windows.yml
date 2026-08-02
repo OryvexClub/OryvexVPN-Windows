@@ -234,35 +234,9 @@ jobs:
         $buildInfo | ConvertTo-Json | Out-File -FilePath "build\windows\x64\runner\Release\build_info.json"
       shell: powershell
 
-    - name: Package application (ZIP)
-      run: |
-        $releaseDir = "build\windows\x64\runner\Release"
-        $outputZip = "OryvexVPN-AmneziaWG-Windows-x64.zip"
-
-        # Create zip package
-        Compress-Archive -Path "$releaseDir\*" -DestinationPath $outputZip -Force
-
-        Write-Host "Package created: $outputZip"
-        Write-Host "Package size: $([math]::Round((Get-Item $outputZip).Length / 1MB, 2)) MB"
-      shell: powershell
-
-    - name: Upload ZIP artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: OryvexVPN-AmneziaWG-Windows-Portable
-        path: OryvexVPN-AmneziaWG-Windows-x64.zip
-        retention-days: 30
-
     - name: Upload installer artifact
       uses: actions/upload-artifact@v4
       with:
         name: OryvexVPN-Windows-Installer
         path: installer/Output/*.exe
         retention-days: 30
-
-    - name: Upload release directory
-      uses: actions/upload-artifact@v4
-      with:
-        name: OryvexVPN-AmneziaWG-Release-Files
-        path: build/windows/x64/runner/Release/
-        retention-days: 7
