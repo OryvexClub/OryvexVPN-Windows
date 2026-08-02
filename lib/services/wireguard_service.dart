@@ -46,7 +46,7 @@ class WireGuardService {
     }
 
     // Step 2: Find fastest endpoint
-    onProgress('Finding fastest server...', VpnStage.fetchingConfig);
+    onProgress('در حال یافتن سریع‌ترین سرور...', VpnStage.fetchingConfig);
     VpnLogger.info(_tag, 'Picking fastest endpoint...');
     final endpoint = await pickFastestEndpoint();
     if (endpoint == null) {
@@ -56,7 +56,7 @@ class WireGuardService {
     VpnLogger.info(_tag, 'Selected endpoint: ${endpoint.hostPort}');
 
     // Step 3: Register with Cloudflare WARP
-    onProgress('Registering with Cloudflare WARP...', VpnStage.fetchingConfig);
+    onProgress('در حال ثبت‌نام با Cloudflare WARP...', VpnStage.fetchingConfig);
     VpnLogger.info(_tag, 'Registering with WARP...');
     final reg = await WarpRegistrationService.register(
       resolveEndpoint: () async => endpoint,
@@ -68,7 +68,7 @@ class WireGuardService {
     VpnLogger.info(_tag, 'Peer public key: ${reg.peerPublicKey}');
 
     // Step 4: Write config
-    onProgress('Creating AmneziaWG config...', VpnStage.installingTunnel);
+    onProgress('در حال ایجاد تنظیمات AmneziaWG...', VpnStage.installingTunnel);
     final confDir = await _confDir();
     final confFile = File('$confDir\\${VpnCore.tunnelName}.conf');
     final amneziaConf = reg.buildConf();
@@ -76,20 +76,17 @@ class WireGuardService {
     VpnLogger.info(_tag, 'Config written to ${confFile.path}');
 
     // Step 5: Install tunnel
-    onProgress('Installing secure tunnel...', VpnStage.installingTunnel);
+    onProgress('در حال نصب تونل امن...', VpnStage.installingTunnel);
     if (await VpnCore.serviceExists()) {
       VpnLogger.info(_tag, 'Stale tunnel exists, removing...');
       await VpnCore.uninstallTunnel();
     }
     await VpnCore.installTunnel(confFile.path);
 
-    // Step 6: Flush DNS
-    onProgress('Configuring DNS...', VpnStage.installingTunnel);
-    await VpnCore.flushDns();
+    // Step 6: Flush DNS (fire-and-forget, don't block on it)
+    // The tunnel is already working after installTunnel succeeded.
+    VpnCore.flushDns().catchError((_) {});
 
-    // If installTunnel succeeded without exception, the tunnel is running.
-    // Don't do strict verification - serviceRunning() can be unreliable
-    // right after install. The tunnel install succeeding is sufficient.
     VpnLogger.info(_tag, '=== TUNNEL INSTALLED SUCCESSFULLY ===');
     VpnLogger.info(_tag, '=== connectWithProgress END ===');
   }

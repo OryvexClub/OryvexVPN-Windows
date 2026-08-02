@@ -141,7 +141,7 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          backgroundColor: const Color(0xFF141414),
+          backgroundColor: const Color(0xFF0A0A0A),
           title: Text(l10n.closeTitle, style: const TextStyle(color: Colors.white)),
           content: Text(
             l10n.closeMessage,
@@ -153,7 +153,7 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
                 Navigator.of(ctx).pop();
                 windowManager.hide();
               },
-              child: Text(l10n.closeBackground, style: const TextStyle(color: Color(0xFF00E5FF))),
+              child: Text(l10n.closeBackground, style: const TextStyle(color: Color(0xFF00E676))),
             ),
             TextButton(
               onPressed: () {
@@ -200,15 +200,15 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       },
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0A0A0A),
+        scaffoldBackgroundColor: const Color(0xFF000000),
         fontFamily: 'Vazirmatn',
         useMaterial3: true,
         colorScheme: ColorScheme.dark(
-          primary: const Color(0xFF00E5FF),
-          secondary: const Color(0xFF00FFCC),
+          primary: const Color(0xFF00E676),
+          secondary: const Color(0xFF69F0AE),
           error: const Color(0xFFFF3366),
-          background: const Color(0xFF0A0A0A),
-          surface: const Color(0xFF141414),
+          background: const Color(0xFF000000),
+          surface: const Color(0xFF0A0A0A),
         ),
       ),
       home: const HomeScreen(),

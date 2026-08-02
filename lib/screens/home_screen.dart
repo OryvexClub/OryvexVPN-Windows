@@ -36,10 +36,10 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Color getStatusColor(VPNService vpn) {
-    if (vpn.isConnected) return const Color(0xFF00E5FF);
+    if (vpn.isConnected) return const Color(0xFF00E676);
     if (vpn.isConnecting) return const Color(0xFFFFB800);
     if (vpn.stage == VpnStage.error) return const Color(0xFFFF3366);
-    return const Color(0xFF8A8A8A);
+    return const Color(0xFF4A4A4A);
   }
 
   String _fmtSpeed(double kb) {
@@ -64,15 +64,15 @@ class _HomeScreenState extends State<HomeScreen>
     final active = vpn.isConnected || vpn.isConnecting;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF080B12),
+      backgroundColor: const Color(0xFF000000),
       body: Container(
         decoration: const BoxDecoration(
           gradient: RadialGradient(
             center: Alignment(0, -0.2),
             radius: 1.4,
             colors: [
-              Color(0xFF0F1B2E),
-              Color(0xFF080B12),
+              Color(0xFF050F05),
+              Color(0xFF000000),
             ],
           ),
         ),
@@ -229,12 +229,12 @@ class _HomeScreenState extends State<HomeScreen>
           height: 160,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                const Color(0xFF1A2332),
-                const Color(0xFF0C111C),
+                Color(0xFF051005),
+                Color(0xFF000000),
               ],
             ),
             boxShadow: [
@@ -269,9 +269,9 @@ class _HomeScreenState extends State<HomeScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: const Color(0xFF0A0A0A),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: color.withOpacity(0.15)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -307,7 +307,7 @@ class _HomeScreenState extends State<HomeScreen>
                 icon: Icons.south_rounded,
                 label: l10n.download,
                 value: '${_fmtSpeed(s.downloadSpeed)} KB/s',
-                color: const Color(0xFF00E5FF),
+                color: const Color(0xFF00E676),
               ),
             ),
             const SizedBox(width: 12),
@@ -316,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen>
                 icon: Icons.north_rounded,
                 label: l10n.upload,
                 value: '${_fmtSpeed(s.uploadSpeed)} KB/s',
-                color: const Color(0xFF00FF88),
+                color: const Color(0xFF00C853),
               ),
             ),
           ],
@@ -338,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen>
                 icon: Icons.language_rounded,
                 label: l10n.ipAddress,
                 value: s.ipInfo.ip,
-                color: const Color(0xFF00FFCC),
+                color: const Color(0xFF00E676),
                 valueSize: 13,
               ),
             ),
@@ -352,7 +352,7 @@ class _HomeScreenState extends State<HomeScreen>
                 icon: Icons.south_rounded,
                 label: l10n.totalDownload,
                 value: _fmtBytes(vpn.totalDownload),
-                color: const Color(0xFF7C7CFF),
+                color: const Color(0xFF00C853),
                 valueSize: 15,
               ),
             ),
@@ -362,7 +362,7 @@ class _HomeScreenState extends State<HomeScreen>
                 icon: Icons.north_rounded,
                 label: l10n.totalUpload,
                 value: _fmtBytes(vpn.totalUpload),
-                color: const Color(0xFFFF6B9D),
+                color: const Color(0xFF69F0AE),
                 valueSize: 15,
               ),
             ),
