@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:async';
 import 'package:path_provider/path_provider.dart';
 
-import '../core/config.dart';
 import 'endpoints.dart';
 import 'vpn_core.dart';
 import 'warp_registration.dart';

@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import '../core/config.dart';
-
 
 class VpnCore {
   VpnCore._();
@@ -156,8 +154,8 @@ class VpnCore {
   /// Preferred stats reader: `wg.exe` for official, `wiresock.exe` for the
   /// WireSock drop-in.
   static String? _statsReaderPath() {
-    if (Platform.isWindows && File(wgExe).exists()) return wgExe;
-    if (Platform.isWindows && File(wiresockExe).exists()) return wiresockExe;
+    if (Platform.isWindows && File(wgExe).existsSync()) return wgExe;
+    if (Platform.isWindows && File(wiresockExe).existsSync()) return wiresockExe;
     return null;
   }
 
