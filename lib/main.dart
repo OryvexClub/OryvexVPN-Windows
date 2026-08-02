@@ -11,7 +11,7 @@ import 'services/network_manager.dart';
 import 'services/tray_service.dart';
 import 'services/window_manager_service.dart';
 import 'services/vpn_service.dart';
-import 'services/warp_service.dart';
+import 'services/wireguard_service.dart';
 import 'l10n/app_localizations.dart';
 
 void main() async {
@@ -85,9 +85,9 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
     }
 
     try {
-      // Force cleanup WarpService
+      // Force cleanup WireGuard
       if (!isDisconnecting) {
-        await WarpService.disconnect().timeout(
+        await WireGuardService.disconnect().timeout(
           const Duration(seconds: 1),
           onTimeout: () {},
         );

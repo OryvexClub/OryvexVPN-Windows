@@ -73,3 +73,9 @@ logs/
 # User configs
 configs/*.conf
 !configs/example.conf
+
+# Temporary analysis files
+folder_structure.txt
+
+# Installer output
+installer/Output/

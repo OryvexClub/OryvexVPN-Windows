@@ -38,17 +38,32 @@ jobs:
 
         Write-Host "Downloading AmneziaWG from GitHub releases..."
 
-        # Try latest release first
-        $amneziaUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/latest/download/amneziawg-amd64.msi"
+        # Use a more reliable download method with retries
+        $amneziaUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/v1.0.20230424/amneziawg-amd64.msi"
         $amneziaMsi = "$env:TEMP\amneziawg-amd64.msi"
 
-        try {
-          Invoke-WebRequest -Uri $amneziaUrl -OutFile $amneziaMsi -UseBasicParsing -ErrorAction Stop
-          Write-Host "Downloaded from latest release"
-        } catch {
-          Write-Host "Latest release not available, trying specific version..."
-          $amneziaUrl = "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/v1.0.20230424/amneziawg-amd64.msi"
-          Invoke-WebRequest -Uri $amneziaUrl -OutFile $amneziaMsi -UseBasicParsing
+        $maxRetries = 3
+        $retryCount = 0
+        $downloaded = $false
+
+        while (-not $downloaded -and $retryCount -lt $maxRetries) {
+          try {
+            Write-Host "Download attempt $($retryCount + 1) of $maxRetries..."
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            $webClient = New-Object System.Net.WebClient
+            $webClient.DownloadFile($amneziaUrl, $amneziaMsi)
+            $downloaded = $true
+            Write-Host "Download successful"
+          } catch {
+            $retryCount++
+            if ($retryCount -lt $maxRetries) {
+              Write-Host "Download failed, retrying in 5 seconds..."
+              Start-Sleep -Seconds 5
+            } else {
+              Write-Host "ERROR: Failed to download after $maxRetries attempts"
+              throw
+            }
+          }
         }
 
         Write-Host "Extracting AmneziaWG payload..."
@@ -99,7 +114,11 @@ jobs:
         $zip = "$env:TEMP\wintun.zip"
         $out = "$env:TEMP\wintun-extract"
         Write-Host "Downloading wintun virtual adapter driver..."
-        Invoke-WebRequest -Uri "https://www.wintun.net/builds/wintun-0.14.1.zip" -OutFile $zip -UseBasicParsing
+
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        $webClient = New-Object System.Net.WebClient
+        $webClient.DownloadFile("https://www.wintun.net/builds/wintun-0.14.1.zip", $zip)
+
         Expand-Archive -Path $zip -DestinationPath $out -Force
         $dll = Get-ChildItem -Path $out -Recurse -Filter "wintun.dll" | Where-Object { $_.FullName -match "amd64" } | Select-Object -First 1
         if (-not $dll) { $dll = Get-ChildItem -Path $out -Recurse -Filter "wintun.dll" | Select-Object -First 1 }
@@ -135,6 +154,42 @@ jobs:
         }
       shell: powershell
 
+    - name: Install Inno Setup
+      run: |
+        Write-Host "Installing Inno Setup..."
+        $innoUrl = "https://jrsoftware.org/download.php/is.exe"
+        $innoInstaller = "$env:TEMP\innosetup.exe"
+
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        $webClient = New-Object System.Net.WebClient
+        $webClient.DownloadFile($innoUrl, $innoInstaller)
+
+        Start-Process -FilePath $innoInstaller -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-" -Wait -NoNewWindow
+        Write-Host "Inno Setup installed successfully"
+      shell: powershell
+
+    - name: Build installer with Inno Setup
+      run: |
+        $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+        if (-not (Test-Path $iscc)) {
+          Write-Host "ERROR: Inno Setup compiler not found at $iscc"
+          exit 1
+        }
+
+        Write-Host "Compiling installer with Inno Setup..."
+        & $iscc "installer\installer.iss"
+
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "ERROR: Inno Setup compilation failed with exit code $LASTEXITCODE"
+          exit $LASTEXITCODE
+        }
+
+        Write-Host "Installer created successfully"
+        if (Test-Path "installer\Output") {
+          Get-ChildItem "installer\Output" | ForEach-Object { Write-Host "  - $($_.Name) ($([math]::Round($_.Length / 1MB, 2)) MB)" }
+        }
+      shell: powershell
+
     - name: Create build info
       run: |
         $buildInfo = @{
@@ -147,7 +202,7 @@ jobs:
         $buildInfo | ConvertTo-Json | Out-File -FilePath "build\windows\x64\runner\Release\build_info.json"
       shell: powershell
 
-    - name: Package application
+    - name: Package application (ZIP)
       run: |
         $releaseDir = "build\windows\x64\runner\Release"
         $outputZip = "OryvexVPN-AmneziaWG-Windows-x64.zip"
@@ -156,14 +211,21 @@ jobs:
         Compress-Archive -Path "$releaseDir\*" -DestinationPath $outputZip -Force
 
         Write-Host "Package created: $outputZip"
-        Write-Host "Package size: $((Get-Item $outputZip).Length / 1MB) MB"
+        Write-Host "Package size: $([math]::Round((Get-Item $outputZip).Length / 1MB, 2)) MB"
       shell: powershell
 
-    - name: Upload build artifact
+    - name: Upload ZIP artifact
       uses: actions/upload-artifact@v4
       with:
-        name: OryvexVPN-AmneziaWG-Windows-Build
+        name: OryvexVPN-AmneziaWG-Windows-Portable
         path: OryvexVPN-AmneziaWG-Windows-x64.zip
+        retention-days: 30
+
+    - name: Upload installer artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: OryvexVPN-Windows-Installer
+        path: installer/Output/*.exe
         retention-days: 30
 
     - name: Upload release directory
