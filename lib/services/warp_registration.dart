@@ -55,6 +55,30 @@ class WarpRegistration {
     b.writeln('PersistentKeepalive = ${AppConfig.persistentKeepaliveSeconds}');
     return b.toString();
   }
+
+  /// Produces a standard WireGuard configuration without AmneziaWG
+  /// obfuscation parameters. Used as a fallback when the AmneziaWG config
+  /// fails to complete a handshake (e.g. server doesn't support obfuscation).
+  String buildStandardConf() {
+    final b = StringBuffer();
+    b.writeln('# Standard WireGuard WARP Config');
+    b.writeln('# Generated: ${DateTime.now().toIso8601String()}');
+    b.writeln('');
+    b.writeln('[Interface]');
+    b.writeln('PrivateKey = $privateKey');
+    b.writeln(
+      'Address = $addressV4/32, $addressV6/128',
+    );
+    b.writeln('DNS = 1.1.1.1, 1.0.0.1');
+    b.writeln('MTU = ${AppConfig.mtu}');
+    b.writeln('');
+    b.writeln('[Peer]');
+    b.writeln('PublicKey = $peerPublicKey');
+    b.writeln('AllowedIPs = 0.0.0.0/0, ::/0');
+    b.writeln('Endpoint = ${endpoint.hostPort}');
+    b.writeln('PersistentKeepalive = ${AppConfig.persistentKeepaliveSeconds}');
+    return b.toString();
+  }
 }
 
 /// Registers a fresh device with Cloudflare WARP and returns the parsed

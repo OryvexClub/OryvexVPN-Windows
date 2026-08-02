@@ -10,6 +10,7 @@ import 'screens/home_screen.dart';
 import 'services/network_manager.dart';
 import 'services/tray_service.dart';
 import 'services/window_manager_service.dart';
+import 'services/vpn_core.dart';
 import 'services/vpn_service.dart';
 import 'services/wireguard_service.dart';
 import 'l10n/app_localizations.dart';
@@ -62,50 +63,79 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
   }
 
   Future<void> _performQuit() async {
+    VpnLogger.info('Main', '=== QUIT START ===');
     bool isDisconnecting = false;
     final context = navigatorKey.currentContext;
 
+    // Step 1: Try graceful VPN disconnect through VPNService
     try {
       if (context != null) {
         final vpnService = context.read<VPNService>();
         if (vpnService.isConnected || vpnService.isConnecting) {
           isDisconnecting = true;
-          print('Disconnecting VPN before closing...');
+          VpnLogger.info('Main', 'Disconnecting VPN before closing...');
           await vpnService.disconnect().timeout(
-            const Duration(seconds: 5),
+            const Duration(seconds: 8),
             onTimeout: () {
-              print('VPN disconnect timeout, forcing close');
+              VpnLogger.warn('Main', 'VPN disconnect timeout');
             },
           );
         }
       }
     } catch (e) {
-      print('Error during VPN cleanup: $e');
+      VpnLogger.error('Main', 'Error during VPN service disconnect: $e');
     }
 
+    // Step 2: Force cleanup via VpnCore if VPNService disconnect didn't work
+    try {
+      VpnLogger.info('Main', 'Running full VpnCore cleanup...');
+      await VpnCore.fullCleanup().timeout(
+        const Duration(seconds: 8),
+        onTimeout: () {
+          VpnLogger.warn('Main', 'VpnCore cleanup timeout');
+        },
+      );
+    } catch (e) {
+      VpnLogger.error('Main', 'VpnCore cleanup error: $e');
+    }
+
+    // Step 3: Also try WireGuardService disconnect as fallback
     try {
       if (!isDisconnecting) {
         await WireGuardService.disconnect().timeout(
-          const Duration(seconds: 4),
+          const Duration(seconds: 5),
           onTimeout: () {},
         );
       }
-    } catch (_) {}
+    } catch (e) {
+      VpnLogger.error('Main', 'WireGuardService disconnect error: $e');
+    }
 
+    // Step 4: Force kill ALL remaining processes (nuclear option)
+    VpnLogger.info('Main', 'Force killing remaining processes...');
+    final procs = ['amneziawg.exe', 'awg.exe', 'wireservice.exe'];
+    for (final proc in procs) {
+      try {
+        final r = Process.runSync('taskkill', ['/F', '/IM', proc], runInShell: true);
+        if (r.exitCode == 0) {
+          VpnLogger.info('Main', 'Killed $proc');
+        }
+      } catch (_) {}
+    }
+
+    // Step 5: Dispose services
     try {
       NetworkManager.instance.dispose();
+      VpnLogger.info('Main', 'NetworkManager disposed');
     } catch (_) {}
 
     try {
       TrayService.instance.dispose();
+      VpnLogger.info('Main', 'TrayService disposed');
     } catch (_) {}
 
-    try {
-      // Force kill any lingering amneziawg processes to ensure a clean exit
-      Process.runSync('taskkill', ['/F', '/IM', 'amneziawg.exe'], runInShell: true);
-      Process.runSync('taskkill', ['/F', '/IM', 'awg.exe'], runInShell: true);
-    } catch (_) {}
-
+    // Step 6: Destroy window and exit
+    VpnLogger.info('Main', 'Destroying window and exiting...');
     windowManager.destroy();
     exit(0);
   }

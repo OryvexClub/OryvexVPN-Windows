@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'wireguard_service.dart';
+import 'vpn_core.dart';
 import 'ipinfo_service.dart';
 import '../utils/error_handler.dart';
 
@@ -33,6 +34,7 @@ class VPNService extends ChangeNotifier {
   // Auto-recovery bookkeeping.
   int _reconnectAttempts = 0;
   static const int _maxReconnectAttempts = 3;
+  static const String _tag = 'VPNService';
 
   VpnStage get stage => _stage;
   bool get isConnected => _stage == VpnStage.connected;
@@ -60,11 +62,14 @@ class VPNService extends ChangeNotifier {
 
   void _updateStatus(String msg) {
     _statusMessage = msg;
+    VpnLogger.info(_tag, 'Status: $msg');
     notifyListeners();
   }
 
   Future<void> initStatus() async {
+    VpnLogger.info(_tag, 'initStatus: checking current state...');
     final actuallyConnected = await WireGuardService.isConnected();
+    VpnLogger.info(_tag, 'initStatus: actuallyConnected=$actuallyConnected');
     if (actuallyConnected) {
       _stage = VpnStage.connected;
       _connectedAt = DateTime.now();
@@ -114,6 +119,8 @@ class VPNService extends ChangeNotifier {
 
     // Tunnel dropped unexpectedly. Try to auto-recover a few times.
     _reconnectAttempts++;
+    VpnLogger.warn(_tag,
+        'Connection dropped! Attempt $_reconnectAttempts/$_maxReconnectAttempts');
     if (_reconnectAttempts <= _maxReconnectAttempts) {
       _statusMessage = 'اتصال قطع شد، در حال تلاش مجدد ($_reconnectAttempts/$_maxReconnectAttempts)...';
       notifyListeners();
@@ -130,6 +137,7 @@ class VPNService extends ChangeNotifier {
   }
 
   Future<void> _reconnect() async {
+    VpnLogger.info(_tag, 'Starting auto-reconnect...');
     _stopStatsMonitoring();
     _stopConnectionMonitoring();
     try {
@@ -139,14 +147,17 @@ class VPNService extends ChangeNotifier {
       });
       final ok = await WireGuardService.isConnected();
       if (ok) {
+        VpnLogger.info(_tag, 'Auto-reconnect SUCCESS');
         _stage = VpnStage.connected;
         _connectedAt = DateTime.now();
         _statusMessage = 'متصل شد';
         _startStatsMonitoring();
         _startConnectionMonitoring();
+      } else {
+        VpnLogger.warn(_tag, 'Auto-reconnect: still no handshake');
       }
     } catch (e) {
-      print('Auto-reconnect failed: $e');
+      VpnLogger.error(_tag, 'Auto-reconnect failed: $e');
     }
     notifyListeners();
   }
@@ -207,6 +218,7 @@ class VPNService extends ChangeNotifier {
   Future<void> connect() async {
     if (isConnecting) return;
 
+    VpnLogger.info(_tag, '=== CONNECT START ===');
     AppLogger.connectionState('Connecting');
     _lastError = null;
     _reconnectAttempts = 0;
@@ -228,18 +240,36 @@ class VPNService extends ChangeNotifier {
           translatedMsg = 'در حال تنظیم DNS...';
         } else if (msg.contains('Verifying') || msg.contains('تایید')) {
           translatedMsg = 'در حال تایید اتصال...';
+        } else if (msg.contains('مجدد') || msg.contains('تلاش')) {
+          translatedMsg = msg;
         }
         AppLogger.info(translatedMsg, 'VPN');
         _updateStatus(translatedMsg);
       });
 
       // Require a real handshake before declaring success.
+      VpnLogger.info(_tag, 'Checking if actually connected...');
       final actuallyUp = await WireGuardService.isConnected();
+      VpnLogger.info(_tag, 'isConnected check: $actuallyUp');
+
       if (!actuallyUp) {
-        // Tunnel service is up but no handshake yet - wait a moment and retry.
-        await Future.delayed(const Duration(seconds: 3));
-        if (!await WireGuardService.isConnected()) {
-          throw Exception('تونل فعال شد اما تبادل کلید (Handshake) انجام نشد');
+        // Tunnel service may be up but handshake not yet detected.
+        // Wait a bit longer and re-check.
+        VpnLogger.info(_tag, 'Not yet connected, waiting 5s...');
+        await Future.delayed(const Duration(seconds: 5));
+        final retryUp = await WireGuardService.isConnected();
+        VpnLogger.info(_tag, 'Retry check: $retryUp');
+
+        if (!retryUp) {
+          // One more try after another delay
+          VpnLogger.info(_tag, 'Still not connected, waiting 5s more...');
+          await Future.delayed(const Duration(seconds: 5));
+          final finalCheck = await WireGuardService.isConnected();
+          VpnLogger.info(_tag, 'Final check: $finalCheck');
+
+          if (!finalCheck) {
+            throw Exception('تونل فعال شد اما تبادل کلید (Handshake) انجام نشد');
+          }
         }
       }
 
@@ -249,7 +279,9 @@ class VPNService extends ChangeNotifier {
       AppLogger.connectionState('Connected');
       _startStatsMonitoring();
       _startConnectionMonitoring();
+      VpnLogger.info(_tag, '=== CONNECT SUCCESS ===');
     } catch (e, stackTrace) {
+      VpnLogger.error(_tag, '=== CONNECT FAILED: $e ===');
       AppLogger.error('Connection failed', e, stackTrace, 'VPN');
       _stage = VpnStage.error;
       _lastError = ErrorHandler.getUserFriendlyMessage(e);
@@ -261,6 +293,7 @@ class VPNService extends ChangeNotifier {
   }
 
   Future<void> disconnect() async {
+    VpnLogger.info(_tag, '=== DISCONNECT START ===');
     AppLogger.connectionState('Disconnecting');
     _stage = VpnStage.disconnecting;
     _updateStatus('در حال قطع اتصال...');
@@ -272,7 +305,8 @@ class VPNService extends ChangeNotifier {
 
       final stillConnected = await WireGuardService.isConnected();
       if (stillConnected) {
-        throw Exception('تونل هنوز فعال است');
+        VpnLogger.warn(_tag, 'Tunnel still running after disconnect, force killing...');
+        await VpnCore.fullCleanup();
       }
 
       _stage = VpnStage.idle;
@@ -285,7 +319,9 @@ class VPNService extends ChangeNotifier {
       _updateStatus('قطع شد');
       _lastError = null;
       AppLogger.connectionState('Disconnected');
+      VpnLogger.info(_tag, '=== DISCONNECT SUCCESS ===');
     } catch (e, stackTrace) {
+      VpnLogger.error(_tag, '=== DISCONNECT FAILED: $e ===');
       AppLogger.error('Disconnect failed', e, stackTrace, 'VPN');
       _stage = VpnStage.error;
       _lastError = ErrorHandler.getUserFriendlyMessage(e);

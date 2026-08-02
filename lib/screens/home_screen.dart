@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import '../services/vpn_service.dart';
-import '../services/window_manager_service.dart';
 import '../widgets/stats_card.dart';
 
 class HomeScreen extends StatefulWidget {

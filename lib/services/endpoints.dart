@@ -155,20 +155,39 @@ Future<int?> _measureLatency(String ip, int port, Duration timeout) async {
   }
 }
 
+/// Standard WARP ports that are known to work with Cloudflare WARP.
+const List<int> kWarpStandardPorts = [2408, 500, 1701, 4500];
+
 /// Finds the reachable endpoint with the lowest latency from [candidates].
 /// Returns `null` if none are reachable.
 /// Uses parallel latency testing for faster results.
+///
+/// Strategy:
+/// 1. Try standard WARP ports first (most reliable).
+/// 2. If none reachable, try the curated probe endpoints.
+/// 3. If all fail, pick a random standard-port endpoint (TCP probing may be
+///    blocked by DPI, but UDP on standard ports often still works).
 Future<VpnEndpoint?> pickFastestEndpoint({
   List<VpnEndpoint>? candidates,
   Duration timeout = const Duration(milliseconds: 1500),
 }) async {
   final list = candidates ?? kEndpoints;
 
-  // We can't reliably TCP ping UDP endpoints, especially through DPI firewalls.
-  // We'll test the probe endpoints in parallel.
+  // --- Phase 1: Probe standard WARP endpoints with standard ports ---
+  final standardProbes = <VpnEndpoint>[];
+  for (final ip in const [
+    '162.159.192.1', '162.159.192.2', '162.159.193.1',
+    '188.114.96.1', '188.114.97.1',
+    '8.6.112.1', '8.6.112.100', '8.6.112.200',
+  ]) {
+    for (final port in kWarpStandardPorts) {
+      standardProbes.add(VpnEndpoint(ip, port));
+    }
+  }
+
   final probeResults = <VpnEndpoint, int?>{};
   await Future.wait(
-    kProbeEndpoints.map((e) async {
+    standardProbes.map((e) async {
       probeResults[e] = await _measureLatency(e.ip, e.port, timeout);
     }),
   );
@@ -182,13 +201,36 @@ Future<VpnEndpoint?> pickFastestEndpoint({
     return reachableProbes.first.key;
   }
 
-  // If TCP probes fail (common for UDP VPNs on filtered networks),
-  // DO NOT sequentially scan 600+ endpoints. It takes 20+ minutes and hangs the UI.
-  // Instead, randomly pick an endpoint from the entire list to spread the load
-  // and increase the chance of finding an unblocked IP.
+  // --- Phase 2: Try curated probe endpoints (may use non-standard ports) ---
+  final curatedResults = <VpnEndpoint, int?>{};
+  await Future.wait(
+    kProbeEndpoints.map((e) async {
+      curatedResults[e] = await _measureLatency(e.ip, e.port, timeout);
+    }),
+  );
+
+  final reachableCurated = curatedResults.entries
+      .where((entry) => entry.value != null)
+      .toList()
+    ..sort((a, b) => a.value!.compareTo(b.value!));
+
+  if (reachableCurated.isNotEmpty) {
+    return reachableCurated.first.key;
+  }
+
+  // --- Phase 3: Fallback - pick a random standard-port endpoint ---
+  // TCP probing is often blocked by DPI, but UDP on standard WARP ports
+  // usually still works. Prefer standard ports over non-standard ones.
+  final standardPortEndpoints = list
+      .where((e) => kWarpStandardPorts.contains(e.port))
+      .toList();
+  if (standardPortEndpoints.isNotEmpty) {
+    standardPortEndpoints.shuffle();
+    return standardPortEndpoints.first;
+  }
+
+  // Last resort: random from full list
   final fallbackList = [...list];
   fallbackList.shuffle();
-
-  // Return a random endpoint from the full list without waiting
   return fallbackList.first;
 }
