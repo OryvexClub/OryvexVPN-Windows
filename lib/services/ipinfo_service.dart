@@ -35,7 +35,7 @@ class IPInfoModel {
 
   factory IPInfoModel.unknown() {
     return IPInfoModel(
-      ip: 'قطع شده',
+      ip: 'N/A',
       city: '-',
       region: '-',
       country: '-',

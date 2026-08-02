@@ -16,7 +16,7 @@ enum VpnStage {
 
 class VPNService extends ChangeNotifier {
   VpnStage _stage = VpnStage.idle;
-  String _statusMessage = 'برای اتصال کلیک کنید';
+  String _statusMessage = 'Click to connect';
   String? _lastError;
   ConnectionStats _stats = ConnectionStats.initial();
   Timer? _statsTimer;
@@ -73,12 +73,12 @@ class VPNService extends ChangeNotifier {
     if (actuallyConnected) {
       _stage = VpnStage.connected;
       _connectedAt = DateTime.now();
-      _statusMessage = 'متصل شد';
+      _statusMessage = 'Connected';
       _startStatsMonitoring();
       _startConnectionMonitoring();
     } else {
       _stage = VpnStage.idle;
-      _statusMessage = 'برای اتصال کلیک کنید';
+      _statusMessage = 'Click to connect';
     }
     notifyListeners();
   }
@@ -122,14 +122,14 @@ class VPNService extends ChangeNotifier {
     VpnLogger.warn(_tag,
         'Connection dropped! Attempt $_reconnectAttempts/$_maxReconnectAttempts');
     if (_reconnectAttempts <= _maxReconnectAttempts) {
-      _statusMessage = 'اتصال قطع شد، در حال تلاش مجدد ($_reconnectAttempts/$_maxReconnectAttempts)...';
+      _statusMessage = 'Connection lost, retrying ($_reconnectAttempts/$_maxReconnectAttempts)...';
       notifyListeners();
       await _reconnect();
     } else {
       _reconnectAttempts = 0;
       _stage = VpnStage.error;
-      _lastError = 'اتصال به طور غیرمنتظره قطع شد';
-      _statusMessage = 'قطع شد';
+      _lastError = 'Connection dropped unexpectedly';
+      _statusMessage = 'Disconnected';
       _stopStatsMonitoring();
       _stopConnectionMonitoring();
       notifyListeners();
@@ -150,7 +150,7 @@ class VPNService extends ChangeNotifier {
         VpnLogger.info(_tag, 'Auto-reconnect SUCCESS');
         _stage = VpnStage.connected;
         _connectedAt = DateTime.now();
-        _statusMessage = 'متصل شد';
+        _statusMessage = 'Connected';
         _startStatsMonitoring();
         _startConnectionMonitoring();
       } else {
@@ -223,50 +223,20 @@ class VPNService extends ChangeNotifier {
     _lastError = null;
     _reconnectAttempts = 0;
     _stage = VpnStage.fetchingConfig;
-    _statusMessage = 'در حال دریافت تنظیمات...';
+    _statusMessage = 'Fetching config...';
     notifyListeners();
 
     try {
       await WireGuardService.connectWithProgress((msg) {
         _stage = VpnStage.installingTunnel;
-        String translatedMsg = msg;
-        if (msg.contains('Finding fastest server') || msg.contains('سریع‌ترین')) {
-          translatedMsg = 'در حال یافتن سریع‌ترین سرور...';
-        } else if (msg.contains('Registering') || msg.contains('ثبت')) {
-          translatedMsg = 'در حال ثبت‌نام با Cloudflare WARP...';
-        } else if (msg.contains('Starting secure tunnel') || msg.contains('راه‌اندازی')) {
-          translatedMsg = 'در حال راه‌اندازی تونل امن...';
-        } else if (msg.contains('DNS')) {
-          translatedMsg = 'در حال تنظیم DNS...';
-        } else if (msg.contains('Verifying') || msg.contains('تایید')) {
-          translatedMsg = 'در حال تایید اتصال...';
-        } else if (msg.contains('مجدد') || msg.contains('تلاش')) {
-          translatedMsg = msg;
-        }
-        AppLogger.info(translatedMsg, 'VPN');
-        _updateStatus(translatedMsg);
+        AppLogger.info(msg, 'VPN');
+        _updateStatus(msg);
       });
 
-      // Check if the tunnel service is actually running.
-      VpnLogger.info(_tag, 'Checking if tunnel service is running...');
-      final actuallyUp = await WireGuardService.isConnected();
-      VpnLogger.info(_tag, 'isConnected check: $actuallyUp');
-
-      if (!actuallyUp) {
-        // Wait a moment for the service to start, then re-check.
-        VpnLogger.info(_tag, 'Not yet running, waiting 3s...');
-        await Future.delayed(const Duration(seconds: 3));
-        final retryUp = await WireGuardService.isConnected();
-        VpnLogger.info(_tag, 'Retry check: $retryUp');
-
-        if (!retryUp) {
-          throw Exception('تونل راه‌اندازی نشد. لطفا دوباره تلاش کنید.');
-        }
-      }
-
+      // Tunnel installed successfully — mark as connected
       _stage = VpnStage.connected;
       _connectedAt = DateTime.now();
-      _updateStatus('متصل شد');
+      _updateStatus('Connected');
       AppLogger.connectionState('Connected');
       _startStatsMonitoring();
       _startConnectionMonitoring();
@@ -276,7 +246,7 @@ class VPNService extends ChangeNotifier {
       AppLogger.error('Connection failed', e, stackTrace, 'VPN');
       _stage = VpnStage.error;
       _lastError = ErrorHandler.getUserFriendlyMessage(e);
-      _updateStatus('اتصال ناموفق بود');
+      _updateStatus('Connection failed');
       _stopStatsMonitoring();
       _stopConnectionMonitoring();
     }
@@ -287,7 +257,7 @@ class VPNService extends ChangeNotifier {
     VpnLogger.info(_tag, '=== DISCONNECT START ===');
     AppLogger.connectionState('Disconnecting');
     _stage = VpnStage.disconnecting;
-    _updateStatus('در حال قطع اتصال...');
+    _updateStatus('Disconnecting...');
     _stopStatsMonitoring();
     _stopConnectionMonitoring();
 
@@ -307,7 +277,7 @@ class VPNService extends ChangeNotifier {
       _previousRxBytes = 0;
       _previousTxBytes = 0;
       _stats = ConnectionStats.initial();
-      _updateStatus('قطع شد');
+      _updateStatus('Disconnected');
       _lastError = null;
       AppLogger.connectionState('Disconnected');
       VpnLogger.info(_tag, '=== DISCONNECT SUCCESS ===');
@@ -316,7 +286,7 @@ class VPNService extends ChangeNotifier {
       AppLogger.error('Disconnect failed', e, stackTrace, 'VPN');
       _stage = VpnStage.error;
       _lastError = ErrorHandler.getUserFriendlyMessage(e);
-      _updateStatus('قطع اتصال ناموفق بود');
+      _updateStatus('Disconnect failed');
     }
     notifyListeners();
   }

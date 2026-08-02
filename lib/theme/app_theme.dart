@@ -13,7 +13,6 @@ class AppTheme {
         brightness: Brightness.dark,
         scaffoldBackgroundColor: background,
         primaryColor: primary,
-        fontFamily: 'Vazirmatn',
         colorScheme: const ColorScheme.dark(
           primary: primary,
           surface: surface,

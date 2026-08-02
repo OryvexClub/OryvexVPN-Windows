@@ -44,7 +44,6 @@ dependencies:
   connectivity_plus: ^6.1.0
   http: ^1.2.2
   cryptography: ^2.7.0
-  google_fonts: ^6.1.0
   flutter_localizations:
     sdk: flutter
   intl: any

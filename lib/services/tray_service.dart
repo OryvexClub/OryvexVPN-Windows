@@ -51,7 +51,7 @@ class TrayService with TrayListener {
     if (!_initialized) return;
     await _rebuildMenu();
     await trayManager.setToolTip(
-      isConnected ? 'OryvexVPN - متصل' : 'OryvexVPN - قطع',
+      isConnected ? 'OryvexVPN - Connected' : 'OryvexVPN - Disconnected',
     );
   }
 
@@ -60,17 +60,17 @@ class TrayService with TrayListener {
       items: [
         MenuItem(
           key: 'show_window',
-          label: 'نمایش پنجره',
+          label: 'Show Window',
         ),
         MenuItem.separator(),
         MenuItem(
           key: 'toggle_connection',
-          label: _isConnected ? 'قطع اتصال' : 'اتصال',
+          label: _isConnected ? 'Disconnect' : 'Connect',
         ),
         MenuItem.separator(),
         MenuItem(
           key: 'quit',
-          label: 'خروج',
+          label: 'Quit',
         ),
       ],
     );

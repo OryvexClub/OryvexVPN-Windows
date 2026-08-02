@@ -1,8 +1,8 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'core/config.dart';
@@ -14,6 +14,7 @@ import 'services/vpn_core.dart';
 import 'services/vpn_service.dart';
 import 'services/wireguard_service.dart';
 import 'l10n/app_localizations.dart';
+import 'l10n/locale_provider.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -26,6 +27,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => VPNService()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
       ],
       child: const OryvexVPNApp(),
     ),
@@ -46,7 +48,6 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
     windowManager.addListener(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final tray = TrayService.instance;
-      // Wire the tray menu actions so Connect/Disconnect/Quit actually work.
       tray.onConnectRequested = () => navigatorKey.currentContext!.read<VPNService>().connect();
       tray.onDisconnectRequested = () => navigatorKey.currentContext!.read<VPNService>().disconnect();
       tray.onQuitRequested = () => _performQuit();
@@ -67,7 +68,6 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
     bool isDisconnecting = false;
     final context = navigatorKey.currentContext;
 
-    // Step 1: Try graceful VPN disconnect through VPNService
     try {
       if (context != null) {
         final vpnService = context.read<VPNService>();
@@ -86,7 +86,6 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       VpnLogger.error('Main', 'Error during VPN service disconnect: $e');
     }
 
-    // Step 2: Force cleanup via VpnCore if VPNService disconnect didn't work
     try {
       VpnLogger.info('Main', 'Running full VpnCore cleanup...');
       await VpnCore.fullCleanup().timeout(
@@ -99,7 +98,6 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       VpnLogger.error('Main', 'VpnCore cleanup error: $e');
     }
 
-    // Step 3: Also try WireGuardService disconnect as fallback
     try {
       if (!isDisconnecting) {
         await WireGuardService.disconnect().timeout(
@@ -111,7 +109,6 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       VpnLogger.error('Main', 'WireGuardService disconnect error: $e');
     }
 
-    // Step 4: Force kill ALL remaining processes (nuclear option)
     VpnLogger.info('Main', 'Force killing remaining processes...');
     final procs = ['amneziawg.exe', 'awg.exe', 'wireservice.exe'];
     for (final proc in procs) {
@@ -123,7 +120,6 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       } catch (_) {}
     }
 
-    // Step 5: Dispose services
     try {
       NetworkManager.instance.dispose();
       VpnLogger.info('Main', 'NetworkManager disposed');
@@ -134,7 +130,6 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       VpnLogger.info('Main', 'TrayService disposed');
     } catch (_) {}
 
-    // Step 6: Destroy window and exit
     VpnLogger.info('Main', 'Destroying window and exiting...');
     windowManager.destroy();
     exit(0);
@@ -144,14 +139,15 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
   void onWindowClose() async {
     final context = navigatorKey.currentContext;
     if (context != null) {
+      final l10n = AppLocalizations.of(context);
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: const Color(0xFF141414),
-          title: const Text('بستن برنامه', style: TextStyle(color: Colors.white)),
-          content: const Text(
-            'آیا می‌خواهید برنامه به طور کامل بسته شود یا در پس‌زمینه (سینی سیستم) فعال بماند؟',
-            style: TextStyle(color: Colors.white70),
+          title: Text(l10n.closeTitle, style: const TextStyle(color: Colors.white)),
+          content: Text(
+            l10n.closeMessage,
+            style: const TextStyle(color: Colors.white70),
           ),
           actions: [
             TextButton(
@@ -159,67 +155,78 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
                 Navigator.of(ctx).pop();
                 windowManager.hide();
               },
-              child: const Text('پنهان در پس‌زمینه', style: TextStyle(color: Color(0xFF00E5FF))),
+              child: Text(l10n.closeBackground, style: const TextStyle(color: Color(0xFF00E5FF))),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(ctx).pop();
                 _performQuit();
               },
-              child: const Text('خروج کامل', style: TextStyle(color: Color(0xFFFF3366))),
+              child: Text(l10n.closeExit, style: const TextStyle(color: Color(0xFFFF3366))),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(ctx).pop();
               },
-              child: const Text('لغو', style: TextStyle(color: Colors.white54)),
+              child: Text(l10n.cancel, style: const TextStyle(color: Colors.white54)),
             ),
           ],
         ),
       );
     } else {
-      // Fallback
       await _performQuit();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      title: AppConfig.appName,
-      debugShowCheckedModeBanner: false,
-      locale: const Locale('fa', 'IR'),
-      supportedLocales: const [
-        Locale('fa', 'IR'),
-      ],
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      builder: (context, child) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: child!,
+    return Consumer<LocaleProvider>(
+      builder: (context, localeProvider, _) {
+        return MaterialApp(
+          navigatorKey: navigatorKey,
+          title: AppConfig.appName,
+          debugShowCheckedModeBanner: false,
+          locale: localeProvider.locale,
+          supportedLocales: const [
+            Locale('en'),
+            Locale('fa'),
+          ],
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          localeResolutionCallback: (locale, supportedLocales) {
+            for (var supportedLocale in supportedLocales) {
+              if (supportedLocale.languageCode == locale?.languageCode) {
+                return supportedLocale;
+              }
+            }
+            return supportedLocales.first;
+          },
+          builder: (context, child) {
+            final isRtl = localeProvider.isRtl;
+            return Directionality(
+              textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+              child: child!,
+            );
+          },
+          theme: ThemeData(
+            brightness: Brightness.dark,
+            scaffoldBackgroundColor: const Color(0xFF0A0A0A),
+            useMaterial3: true,
+            colorScheme: ColorScheme.dark(
+              primary: const Color(0xFF00E5FF),
+              secondary: const Color(0xFF00FFCC),
+              error: const Color(0xFFFF3366),
+              background: const Color(0xFF0A0A0A),
+              surface: const Color(0xFF141414),
+            ),
+          ),
+          home: const HomeScreen(),
         );
       },
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0A0A0A),
-        fontFamily: GoogleFonts.vazirmatn().fontFamily,
-        textTheme: GoogleFonts.vazirmatnTextTheme(ThemeData.dark().textTheme),
-        useMaterial3: true,
-        colorScheme: ColorScheme.dark(
-          primary: const Color(0xFF00E5FF),
-          secondary: const Color(0xFF00FFCC),
-          error: const Color(0xFFFF3366),
-          background: const Color(0xFF0A0A0A),
-          surface: const Color(0xFF141414),
-        ),
-      ),
-      home: const HomeScreen(),
     );
   }
 }

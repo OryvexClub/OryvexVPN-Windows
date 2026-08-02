@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import '../services/vpn_service.dart';
 import '../widgets/stats_card.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/locale_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -109,6 +111,10 @@ class _HomeScreenState extends State<HomeScreen>
   // ---- Title bar ---------------------------------------------------------
 
   Widget _buildTitleBar(VPNService vpn, Color color) {
+    final localeProvider = context.watch<LocaleProvider>();
+    final isRtl = localeProvider.isRtl;
+    final currentLang = localeProvider.locale.languageCode;
+
     return Container(
       height: 50,
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -134,16 +140,36 @@ class _HomeScreenState extends State<HomeScreen>
               child: const SizedBox(height: double.infinity),
             ),
           ),
+          // Language toggle
+          GestureDetector(
+            onTap: () => localeProvider.toggleLocale(),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                currentLang == 'en' ? 'EN' : 'FA',
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
           IconButton(
             icon: const Icon(Icons.remove, color: Colors.white54, size: 18),
             onPressed: () => windowManager.minimize(),
-            tooltip: 'کوچک‌سازی',
+            tooltip: isRtl ? 'کوچک‌سازی' : 'Minimize',
             splashRadius: 18,
           ),
           IconButton(
             icon: const Icon(Icons.close, color: Colors.white54, size: 18),
             onPressed: () => windowManager.close(),
-            tooltip: 'بستن',
+            tooltip: isRtl ? 'بستن' : 'Close',
             splashRadius: 18,
           ),
         ],
@@ -264,6 +290,7 @@ class _HomeScreenState extends State<HomeScreen>
   // ---- Connection info ---------------------------------------------------
 
   Widget _buildConnectionInfo(VPNService vpn, Color color) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
@@ -276,8 +303,8 @@ class _HomeScreenState extends State<HomeScreen>
         children: [
           Icon(Icons.timer_outlined, color: color, size: 20),
           const SizedBox(width: 8),
-          const Text('مدت اتصال: ',
-              style: TextStyle(color: Colors.white60, fontSize: 13)),
+          Text('${l10n.duration}: ',
+              style: const TextStyle(color: Colors.white60, fontSize: 13)),
           Text(
             vpn.connectedDuration,
             style: const TextStyle(
@@ -294,6 +321,7 @@ class _HomeScreenState extends State<HomeScreen>
   // ---- Stats grid --------------------------------------------------------
 
   Widget _buildStatsGrid(VPNService vpn) {
+    final l10n = AppLocalizations.of(context);
     final s = vpn.stats;
     return Column(
       children: [
@@ -302,7 +330,7 @@ class _HomeScreenState extends State<HomeScreen>
             Expanded(
               child: StatsCard(
                 icon: Icons.south_rounded,
-                label: 'دانلود',
+                label: l10n.download,
                 value: '${_fmtSpeed(s.downloadSpeed)} KB/s',
                 color: const Color(0xFF00E5FF),
               ),
@@ -311,7 +339,7 @@ class _HomeScreenState extends State<HomeScreen>
             Expanded(
               child: StatsCard(
                 icon: Icons.north_rounded,
-                label: 'آپلود',
+                label: l10n.upload,
                 value: '${_fmtSpeed(s.uploadSpeed)} KB/s',
                 color: const Color(0xFF00FF88),
               ),
@@ -324,7 +352,7 @@ class _HomeScreenState extends State<HomeScreen>
             Expanded(
               child: StatsCard(
                 icon: Icons.speed_rounded,
-                label: 'پینگ',
+                label: l10n.ping,
                 value: s.ping > 0 ? '${s.ping} ms' : '—',
                 color: const Color(0xFFFFB800),
               ),
@@ -333,7 +361,7 @@ class _HomeScreenState extends State<HomeScreen>
             Expanded(
               child: StatsCard(
                 icon: Icons.language_rounded,
-                label: 'آدرس IP',
+                label: l10n.ipAddress,
                 value: s.ipInfo.ip,
                 color: const Color(0xFF00FFCC),
                 valueSize: 13,
@@ -347,7 +375,7 @@ class _HomeScreenState extends State<HomeScreen>
             Expanded(
               child: StatsCard(
                 icon: Icons.south_rounded,
-                label: 'مجموع دانلود',
+                label: l10n.totalDownload,
                 value: _fmtBytes(vpn.totalDownload),
                 color: const Color(0xFF7C7CFF),
                 valueSize: 15,
@@ -357,7 +385,7 @@ class _HomeScreenState extends State<HomeScreen>
             Expanded(
               child: StatsCard(
                 icon: Icons.north_rounded,
-                label: 'مجموع آپلود',
+                label: l10n.totalUpload,
                 value: _fmtBytes(vpn.totalUpload),
                 color: const Color(0xFFFF6B9D),
                 valueSize: 15,

@@ -3,6 +3,8 @@ import 'package:settings_ui/settings_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
 import '../services/vpn_service.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/locale_provider.dart';
 import 'package:provider/provider.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -37,12 +39,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final localeProvider = context.watch<LocaleProvider>();
+    final currentLang = localeProvider.locale.languageCode;
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text(
-          'تنظیمات',
-          style: TextStyle(fontFamily: 'Vazirmatn', fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.settings,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -62,7 +68,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         sections: [
           SettingsSection(
-            title: const Text('عمومی', style: TextStyle(fontFamily: 'Vazirmatn')),
+            title: Text(l10n.general),
             tiles: <SettingsTile>[
               SettingsTile.switchTile(
                 onToggle: (value) {
@@ -71,8 +77,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
                 initialValue: _autoConnect,
                 leading: const Icon(Icons.autorenew),
-                title: const Text('اتصال خودکار', style: TextStyle(fontFamily: 'Vazirmatn')),
-                description: const Text('وصل شدن خودکار در هنگام باز شدن برنامه', style: TextStyle(fontFamily: 'Vazirmatn', fontSize: 12)),
+                title: Text(l10n.autoConnect),
+                description: Text(l10n.autoConnectDesc, style: const TextStyle(fontSize: 12)),
               ),
               SettingsTile.switchTile(
                 onToggle: (value) {
@@ -81,22 +87,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
                 initialValue: _startMinimized,
                 leading: const Icon(Icons.minimize),
-                title: const Text('شروع کمینه شده', style: TextStyle(fontFamily: 'Vazirmatn')),
-                description: const Text('اجرای برنامه در System Tray', style: TextStyle(fontFamily: 'Vazirmatn', fontSize: 12)),
+                title: Text(l10n.startMinimized),
+                description: Text(l10n.startMinimizedDesc, style: const TextStyle(fontSize: 12)),
               ),
             ],
           ),
           SettingsSection(
-            title: const Text('وضعیت شبکه', style: TextStyle(fontFamily: 'Vazirmatn')),
+            title: Text(l10n.language),
+            tiles: <SettingsTile>[
+              SettingsTile(
+                leading: const Icon(Icons.language),
+                title: Text(l10n.language),
+                value: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      currentLang == 'en' ? 'English' : 'فارسی',
+                      style: const TextStyle(color: AppTheme.primary),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.swap_horiz, color: Colors.white54, size: 18),
+                  ],
+                ),
+                onPressed: (context) {
+                  localeProvider.toggleLocale();
+                },
+              ),
+            ],
+          ),
+          SettingsSection(
+            title: Text(l10n.networkStatus),
             tiles: <SettingsTile>[
               SettingsTile(
                 leading: const Icon(Icons.network_check),
-                title: const Text('وضعیت پروکسی سیستم', style: TextStyle(fontFamily: 'Vazirmatn')),
+                title: Text(l10n.proxyStatus),
                 value: Consumer<VPNService>(
                   builder: (context, vpn, child) => Text(
-                    vpn.isConnected ? 'تنظیم شده توسط اورایوکس' : 'پیش‌فرض سیستم',
+                    vpn.isConnected ? l10n.proxyActive : l10n.proxyDefault,
                     style: TextStyle(
-                      fontFamily: 'Vazirmatn',
                       color: vpn.isConnected ? AppTheme.success : Colors.white54,
                     ),
                   ),
@@ -104,12 +132,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               SettingsTile(
                 leading: const Icon(Icons.dns),
-                title: const Text('وضعیت DNS', style: TextStyle(fontFamily: 'Vazirmatn')),
+                title: Text(l10n.dnsStatus),
                 value: Consumer<VPNService>(
                   builder: (context, vpn, child) => Text(
-                    vpn.isConnected ? 'Cloudflare DNS (1.1.1.1)' : 'پیش‌فرض شبکه',
+                    vpn.isConnected ? l10n.dnsCloudflare : l10n.dnsDefault,
                     style: TextStyle(
-                      fontFamily: 'Vazirmatn',
                       color: vpn.isConnected ? AppTheme.success : Colors.white54,
                     ),
                   ),
@@ -118,12 +145,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
           SettingsSection(
-            title: const Text('درباره', style: TextStyle(fontFamily: 'Vazirmatn')),
+            title: Text(l10n.about),
             tiles: <SettingsTile>[
               SettingsTile(
                 leading: const Icon(Icons.info_outline),
-                title: const Text('نسخه', style: TextStyle(fontFamily: 'Vazirmatn')),
-                value: const Text('1.0.0', style: TextStyle(fontFamily: 'Vazirmatn')),
+                title: Text(l10n.version),
+                value: const Text('1.0.0'),
               ),
             ],
           ),

@@ -40,20 +40,20 @@ class WireGuardService {
       final missing = await VpnCore.missingFiles();
       VpnLogger.error(_tag, 'Core files missing: $missing');
       throw Exception(
-        'فایل‌های هسته VPN یافت نشد (${missing.join('، ')}). لطفا برنامه را دوباره نصب کنید.',
+        'VPN core files not found (${missing.join(', ')}). Please reinstall the app.',
       );
     }
 
-    onProgress('در حال یافتن سریع‌ترین سرور...');
+    onProgress('Finding fastest server...');
     VpnLogger.info(_tag, 'Picking fastest endpoint...');
     final endpoint = await pickFastestEndpoint();
     if (endpoint == null) {
       VpnLogger.error(_tag, 'No endpoint reachable');
-      throw Exception('هیچ سروری در دسترس نیست. لطفا اینترنت را بررسی کنید.');
+      throw Exception('No server available. Please check your internet connection.');
     }
     VpnLogger.info(_tag, 'Selected endpoint: ${endpoint.hostPort}');
 
-    onProgress('در حال ثبت‌نام با Cloudflare WARP...');
+    onProgress('Registering with Cloudflare WARP...');
     VpnLogger.info(_tag, 'Registering with WARP...');
     final reg = await WarpRegistrationService.register(
       resolveEndpoint: () async => endpoint,
@@ -66,68 +66,26 @@ class WireGuardService {
 
     final confDir = await _confDir();
 
-    // === STRATEGY: Try AmneziaWG config first, fallback to standard WireGuard ===
-
-    // --- Attempt 1: AmneziaWG config with obfuscation parameters ---
-    VpnLogger.info(_tag, '--- Attempt 1: AmneziaWG config ---');
-    final confFileAmnezia = File('$confDir\\${VpnCore.tunnelName}.conf');
+    // Write AmneziaWG config
+    VpnLogger.info(_tag, 'Writing AmneziaWG config...');
+    final confFile = File('$confDir\\${VpnCore.tunnelName}.conf');
     final amneziaConf = reg.buildConf();
-    await confFileAmnezia.writeAsString(amneziaConf);
-    VpnLogger.info(_tag, 'AmneziaWG config written to ${confFileAmnezia.path}');
-    VpnLogger.info(_tag, 'AmneziaWG config:\n$amneziaConf');
+    await confFile.writeAsString(amneziaConf);
+    VpnLogger.info(_tag, 'Config written to ${confFile.path}');
 
-    onProgress('در حال راه‌اندازی تونل امن...');
+    onProgress('Starting secure tunnel...');
     if (await VpnCore.serviceExists()) {
       VpnLogger.info(_tag, 'Stale tunnel exists, removing...');
       await VpnCore.uninstallTunnel();
     }
 
-    try {
-      await VpnCore.installTunnel(confFileAmnezia.path);
-      onProgress('در حال تنظیم DNS...');
-      await VpnCore.flushDns();
-      // Check if service started — if so, we're done
-      if (await VpnCore.serviceRunning()) {
-        VpnLogger.info(_tag, '=== TUNNEL RUNNING (AmneziaWG) ===');
-        final showOutput = await VpnCore.readShow();
-        VpnLogger.info(_tag, 'awg show output:\n$showOutput');
-        VpnLogger.info(_tag, '=== connectWithProgress END ===');
-        return;
-      }
-    } catch (e) {
-      VpnLogger.error(_tag, 'AmneziaWG tunnel install failed: $e');
-    }
+    // Install tunnel — if this succeeds, we're connected
+    await VpnCore.installTunnel(confFile.path);
+    await VpnCore.flushDns();
 
-    // --- Attempt 2: Standard WireGuard config (no obfuscation) ---
-    VpnLogger.info(_tag, '--- Attempt 2: Standard WireGuard config ---');
-    onProgress('تلاش مجدد با تنظیمات استاندارد...');
-
-    // Clean up previous attempt
-    try {
-      await VpnCore.uninstallTunnel();
-    } catch (_) {}
-
-    final confFileStandard = File('$confDir\\${VpnCore.tunnelName}_wg.conf');
-    final standardConf = reg.buildStandardConf();
-    await confFileStandard.writeAsString(standardConf);
-    VpnLogger.info(_tag, 'Standard config written to ${confFileStandard.path}');
-    VpnLogger.info(_tag, 'Standard config:\n$standardConf');
-
-    try {
-      await VpnCore.installTunnel(confFileStandard.path);
-      onProgress('در حال تنظیم DNS...');
-      await VpnCore.flushDns();
-      if (await VpnCore.serviceRunning()) {
-        VpnLogger.info(_tag, '=== TUNNEL RUNNING (Standard WG) ===');
-        final showOutput = await VpnCore.readShow();
-        VpnLogger.info(_tag, 'awg show output:\n$showOutput');
-      } else {
-        VpnLogger.error(_tag, '=== TUNNEL NOT RUNNING ===');
-      }
-    } catch (e) {
-      VpnLogger.error(_tag, 'Standard WG tunnel install failed: $e');
-    }
-
+    VpnLogger.info(_tag, '=== TUNNEL INSTALLED ===');
+    final showOutput = await VpnCore.readShow();
+    VpnLogger.info(_tag, 'awg show output:\n$showOutput');
     VpnLogger.info(_tag, '=== connectWithProgress END ===');
   }
 
