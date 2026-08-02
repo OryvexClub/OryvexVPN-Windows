@@ -160,11 +160,12 @@ Future<int?> _measureLatency(String ip, int port, Duration timeout) async {
 /// Uses parallel latency testing for faster results.
 Future<VpnEndpoint?> pickFastestEndpoint({
   List<VpnEndpoint>? candidates,
-  Duration timeout = const Duration(seconds: 2),
+  Duration timeout = const Duration(milliseconds: 1500),
 }) async {
   final list = candidates ?? kEndpoints;
 
-  // Test probe endpoints in parallel with actual latency measurement
+  // We can't reliably TCP ping UDP endpoints, especially through DPI firewalls.
+  // We'll test the probe endpoints in parallel.
   final probeResults = <VpnEndpoint, int?>{};
   await Future.wait(
     kProbeEndpoints.map((e) async {
@@ -172,24 +173,21 @@ Future<VpnEndpoint?> pickFastestEndpoint({
     }),
   );
 
-  // Filter reachable endpoints and sort by latency
   final reachableProbes = probeResults.entries
       .where((entry) => entry.value != null)
       .toList()
     ..sort((a, b) => a.value!.compareTo(b.value!));
 
   if (reachableProbes.isNotEmpty) {
-    // Return the endpoint with the lowest latency
     return reachableProbes.first.key;
   }
 
-  // Fallback: scan the full list sequentially until one answers
-  for (final e in list) {
-    final latency = await _measureLatency(e.ip, e.port, timeout);
-    if (latency != null) {
-      return e;
-    }
-  }
+  // If TCP probes fail (common for UDP VPNs on filtered networks),
+  // DO NOT sequentially scan 600+ endpoints. It takes 20+ minutes and hangs the UI.
+  // Instead, randomly pick an endpoint from the specific curated list.
+  final fallbackList = [...kSpecificEndpoints];
+  fallbackList.shuffle();
 
-  return null;
+  // Return a random endpoint from the curated list without waiting
+  return fallbackList.first;
 }
