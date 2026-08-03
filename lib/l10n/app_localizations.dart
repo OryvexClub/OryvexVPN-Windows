@@ -87,7 +87,7 @@ class AppLocalizations {
     'checking_internet': 'Checking internet connection...',
     'youtube_check_failed': 'Cannot connect to server. Please try again.',
     'sys_warning': 'System Warning',
-    'clock_out_of_sync': 'ساعت سیستم شما تنظیم نیست.
+    'clock_out_of_sync': 'Your system clock is not synchronized.
 ',
     'conflicting_procs': 'Conflicting programs found: ',
     'exit_app': 'Exit app',
