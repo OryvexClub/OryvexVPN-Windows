@@ -32,6 +32,7 @@ class WireGuardService {
   }
 
   static Future<void> connectWithProgress({
+    bool isFullTunnel = true,
     required void Function(String msg, VpnStage stage) onProgress,
   }) async {
     VpnLogger.info(_tag, '=== connectWithProgress START ===');
@@ -71,7 +72,7 @@ class WireGuardService {
     onProgress('Creating AmneziaWG config...', VpnStage.installingTunnel);
     final confDir = await _confDir();
     final confFile = File('$confDir\\${VpnCore.tunnelName}.conf');
-    final amneziaConf = reg.buildConf();
+    final amneziaConf = reg.buildConf(isFullTunnel: isFullTunnel);
     await confFile.writeAsString(amneziaConf);
     VpnLogger.info(_tag, 'Config written to ${confFile.path}');
 

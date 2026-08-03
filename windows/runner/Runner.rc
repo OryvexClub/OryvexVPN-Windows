@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "warp_vpn_app" "\0"
+            VALUE "CompanyName", "OryvexVPN" "\0"
+            VALUE "FileDescription", "OryvexVPN" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "warp_vpn_app" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "warp_vpn_app.exe" "\0"
-            VALUE "ProductName", "warp_vpn_app" "\0"
+            VALUE "InternalName", "OryvexVPN" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 OryvexVPN. All rights reserved." "\0"
+            VALUE "OriginalFilename", "OryvexVPN.exe" "\0"
+            VALUE "ProductName", "OryvexVPN" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

@@ -1,5 +1,5 @@
 #define MyAppName "OryvexVPN"
-#define MyAppExeName "warp_vpn_app.exe"
+#define MyAppExeName "OryvexVPN.exe"
 #define MyAppVersion "1.0.0"
 #define MyAppPublisher "OryvexVPN"
 #define MyAppURL "https://oryvex.com"

@@ -69,6 +69,8 @@ class _HomeScreenState extends State<HomeScreen>
                     const SizedBox(height: 16),
                     _buildErrorBox(vpn),
                   ],
+                  const SizedBox(height: 24),
+                  _buildFullTunnelToggle(vpn, active),
                   const SizedBox(height: 32),
                   _buildStatsGrid(vpn),
                   const SizedBox(height: 30),
@@ -191,6 +193,80 @@ class _HomeScreenState extends State<HomeScreen>
               fontWeight: FontWeight.w600,
               color: Color(0xFF888891),
               letterSpacing: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFullTunnelToggle(VPNService vpn, bool active) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0C0C0C),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF1A1A1A)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            vpn.isFullTunnel ? Icons.lock : Icons.lock_open,
+            size: 16,
+            color: vpn.isFullTunnel
+                ? const Color(0xFF00E5FF)
+                : const Color(0xFF888891),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            'FULL TUNNEL',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: vpn.isFullTunnel
+                  ? const Color(0xFF00E5FF)
+                  : const Color(0xFF888891),
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(width: 10),
+          GestureDetector(
+            onTap: active ? null : () => vpn.toggleFullTunnel(),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 36,
+              height: 20,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: vpn.isFullTunnel
+                    ? const Color(0xFF00E5FF)
+                    : const Color(0xFF2A2A2E),
+              ),
+              child: Align(
+                alignment: vpn.isFullTunnel
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                child: Container(
+                  width: 16,
+                  height: 16,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: active ? Colors.white38 : Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            vpn.isFullTunnel ? 'ON' : 'OFF',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: active ? Colors.white38 : Colors.white54,
+              letterSpacing: 0.5,
             ),
           ),
         ],

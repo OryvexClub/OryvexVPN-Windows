@@ -4,6 +4,7 @@ import 'system_check_service.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'wireguard_service.dart';
 import 'vpn_core.dart';
 import 'ipinfo_service.dart';
@@ -41,6 +42,17 @@ class VPNService extends ChangeNotifier {
   static const int _maxReconnectAttempts = 3;
   static const String _tag = 'VPNService';
 
+  bool _isFullTunnel = true;
+  bool get isFullTunnel => _isFullTunnel;
+
+  void toggleFullTunnel() {
+    _isFullTunnel = !_isFullTunnel;
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setBool('is_full_tunnel', _isFullTunnel);
+    });
+    notifyListeners();
+  }
+
   VpnStage get stage => _stage;
   bool get isConnected => _stage == VpnStage.connected;
   bool get isConnecting =>
@@ -66,7 +78,14 @@ class VPNService extends ChangeNotifier {
   }
 
   VPNService() {
+    _loadFullTunnelSetting();
     _startSystemMonitoring();
+  }
+
+  Future<void> _loadFullTunnelSetting() async {
+    final prefs = await SharedPreferences.getInstance();
+    _isFullTunnel = prefs.getBool('is_full_tunnel') ?? true;
+    notifyListeners();
   }
 
   void _updateStatus(String msg) {
@@ -342,6 +361,7 @@ class VPNService extends ChangeNotifier {
 
   Future<void> _attemptConnectionRound() async {
     await WireGuardService.connectWithProgress(
+      isFullTunnel: _isFullTunnel,
       onProgress: (msg, stage) {
         _stage = stage;
         AppLogger.info(msg, 'VPN');
