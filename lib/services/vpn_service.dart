@@ -9,8 +9,6 @@ import 'wireguard_service.dart';
 import 'vpn_core.dart';
 import 'ipinfo_service.dart';
 import '../utils/error_handler.dart';
-import 'socks5_proxy.dart';
-import 'http_proxy.dart';
 
 enum VpnStage {
   idle,
@@ -19,12 +17,6 @@ enum VpnStage {
   connected,
   error,
   disconnecting,
-}
-
-enum VpnMode {
-  fullTunnel,
-  httpProxy,
-  socks5Proxy,
 }
 
 class VPNService extends ChangeNotifier {
@@ -50,29 +42,8 @@ class VPNService extends ChangeNotifier {
   static const int _maxReconnectAttempts = 3;
   static const String _tag = 'VPNService';
 
-  // Local proxy servers (active when Full Tunnel is OFF)
-  final Socks5Proxy _socks5Proxy = Socks5Proxy();
-  final HttpProxy _httpProxy = HttpProxy();
-
-  Socks5Proxy get socks5Proxy => _socks5Proxy;
-  HttpProxy get httpProxy => _httpProxy;
-
-  VpnMode _vpnMode = VpnMode.fullTunnel;
-  VpnMode get vpnMode => _vpnMode;
-  bool get isFullTunnel => _vpnMode == VpnMode.fullTunnel;
-  bool get isHttpProxy => _vpnMode == VpnMode.httpProxy;
-  bool get isSocks5Proxy => _vpnMode == VpnMode.socks5Proxy;
-
   String _antiDpiPreset = 'standard';
   String get antiDpiPreset => _antiDpiPreset;
-
-  void setVpnMode(VpnMode mode) {
-    _vpnMode = mode;
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.setString('vpn_mode', mode.name);
-    });
-    notifyListeners();
-  }
 
   void setAntiDpiPreset(String preset) {
     _antiDpiPreset = preset;
@@ -113,18 +84,6 @@ class VPNService extends ChangeNotifier {
 
   Future<void> _loadFullTunnelSetting() async {
     final prefs = await SharedPreferences.getInstance();
-    final modeStr = prefs.getString('vpn_mode');
-    if (modeStr != null) {
-      _vpnMode = VpnMode.values.firstWhere(
-        (m) => m.name == modeStr,
-        orElse: () => VpnMode.fullTunnel,
-      );
-    } else {
-      // Legacy: convert old boolean setting
-      final wasFullTunnel = prefs.getBool('is_full_tunnel') ?? true;
-      _vpnMode = wasFullTunnel ? VpnMode.fullTunnel : VpnMode.httpProxy;
-      prefs.setString('vpn_mode', _vpnMode.name);
-    }
     _antiDpiPreset = prefs.getString('anti_dpi_preset') ?? 'standard';
     notifyListeners();
   }
@@ -513,11 +472,6 @@ class VPNService extends ChangeNotifier {
       // Flush DNS so the tunnel's DNS servers take effect immediately
       VpnCore.flushDns().catchError((_) {});
 
-      // Start local proxy servers when in proxy mode
-      if (_vpnMode == VpnMode.httpProxy || _vpnMode == VpnMode.socks5Proxy) {
-        await _startProxies();
-      }
-
       VpnLogger.info(_tag, '=== CONNECT SUCCESS ===');
       notifyListeners();
     }
@@ -530,7 +484,6 @@ class VPNService extends ChangeNotifier {
     _updateStatus('Disconnecting...');
     _stopStatsMonitoring();
     _stopConnectionMonitoring();
-    await _stopProxies();
 
     try {
       await WireGuardService.disconnect();
@@ -562,42 +515,11 @@ class VPNService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _startProxies() async {
-    try {
-      if (_vpnMode == VpnMode.httpProxy && !_httpProxy.isRunning) {
-        await _httpProxy.start(port: 1452);
-        VpnLogger.info(_tag, 'HTTP proxy started on port 1452');
-      }
-      if (_vpnMode == VpnMode.socks5Proxy && !_socks5Proxy.isRunning) {
-        await _socks5Proxy.start(port: 8563);
-        VpnLogger.info(_tag, 'SOCKS5 proxy started on port 8563');
-      }
-    } catch (e) {
-      VpnLogger.error(_tag, 'Failed to start proxy: $e');
-    }
-  }
-
-  Future<void> _stopProxies() async {
-    try {
-      if (_httpProxy.isRunning) {
-        await _httpProxy.stop();
-        VpnLogger.info(_tag, 'HTTP proxy stopped');
-      }
-      if (_socks5Proxy.isRunning) {
-        await _socks5Proxy.stop();
-        VpnLogger.info(_tag, 'SOCKS5 proxy stopped');
-      }
-    } catch (e) {
-      VpnLogger.warn(_tag, 'Error stopping proxies: $e');
-    }
-  }
-
   @override
   void dispose() {
     _systemCheckTimer?.cancel();
     _stopStatsMonitoring();
     _stopConnectionMonitoring();
-    _stopProxies();
     super.dispose();
   }
 }

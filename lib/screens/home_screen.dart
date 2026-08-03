@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'dart:math' as math;
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
@@ -71,8 +70,6 @@ class _HomeScreenState extends State<HomeScreen>
                     _buildErrorBox(vpn),
                   ],
                   const SizedBox(height: 24),
-                  _buildFullTunnelToggle(vpn, active),
-                  const SizedBox(height: 32),
                   _buildStatsGrid(vpn),
                   const SizedBox(height: 30),
                 ],
@@ -198,185 +195,6 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildFullTunnelToggle(VPNService vpn, bool active) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0C0C0C),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFF1A1A1A)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                active ? Icons.lock : Icons.lock_open,
-                size: 14,
-                color: active ? const Color(0xFF00E5FF) : const Color(0xFF888891),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'CONNECTION MODE',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: active ? const Color(0xFF00E5FF) : const Color(0xFF888891),
-                  letterSpacing: 1,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          // 3-mode selector
-          Row(
-            children: [
-              _buildModeChip(
-                label: 'Tunnel',
-                icon: Icons.shield,
-                isSelected: vpn.vpnMode == VpnMode.fullTunnel,
-                active: active,
-                onTap: () => vpn.setVpnMode(VpnMode.fullTunnel),
-              ),
-              const SizedBox(width: 6),
-              _buildModeChip(
-                label: 'HTTP',
-                icon: Icons.language,
-                isSelected: vpn.vpnMode == VpnMode.httpProxy,
-                active: active,
-                onTap: () => vpn.setVpnMode(VpnMode.httpProxy),
-              ),
-              const SizedBox(width: 6),
-              _buildModeChip(
-                label: 'SOCKS5',
-                icon: Icons.cable,
-                isSelected: vpn.vpnMode == VpnMode.socks5Proxy,
-                active: active,
-                onTap: () => vpn.setVpnMode(VpnMode.socks5Proxy),
-              ),
-            ],
-          ),
-          // Proxy info (shown when connected in proxy mode)
-          if (vpn.isConnected && vpn.isHttpProxy) ...[
-            const SizedBox(height: 10),
-            const Divider(color: Color(0xFF1A1A1A), height: 1),
-            const SizedBox(height: 10),
-            _buildProxyPort(label: 'HTTP', address: '127.0.0.1:1452'),
-          ],
-          if (vpn.isConnected && vpn.isSocks5Proxy) ...[
-            const SizedBox(height: 10),
-            const Divider(color: Color(0xFF1A1A1A), height: 1),
-            const SizedBox(height: 10),
-            _buildProxyPort(label: 'SOCKS5', address: '127.0.0.1:8563'),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildModeChip({
-    required String label,
-    required IconData icon,
-    required bool isSelected,
-    required bool active,
-    required VoidCallback onTap,
-  }) {
-    final color = isSelected ? const Color(0xFF00E5FF) : const Color(0xFF2A2A2E);
-    final textColor = isSelected ? Colors.black : const Color(0xFF888891);
-    final iconColor = isSelected ? Colors.black : const Color(0xFF888891);
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: active ? null : onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(
-              color: isSelected ? const Color(0xFF00E5FF) : const Color(0xFF1A1A1A),
-              width: isSelected ? 1.5 : 1,
-            ),
-            boxShadow: isSelected
-                ? [BoxShadow(color: const Color(0xFF00E5FF).withOpacity(0.2), blurRadius: 8)]
-                : null,
-          ),
-          child: Column(
-            children: [
-              Icon(icon, size: 14, color: active && !isSelected ? Colors.white24 : iconColor),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w700,
-                  color: active && !isSelected ? Colors.white24 : textColor,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProxyPort({
-    required String label,
-    required String address,
-  }) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-          decoration: BoxDecoration(
-            color: const Color(0xFF00E5FF).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 9,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF00E5FF),
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          address,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: Colors.white70,
-            fontFamily: 'monospace',
-          ),
-        ),
-        const Spacer(),
-        GestureDetector(
-          onTap: () {
-            Clipboard.setData(ClipboardData(text: address));
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('$label proxy copied!'),
-                duration: const Duration(seconds: 1),
-                backgroundColor: const Color(0xFF00E5FF),
-              ),
-            );
-          },
-          child: const Icon(
-            Icons.copy_rounded,
-            size: 14,
-            color: Color(0xFF888891),
-          ),
-        ),
-      ],
     );
   }
 
