@@ -73,9 +73,6 @@ flutter:
     - assets/fonts/
 
   fonts:
-    - family: Vazirmatn
-      fonts:
-        - asset: assets/fonts/Vazirmatn-Regular.ttf
     - family: Inter
       fonts:
         - asset: assets/fonts/Inter-Regular.ttf
