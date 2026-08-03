@@ -87,8 +87,7 @@ class AppLocalizations {
     'checking_internet': 'Checking internet connection...',
     'youtube_check_failed': 'Cannot connect to server. Please try again.',
     'sys_warning': 'System Warning',
-    'clock_out_of_sync': 'Your system clock is not synchronized.
-',
+    'clock_out_of_sync': 'Your system clock is not synchronized.',
     'conflicting_procs': 'Conflicting programs found: ',
     'exit_app': 'Exit app',
     'kill_all': 'Kill All',
@@ -169,8 +168,7 @@ class AppLocalizations {
     'checking_internet': 'در حال بررسی اتصال اینترنت...',
     'youtube_check_failed': 'امکان اتصال به سرور وجود ندارد. لطفا دوباره تلاش کنید.',
     'sys_warning': 'هشدار سیستم',
-    'clock_out_of_sync': 'ساعت سیستم شما تنظیم نیست.
-',
+    'clock_out_of_sync': 'ساعت سیستم شما تنظیم نیست.',
     'conflicting_procs': 'برنامه‌های متداخل یافت شد: ',
     'exit_app': 'خروج از برنامه',
     'kill_all': 'بستن برنامه‌های مزاحم',
