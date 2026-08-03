@@ -295,9 +295,7 @@ class _HomeScreenState extends State<HomeScreen>
           ),
           const SizedBox(height: 10),
           const Text(
-            'Some AI services, including ChatGPT and Claude, may occasionally return Error 406 or refuse connections while using OryvexVPN.
-
-This happens because some websites temporarily block or limit traffic from certain VPN networks. Your VPN is still connected and working normally.\n\nWe hope to improve compatibility with all supported services in future updates.',
+            'Some AI services, including ChatGPT and Claude, may occasionally return Error 406 or refuse connections while using OryvexVPN.\n\nThis happens because some websites temporarily block or limit traffic from certain VPN networks. Your VPN is still connected and working normally.\n\nWe hope to improve compatibility with all supported services in future updates.',
             style: TextStyle(fontSize: 12.5, color: Colors.white70, height: 1.5),
           ),
         ],
