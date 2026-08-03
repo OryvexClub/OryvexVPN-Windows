@@ -181,8 +181,7 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
   @override
   Widget build(BuildContext context) {
     final localeProvider = context.watch<LocaleProvider>();
-    final isFa = localeProvider.locale.languageCode == 'fa';
-    
+
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: AppConfig.appName,
@@ -190,7 +189,6 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       locale: localeProvider.locale,
       supportedLocales: const [
         Locale('en', 'US'),
-        Locale('fa', 'IR'),
       ],
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -200,14 +198,14 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       ],
       builder: (context, child) {
         return Directionality(
-          textDirection: isFa ? TextDirection.rtl : TextDirection.ltr,
+          textDirection: TextDirection.ltr,
           child: child!,
         );
       },
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF000000),
-        fontFamily: isFa ? 'Vazirmatn' : 'Inter',
+        fontFamily: 'Inter',
         useMaterial3: true,
         colorScheme: ColorScheme.dark(
           primary: const Color(0xFF00E676),

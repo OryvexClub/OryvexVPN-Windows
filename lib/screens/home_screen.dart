@@ -191,14 +191,6 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.language, color: Colors.white54, size: 18),
-            onPressed: () {
-              context.read<LocaleProvider>().toggleLocale();
-            },
-            tooltip: AppLocalizations.of(context).language,
-            splashRadius: 18,
-          ),
-          IconButton(
             icon: const Icon(Icons.remove, color: Colors.white54, size: 18),
             onPressed: () => windowManager.minimize(),
             tooltip: AppLocalizations.of(context).minimize,

@@ -27,7 +27,7 @@ class WindowManagerService {
     await windowManager.waitUntilReadyToShow(windowOptions, () async {
       await windowManager.show();
       await windowManager.focus();
-      // جلوگیری از بسته شدن پنجره درجا، تا Listener بتواند تونل را ببندد
+      // Prevent immediate window closure so the Listener can close the tunnel
       await windowManager.setPreventClose(true); 
     });
   }

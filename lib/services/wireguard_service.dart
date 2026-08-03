@@ -46,17 +46,17 @@ class WireGuardService {
     }
 
     // Step 2: Find fastest endpoint
-    onProgress('در حال یافتن سریع‌ترین سرور...', VpnStage.fetchingConfig);
+    onProgress('Finding fastest server...', VpnStage.fetchingConfig);
     VpnLogger.info(_tag, 'Picking fastest endpoint...');
     final endpoint = await pickFastestEndpoint();
     if (endpoint == null) {
       VpnLogger.error(_tag, 'No endpoint reachable');
-      throw Exception('هیچ سروری در دسترس نیست. لطفا اینترنت خود را بررسی کنید.');
+      throw Exception('No server available. Please check your internet.');
     }
     VpnLogger.info(_tag, 'Selected endpoint: ${endpoint.hostPort}');
 
     // Step 3: Register with Cloudflare WARP
-    onProgress('در حال ثبت‌نام با Cloudflare WARP...', VpnStage.fetchingConfig);
+    onProgress('Registering with Cloudflare WARP...', VpnStage.fetchingConfig);
     VpnLogger.info(_tag, 'Registering with WARP...');
     final reg = await WarpRegistrationService.register(
       resolveEndpoint: () async => endpoint,
@@ -68,7 +68,7 @@ class WireGuardService {
     VpnLogger.info(_tag, 'Peer public key: ${reg.peerPublicKey}');
 
     // Step 4: Write config
-    onProgress('در حال ایجاد تنظیمات AmneziaWG...', VpnStage.installingTunnel);
+    onProgress('Creating AmneziaWG config...', VpnStage.installingTunnel);
     final confDir = await _confDir();
     final confFile = File('$confDir\\${VpnCore.tunnelName}.conf');
     final amneziaConf = reg.buildConf();
@@ -76,7 +76,7 @@ class WireGuardService {
     VpnLogger.info(_tag, 'Config written to ${confFile.path}');
 
     // Step 5: Install tunnel
-    onProgress('در حال نصب تونل امن...', VpnStage.installingTunnel);
+    onProgress('Installing secure tunnel...', VpnStage.installingTunnel);
     if (await VpnCore.serviceExists()) {
       VpnLogger.info(_tag, 'Stale tunnel exists, removing...');
       await VpnCore.uninstallTunnel();
