@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:math' as math;
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
@@ -208,69 +209,146 @@ class _HomeScreenState extends State<HomeScreen>
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFF1A1A1A)),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Column(
         children: [
-          Icon(
-            vpn.isFullTunnel ? Icons.lock : Icons.lock_open,
-            size: 16,
-            color: vpn.isFullTunnel
-                ? const Color(0xFF00E5FF)
-                : const Color(0xFF888891),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            'FULL TUNNEL',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: vpn.isFullTunnel
-                  ? const Color(0xFF00E5FF)
-                  : const Color(0xFF888891),
-              letterSpacing: 1,
-            ),
-          ),
-          const SizedBox(width: 10),
-          GestureDetector(
-            onTap: active ? null : () => vpn.toggleFullTunnel(),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 36,
-              height: 20,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
+          // Toggle row
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                vpn.isFullTunnel ? Icons.lock : Icons.lock_open,
+                size: 16,
                 color: vpn.isFullTunnel
                     ? const Color(0xFF00E5FF)
-                    : const Color(0xFF2A2A2E),
+                    : const Color(0xFF888891),
               ),
-              child: Align(
-                alignment: vpn.isFullTunnel
-                    ? Alignment.centerRight
-                    : Alignment.centerLeft,
-                child: Container(
-                  width: 16,
-                  height: 16,
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
+              const SizedBox(width: 10),
+              Text(
+                'FULL TUNNEL',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: vpn.isFullTunnel
+                      ? const Color(0xFF00E5FF)
+                      : const Color(0xFF888891),
+                  letterSpacing: 1,
+                ),
+              ),
+              const SizedBox(width: 10),
+              GestureDetector(
+                onTap: active ? null : () => vpn.toggleFullTunnel(),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 36,
+                  height: 20,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: active ? Colors.white38 : Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    color: vpn.isFullTunnel
+                        ? const Color(0xFF00E5FF)
+                        : const Color(0xFF2A2A2E),
+                  ),
+                  child: Align(
+                    alignment: vpn.isFullTunnel
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: active ? Colors.white38 : Colors.white,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
+              const SizedBox(width: 8),
+              Text(
+                vpn.isFullTunnel ? 'ON' : 'OFF',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: active ? Colors.white38 : Colors.white54,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          Text(
-            vpn.isFullTunnel ? 'ON' : 'OFF',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: active ? Colors.white38 : Colors.white54,
+          // Proxy ports (shown when connected and Full Tunnel is OFF)
+          if (vpn.isConnected && !vpn.isFullTunnel) ...[
+            const SizedBox(height: 12),
+            const Divider(color: Color(0xFF1A1A1A), height: 1),
+            const SizedBox(height: 12),
+            _buildProxyPort(
+              label: 'HTTP',
+              port: '1452',
+              address: '127.0.0.1:1452',
+            ),
+            const SizedBox(height: 8),
+            _buildProxyPort(
+              label: 'SOCKS5',
+              port: '8563',
+              address: '127.0.0.1:8563',
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProxyPort({
+    required String label,
+    required String port,
+    required String address,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          decoration: BoxDecoration(
+            color: const Color(0xFF00E5FF).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF00E5FF),
               letterSpacing: 0.5,
             ),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          address,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: Colors.white70,
+            fontFamily: 'monospace',
+          ),
+        ),
+        const Spacer(),
+        GestureDetector(
+          onTap: () {
+            Clipboard.setData(ClipboardData(text: address));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('$label proxy copied!'),
+                duration: const Duration(seconds: 1),
+                backgroundColor: const Color(0xFF00E5FF),
+              ),
+            );
+          },
+          child: const Icon(
+            Icons.copy_rounded,
+            size: 14,
+            color: Color(0xFF888891),
+          ),
+        ),
+      ],
     );
   }
 

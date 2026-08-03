@@ -9,6 +9,8 @@ import 'wireguard_service.dart';
 import 'vpn_core.dart';
 import 'ipinfo_service.dart';
 import '../utils/error_handler.dart';
+import 'socks5_proxy.dart';
+import 'http_proxy.dart';
 
 enum VpnStage {
   idle,
@@ -41,6 +43,13 @@ class VPNService extends ChangeNotifier {
   int _reconnectAttempts = 0;
   static const int _maxReconnectAttempts = 3;
   static const String _tag = 'VPNService';
+
+  // Local proxy servers (active when Full Tunnel is OFF)
+  final Socks5Proxy _socks5Proxy = Socks5Proxy();
+  final HttpProxy _httpProxy = HttpProxy();
+
+  Socks5Proxy get socks5Proxy => _socks5Proxy;
+  HttpProxy get httpProxy => _httpProxy;
 
   bool _isFullTunnel = true;
   bool get isFullTunnel => _isFullTunnel;
@@ -360,8 +369,10 @@ class VPNService extends ChangeNotifier {
   }
 
   Future<void> _attemptConnectionRound() async {
+    // Always use full tunnel for WireGuard routing.
+    // When Full Tunnel is OFF, local proxies handle selective routing.
     await WireGuardService.connectWithProgress(
-      isFullTunnel: _isFullTunnel,
+      isFullTunnel: true,
       onProgress: (msg, stage) {
         _stage = stage;
         AppLogger.info(msg, 'VPN');
@@ -449,6 +460,12 @@ class VPNService extends ChangeNotifier {
       AppLogger.connectionState('Connected');
       _startStatsMonitoring();
       _startConnectionMonitoring();
+
+      // Start local proxies when Full Tunnel is OFF
+      if (!_isFullTunnel) {
+        await _startProxies();
+      }
+
       VpnLogger.info(_tag, '=== CONNECT SUCCESS ===');
       notifyListeners();
     }
@@ -461,6 +478,7 @@ class VPNService extends ChangeNotifier {
     _updateStatus('Disconnecting...');
     _stopStatsMonitoring();
     _stopConnectionMonitoring();
+    await _stopProxies();
 
     try {
       await WireGuardService.disconnect();
@@ -492,11 +510,42 @@ class VPNService extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _startProxies() async {
+    try {
+      if (!_httpProxy.isRunning) {
+        await _httpProxy.start(port: 1452);
+        VpnLogger.info(_tag, 'HTTP proxy started on port 1452');
+      }
+      if (!_socks5Proxy.isRunning) {
+        await _socks5Proxy.start(port: 8563);
+        VpnLogger.info(_tag, 'SOCKS5 proxy started on port 8563');
+      }
+    } catch (e) {
+      VpnLogger.error(_tag, 'Failed to start proxies: $e');
+    }
+  }
+
+  Future<void> _stopProxies() async {
+    try {
+      if (_httpProxy.isRunning) {
+        await _httpProxy.stop();
+        VpnLogger.info(_tag, 'HTTP proxy stopped');
+      }
+      if (_socks5Proxy.isRunning) {
+        await _socks5Proxy.stop();
+        VpnLogger.info(_tag, 'SOCKS5 proxy stopped');
+      }
+    } catch (e) {
+      VpnLogger.warn(_tag, 'Error stopping proxies: $e');
+    }
+  }
+
   @override
   void dispose() {
     _systemCheckTimer?.cancel();
     _stopStatsMonitoring();
     _stopConnectionMonitoring();
+    _stopProxies();
     super.dispose();
   }
 }
