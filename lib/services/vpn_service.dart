@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'wireguard_service.dart';
@@ -288,10 +289,28 @@ class VPNService extends ChangeNotifier {
 
       // Verify tunnel actually started successfully
       await Future.delayed(const Duration(seconds: 2));
-      // Remove service status verification because the amnezia service may be working even when sc query fails or isn't fast enough
-      // The handshakes check is the source of truth for if it's connected or not anyway (although there is a delay in handshake statistics)
+
+      _updateStatus('در حال بررسی اتصال اینترنت...');
+      bool internetOk = false;
+      try {
+        final client = HttpClient();
+        client.connectionTimeout = const Duration(seconds: 5);
+        final request = await client.getUrl(Uri.parse('https://www.youtube.com/'));
+        final response = await request.close();
+        if (response.statusCode == 200) {
+            internetOk = true;
+        }
+        client.close();
+      } catch (e) {
+         VpnLogger.warn(_tag, 'youtube connection check failed: $e');
+      }
+
+      if (!internetOk) {
+         throw Exception('امکان اتصال به سرور وجود ندارد. لطفا دوباره تلاش کنید.');
+      }
 
       // Tunnel installed successfully — mark as connected
+
       _stage = VpnStage.connected;
       _connectedAt = DateTime.now();
       _updateStatus('متصل شد');

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:provider/provider.dart';
@@ -5,6 +6,7 @@ import 'package:window_manager/window_manager.dart';
 import '../services/vpn_service.dart';
 import '../widgets/stats_card.dart';
 import '../l10n/app_localizations.dart';
+import '../services/system_check_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen>
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<VPNService>().initStatus();
+      _checkSystem();
     });
     _pulseController = AnimationController(
       vsync: this,
@@ -35,6 +38,48 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
+  Future<void> _checkSystem() async {
+    bool clockSynced = await SystemCheckService.isClockSynced();
+    List<String> procs = await SystemCheckService.getConflictingProcesses();
+    
+    if (!clockSynced || procs.isNotEmpty) {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF0A0A0A),
+            title: const Text('هشدار سیستم', style: TextStyle(color: Colors.white)),
+            content: Text(
+              (clockSynced ? '' : 'ساعت سیستم شما تنظیم نیست.\n') +
+              (procs.isNotEmpty ? 'برنامه‌های متداخل یافت شد: ${procs.join(', ')}' : ''),
+              style: const TextStyle(color: Colors.white70),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  exit(0);
+                },
+                child: const Text('Exit app', style: TextStyle(color: Colors.white54)),
+              ),
+              if (procs.isNotEmpty)
+                TextButton(
+                  onPressed: () {
+                    for (var p in procs) {
+                      Process.run('taskkill', ['/F', '/IM', p]);
+                    }
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Kill All', style: TextStyle(color: Color(0xFFFF3366))),
+                ),
+            ],
+          );
+        }
+      );
+    }
+  }
+
   Color getStatusColor(VPNService vpn) {
     if (vpn.isConnected) return const Color(0xFF00E676);
     if (vpn.isConnecting) return const Color(0xFFFFB800);
@@ -42,20 +87,9 @@ class _HomeScreenState extends State<HomeScreen>
     return const Color(0xFF4A4A4A);
   }
 
-  String _fmtSpeed(double kb) {
-    if (kb <= 0) return '0';
-    if (kb >= 1024 * 1024) return (kb / 1024 / 1024).toStringAsFixed(1);
-    if (kb >= 1024) return (kb / 1024).toStringAsFixed(1);
-    return kb.toStringAsFixed(0);
-  }
+  
 
-  String _fmtBytes(int bytes) {
-    if (bytes <= 0) return '0 B';
-    if (bytes >= 1073741824) return '${(bytes / 1073741824).toStringAsFixed(1)} GB';
-    if (bytes >= 1048576) return '${(bytes / 1048576).toStringAsFixed(1)} MB';
-    if (bytes >= 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    return '$bytes B';
-  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -296,32 +330,9 @@ class _HomeScreenState extends State<HomeScreen>
   // ---- Stats grid --------------------------------------------------------
 
   Widget _buildStatsGrid(VPNService vpn) {
-    final l10n = AppLocalizations.of(context);
     final s = vpn.stats;
     return Column(
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: StatsCard(
-                icon: Icons.south_rounded,
-                label: 'دانلود', // Using Persian text since sometimes l10n getter causes issues
-                value: '${_fmtSpeed(s.downloadSpeed)} KB/s',
-                color: const Color(0xFF00E676),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: StatsCard(
-                icon: Icons.north_rounded,
-                label: 'آپلود',
-                value: '${_fmtSpeed(s.uploadSpeed)} KB/s',
-                color: const Color(0xFF00C853),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
         Row(
           children: [
             Expanded(
@@ -340,30 +351,6 @@ class _HomeScreenState extends State<HomeScreen>
                 value: s.ipInfo.ip,
                 color: const Color(0xFF00E676),
                 valueSize: 13,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: StatsCard(
-                icon: Icons.south_rounded,
-                label: 'مجموع دانلود',
-                value: _fmtBytes(vpn.totalDownload),
-                color: const Color(0xFF00C853),
-                valueSize: 15,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: StatsCard(
-                icon: Icons.north_rounded,
-                label: 'مجموع آپلود',
-                value: _fmtBytes(vpn.totalUpload),
-                color: const Color(0xFF69F0AE),
-                valueSize: 15,
               ),
             ),
           ],
