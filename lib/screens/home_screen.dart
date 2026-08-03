@@ -203,103 +203,131 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildFullTunnelToggle(VPNService vpn, bool active) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFF0C0C0C),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFF1A1A1A)),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Toggle row
           Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                vpn.isFullTunnel ? Icons.lock : Icons.lock_open,
-                size: 16,
-                color: vpn.isFullTunnel
-                    ? const Color(0xFF00E5FF)
-                    : const Color(0xFF888891),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                'FULL TUNNEL',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: vpn.isFullTunnel
-                      ? const Color(0xFF00E5FF)
-                      : const Color(0xFF888891),
-                  letterSpacing: 1,
-                ),
-              ),
-              const SizedBox(width: 10),
-              GestureDetector(
-                onTap: active ? null : () => vpn.toggleFullTunnel(),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 36,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: vpn.isFullTunnel
-                        ? const Color(0xFF00E5FF)
-                        : const Color(0xFF2A2A2E),
-                  ),
-                  child: Align(
-                    alignment: vpn.isFullTunnel
-                        ? Alignment.centerRight
-                        : Alignment.centerLeft,
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: active ? Colors.white38 : Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
+                active ? Icons.lock : Icons.lock_open,
+                size: 14,
+                color: active ? const Color(0xFF00E5FF) : const Color(0xFF888891),
               ),
               const SizedBox(width: 8),
               Text(
-                vpn.isFullTunnel ? 'ON' : 'OFF',
+                'CONNECTION MODE',
                 style: TextStyle(
                   fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: active ? Colors.white38 : Colors.white54,
-                  letterSpacing: 0.5,
+                  fontWeight: FontWeight.w700,
+                  color: active ? const Color(0xFF00E5FF) : const Color(0xFF888891),
+                  letterSpacing: 1,
                 ),
               ),
             ],
           ),
-          // Proxy ports (shown when connected and Full Tunnel is OFF)
-          if (vpn.isConnected && !vpn.isFullTunnel) ...[
-            const SizedBox(height: 12),
+          const SizedBox(height: 10),
+          // 3-mode selector
+          Row(
+            children: [
+              _buildModeChip(
+                label: 'Tunnel',
+                icon: Icons.shield,
+                isSelected: vpn.vpnMode == VpnMode.fullTunnel,
+                active: active,
+                onTap: () => vpn.setVpnMode(VpnMode.fullTunnel),
+              ),
+              const SizedBox(width: 6),
+              _buildModeChip(
+                label: 'HTTP',
+                icon: Icons.language,
+                isSelected: vpn.vpnMode == VpnMode.httpProxy,
+                active: active,
+                onTap: () => vpn.setVpnMode(VpnMode.httpProxy),
+              ),
+              const SizedBox(width: 6),
+              _buildModeChip(
+                label: 'SOCKS5',
+                icon: Icons.cable,
+                isSelected: vpn.vpnMode == VpnMode.socks5Proxy,
+                active: active,
+                onTap: () => vpn.setVpnMode(VpnMode.socks5Proxy),
+              ),
+            ],
+          ),
+          // Proxy info (shown when connected in proxy mode)
+          if (vpn.isConnected && vpn.isHttpProxy) ...[
+            const SizedBox(height: 10),
             const Divider(color: Color(0xFF1A1A1A), height: 1),
-            const SizedBox(height: 12),
-            _buildProxyPort(
-              label: 'HTTP',
-              port: '1452',
-              address: '127.0.0.1:1452',
-            ),
-            const SizedBox(height: 8),
-            _buildProxyPort(
-              label: 'SOCKS5',
-              port: '8563',
-              address: '127.0.0.1:8563',
-            ),
+            const SizedBox(height: 10),
+            _buildProxyPort(label: 'HTTP', address: '127.0.0.1:1452'),
+          ],
+          if (vpn.isConnected && vpn.isSocks5Proxy) ...[
+            const SizedBox(height: 10),
+            const Divider(color: Color(0xFF1A1A1A), height: 1),
+            const SizedBox(height: 10),
+            _buildProxyPort(label: 'SOCKS5', address: '127.0.0.1:8563'),
           ],
         ],
       ),
     );
   }
 
+  Widget _buildModeChip({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required bool active,
+    required VoidCallback onTap,
+  }) {
+    final color = isSelected ? const Color(0xFF00E5FF) : const Color(0xFF2A2A2E);
+    final textColor = isSelected ? Colors.black : const Color(0xFF888891);
+    final iconColor = isSelected ? Colors.black : const Color(0xFF888891);
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: active ? null : onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: isSelected ? const Color(0xFF00E5FF) : const Color(0xFF1A1A1A),
+              width: isSelected ? 1.5 : 1,
+            ),
+            boxShadow: isSelected
+                ? [BoxShadow(color: const Color(0xFF00E5FF).withOpacity(0.2), blurRadius: 8)]
+                : null,
+          ),
+          child: Column(
+            children: [
+              Icon(icon, size: 14, color: active && !isSelected ? Colors.white24 : iconColor),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  color: active && !isSelected ? Colors.white24 : textColor,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildProxyPort({
     required String label,
-    required String port,
     required String address,
   }) {
     return Row(

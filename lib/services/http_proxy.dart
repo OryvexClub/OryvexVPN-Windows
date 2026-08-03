@@ -134,17 +134,34 @@ class HttpProxy {
     final query = targetUri.hasQuery ? '?${targetUri.query}' : '';
     final newFirstLine = '$method ${path}${query} HTTP/1.1';
 
-    // Rebuild the request with the rewritten first line
+    // Rebuild headers: replace Host with target host, remove Proxy-*
     final lines = fullRequest.split('\r\n');
-    lines[0] = newFirstLine;
+    final headerLines = <String>[newFirstLine];
+    bool hostHeaderSet = false;
 
-    // Remove Proxy-* headers
-    final filteredLines = lines.where((line) {
+    for (var i = 1; i < lines.length; i++) {
+      final line = lines[i];
+      if (line.isEmpty) break; // end of headers
       final lower = line.toLowerCase();
-      return !lower.startsWith('proxy-');
-    }).toList();
+      if (lower.startsWith('proxy-')) continue; // skip proxy headers
+      if (lower.startsWith('host:')) {
+        headerLines.add('Host: $host');
+        hostHeaderSet = true;
+      } else {
+        headerLines.add(line);
+      }
+    }
 
-    final newRequest = filteredLines.join('\r\n');
+    if (!hostHeaderSet) {
+      headerLines.add('Host: $host');
+    }
+
+    // Add Connection: close to avoid keep-alive issues
+    headerLines.add('Connection: close');
+    headerLines.add(''); // empty line separates headers from body
+    headerLines.add(''); // second empty line for safety
+
+    final newRequest = headerLines.join('\r\n');
     remote.add(Utf8Encoder().convert(newRequest));
     await remote.flush();
 

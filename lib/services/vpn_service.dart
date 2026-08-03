@@ -21,6 +21,12 @@ enum VpnStage {
   disconnecting,
 }
 
+enum VpnMode {
+  fullTunnel,
+  httpProxy,
+  socks5Proxy,
+}
+
 class VPNService extends ChangeNotifier {
   VpnStage _stage = VpnStage.idle;
   String _statusMessage = 'Click to connect';
@@ -51,16 +57,19 @@ class VPNService extends ChangeNotifier {
   Socks5Proxy get socks5Proxy => _socks5Proxy;
   HttpProxy get httpProxy => _httpProxy;
 
-  bool _isFullTunnel = true;
-  bool get isFullTunnel => _isFullTunnel;
+  VpnMode _vpnMode = VpnMode.fullTunnel;
+  VpnMode get vpnMode => _vpnMode;
+  bool get isFullTunnel => _vpnMode == VpnMode.fullTunnel;
+  bool get isHttpProxy => _vpnMode == VpnMode.httpProxy;
+  bool get isSocks5Proxy => _vpnMode == VpnMode.socks5Proxy;
 
   String _antiDpiPreset = 'standard';
   String get antiDpiPreset => _antiDpiPreset;
 
-  void toggleFullTunnel() {
-    _isFullTunnel = !_isFullTunnel;
+  void setVpnMode(VpnMode mode) {
+    _vpnMode = mode;
     SharedPreferences.getInstance().then((prefs) {
-      prefs.setBool('is_full_tunnel', _isFullTunnel);
+      prefs.setString('vpn_mode', mode.name);
     });
     notifyListeners();
   }
@@ -104,7 +113,18 @@ class VPNService extends ChangeNotifier {
 
   Future<void> _loadFullTunnelSetting() async {
     final prefs = await SharedPreferences.getInstance();
-    _isFullTunnel = prefs.getBool('is_full_tunnel') ?? true;
+    final modeStr = prefs.getString('vpn_mode');
+    if (modeStr != null) {
+      _vpnMode = VpnMode.values.firstWhere(
+        (m) => m.name == modeStr,
+        orElse: () => VpnMode.fullTunnel,
+      );
+    } else {
+      // Legacy: convert old boolean setting
+      final wasFullTunnel = prefs.getBool('is_full_tunnel') ?? true;
+      _vpnMode = wasFullTunnel ? VpnMode.fullTunnel : VpnMode.httpProxy;
+      prefs.setString('vpn_mode', _vpnMode.name);
+    }
     _antiDpiPreset = prefs.getString('anti_dpi_preset') ?? 'standard';
     notifyListeners();
   }
@@ -476,8 +496,8 @@ class VPNService extends ChangeNotifier {
       _startStatsMonitoring();
       _startConnectionMonitoring();
 
-      // Start local proxies when Full Tunnel is OFF
-      if (!_isFullTunnel) {
+      // Start local proxy servers when in proxy mode
+      if (_vpnMode == VpnMode.httpProxy || _vpnMode == VpnMode.socks5Proxy) {
         await _startProxies();
       }
 
@@ -527,16 +547,16 @@ class VPNService extends ChangeNotifier {
 
   Future<void> _startProxies() async {
     try {
-      if (!_httpProxy.isRunning) {
+      if (_vpnMode == VpnMode.httpProxy && !_httpProxy.isRunning) {
         await _httpProxy.start(port: 1452);
         VpnLogger.info(_tag, 'HTTP proxy started on port 1452');
       }
-      if (!_socks5Proxy.isRunning) {
+      if (_vpnMode == VpnMode.socks5Proxy && !_socks5Proxy.isRunning) {
         await _socks5Proxy.start(port: 8563);
         VpnLogger.info(_tag, 'SOCKS5 proxy started on port 8563');
       }
     } catch (e) {
-      VpnLogger.error(_tag, 'Failed to start proxies: $e');
+      VpnLogger.error(_tag, 'Failed to start proxy: $e');
     }
   }
 
