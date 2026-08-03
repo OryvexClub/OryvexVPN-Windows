@@ -55,9 +55,9 @@ class WireGuardService {
     }
     VpnLogger.info(_tag, 'Selected endpoint: ${endpoint.hostPort}');
 
-    // Step 3: Register with Cloudflare WARP
-    onProgress('Registering with Cloudflare WARP...', VpnStage.fetchingConfig);
-    VpnLogger.info(_tag, 'Registering with WARP...');
+    // Step 3: Register with remote infrastructure
+    onProgress('Provisioning secure tunnel...', VpnStage.fetchingConfig);
+    VpnLogger.info(_tag, 'Registering with remote infrastructure...');
     final reg = await WarpRegistrationService.register(
       resolveEndpoint: () async => endpoint,
     );

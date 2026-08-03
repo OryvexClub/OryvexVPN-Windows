@@ -71,6 +71,8 @@ class _HomeScreenState extends State<HomeScreen>
                   ],
                   const SizedBox(height: 32),
                   _buildStatsGrid(vpn),
+                  const SizedBox(height: 24),
+                  _buildAiWarningBox(),
                   const SizedBox(height: 30),
                 ],
               ),
@@ -86,17 +88,17 @@ class _HomeScreenState extends State<HomeScreen>
       children: [
         RichText(
           text: const TextSpan(
-            text: 'WARP',
+            text: 'Oryvex',
             style: TextStyle(
-              fontSize: 36,
+              fontSize: 34,
               fontWeight: FontWeight.w800,
               color: Colors.white,
-              letterSpacing: -1.5,
+              letterSpacing: -1.0,
               fontFamily: 'Inter',
             ),
             children: [
               TextSpan(
-                text: '_GEN',
+                text: 'VPN',
                 style: TextStyle(
                   color: Color(0xFF00E5FF),
                   shadows: [Shadow(color: Color(0x3300E5FF), blurRadius: 20)],
@@ -105,15 +107,16 @@ class _HomeScreenState extends State<HomeScreen>
             ],
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 10),
         const Text(
-          'Next-Generation OryvexVPN Configuration',
+          'Enjoy a fast, secure, and private internet experience with a simple and modern interface.',
+          textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
+            fontSize: 13,
+            height: 1.4,
+            fontWeight: FontWeight.w500,
             color: Color(0xFF888891),
-            letterSpacing: 1.2,
-            textBaseline: TextBaseline.alphabetic,
+            letterSpacing: 0.3,
           ),
         ),
       ],
@@ -268,6 +271,40 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  Widget _buildAiWarningBox() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF161616),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF262626)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.info_outline_rounded, color: Colors.blue[400], size: 20),
+              const SizedBox(width: 10),
+              const Text(
+                'AI Service Compatibility',
+                style: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'Some AI services, including ChatGPT and Claude, may occasionally return Error 406 or refuse connections while using OryvexVPN.
+
+This happens because some websites temporarily block or limit traffic from certain VPN networks. Your VPN is still connected and working normally.\n\nWe hope to improve compatibility with all supported services in future updates.',
+            style: TextStyle(fontSize: 12.5, color: Colors.white70, height: 1.5),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStatsGrid(VPNService vpn) {
     final s = vpn.stats;
     return Column(
@@ -295,9 +332,9 @@ class _HomeScreenState extends State<HomeScreen>
         ),
         const SizedBox(height: 16),
         _buildBentoCard(
-          icon: Icons.language_rounded,
-          title: 'ENDPOINT ROUTE',
-          value: s.ipInfo.ip.contains(':') ? s.ipInfo.ip.split(':')[0] : s.ipInfo.ip,
+          icon: Icons.info_outline_rounded,
+          title: 'YOUR INFO',
+          value: s.ipInfo.cleanIsp,
           color: const Color(0xFF00E5FF),
           fullWidth: true,
         ),

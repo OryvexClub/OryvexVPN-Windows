@@ -20,6 +20,7 @@ PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=commandline
 OutputDir=Output
 OutputBaseFilename=OryvexVPN-Setup-v{#MyAppVersion}
+SetupIconFile=..\windows_logos\app_icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma2/max
 SolidCompression=yes

@@ -17,7 +17,7 @@ class Strings {
   static const String bestIP = 'Best IP';
   static const String quickActions = 'Quick Actions';
   static const String endpoint = 'Endpoint';
-  static const String auto = 'Auto (Cloudflare)';
+  static const String auto = 'Auto (Oryvex Routing)';
   static const String custom = 'Custom';
   static const String ipAddress = 'IP Address';
   static const String port = 'Port';
