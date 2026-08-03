@@ -25,8 +25,8 @@ class AppConfig {
 
   // ---- AmneziaWG junk packet obfuscation (Iran-optimized for WARP) -----------------------------------------------------
   static const int junkPacketCount = 3;
-  static const int junkPacketMinSize = 40;
-  static const int junkPacketMaxSize = 70;
+  static const int junkPacketMinSize = 1;
+  static const int junkPacketMaxSize = 3;
   static const int initPacketJunkSize = 0;
   static const int responsePacketJunkSize = 0;
   static const int initPacketMagicHeader = 1;
