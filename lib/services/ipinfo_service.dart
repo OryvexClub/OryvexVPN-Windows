@@ -14,8 +14,7 @@ class IPInfoModel {
 
   String get cleanIsp {
     if (org == 'Unknown' || org == '-') {
-      if (ip != 'Unknown' && ip != 'N/A') return ip;
-      return 'OryvexVPN Secure Network';
+      return 'Unknown ISP';
     }
     // Remove AS number (e.g. "AS12345 Google LLC" -> "Google LLC")
     return org.replaceFirst(RegExp(r'^AS\d+\s+'), '');
