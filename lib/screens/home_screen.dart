@@ -71,8 +71,6 @@ class _HomeScreenState extends State<HomeScreen>
                   ],
                   const SizedBox(height: 32),
                   _buildStatsGrid(vpn),
-                  const SizedBox(height: 24),
-                  _buildAiWarningBox(),
                   const SizedBox(height: 30),
                 ],
               ),
@@ -135,6 +133,14 @@ class _HomeScreenState extends State<HomeScreen>
               onPanStart: (_) => windowManager.startDragging(),
               child: const SizedBox(height: double.infinity),
             ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.info_outline_rounded, color: Colors.white54, size: 16),
+            onPressed: () => _showAiCompatibilityDialog(context),
+            splashRadius: 18,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 40),
+            tooltip: 'AI Service Compatibility',
           ),
           IconButton(
             icon: const Icon(Icons.remove, color: Colors.white54, size: 16),
@@ -271,32 +277,29 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildAiWarningBox() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF161616),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF262626)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.info_outline_rounded, color: Colors.blue[400], size: 20),
-              const SizedBox(width: 10),
-              const Text(
-                'AI Service Compatibility',
-                style: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Some AI services, including ChatGPT and Claude, may occasionally return Error 406 or refuse connections while using OryvexVPN.\n\nThis happens because some websites temporarily block or limit traffic from certain VPN networks. Your VPN is still connected and working normally.\n\nWe hope to improve compatibility with all supported services in future updates.',
-            style: TextStyle(fontSize: 12.5, color: Colors.white70, height: 1.5),
+  void _showAiCompatibilityDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF111111),
+        title: Row(
+          children: [
+            Icon(Icons.info_outline_rounded, color: Colors.blue[400]),
+            const SizedBox(width: 10),
+            const Text(
+              'AI Service Compatibility',
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            ),
+          ],
+        ),
+        content: const Text(
+          'Some AI services, including ChatGPT and Claude, may occasionally return Error 406 or refuse connections while using OryvexVPN.\n\nThis happens because some websites temporarily block or limit traffic from certain VPN networks. Your VPN is still connected and working normally.\n\nWe hope to improve compatibility with all supported services in future updates.',
+          style: TextStyle(color: Colors.white70, height: 1.5, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close', style: TextStyle(color: Colors.white54)),
           ),
         ],
       ),

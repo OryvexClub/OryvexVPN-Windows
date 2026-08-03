@@ -13,7 +13,10 @@ class IPInfoModel {
   final String timezone;
 
   String get cleanIsp {
-    if (org == 'Unknown' || org == '-') return 'OryvexVPN Secure Network';
+    if (org == 'Unknown' || org == '-') {
+      if (ip != 'Unknown' && ip != 'N/A') return ip;
+      return 'OryvexVPN Secure Network';
+    }
     // Remove AS number (e.g. "AS12345 Google LLC" -> "Google LLC")
     return org.replaceFirst(RegExp(r'^AS\d+\s+'), '');
   }
