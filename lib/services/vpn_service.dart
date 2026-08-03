@@ -255,30 +255,22 @@ class VPNService extends ChangeNotifier {
   Future<void> _checkConnectionStatus() async {
     if (_stage != VpnStage.connected) return;
 
-
-
     final alive = await WireGuardService.isConnected();
 
-    // Validate if connection actually has handshakes instead of just checking if the service is running.
-    // Cloudflare WARP drops packets if the endpoint doesn't work, so it will show up as connected
-    // but handshakes will fail and traffic will be 0.
-    bool validHandshake = true;
-    try {
-      final stats = await WireGuardService.getTunnelStats();
-      final handshakeAge = stats['handshake_age'] as int?;
-      // If there's no handshake after 25 seconds, or if the handshake is very old (> 120s), we consider it dropped
-      if (handshakeAge == null) {
-        if (_connectedAt != null && DateTime.now().difference(_connectedAt!).inSeconds > 25) {
-          validHandshake = false;
-        }
-      } else if (handshakeAge > 120) {
-        validHandshake = false;
+    if (!alive) {
+      // Service is dead — only then consider it dropped
+      VpnLogger.warn(_tag, 'Tunnel service is not running');
+    } else {
+      // Service is running. Check handshake health but don't kill connection
+      // just because handshake is slow. Only log warnings.
+      try {
+        final stats = await WireGuardService.getTunnelStats();
+        final handshakeAge = stats['handshake_age'] as int?;
+        final rx = stats['rx_bytes'] as int? ?? 0;
+        VpnLogger.debug(_tag, 'Health check: handshake_age=$handshakeAge, rx=$rx');
+      } catch (e) {
+        VpnLogger.debug(_tag, 'Health check stats read failed: $e');
       }
-    } catch (e) {
-      VpnLogger.warn(_tag, 'Failed to verify handshake: $e');
-    }
-
-    if (alive && validHandshake) {
       _reconnectAttempts = 0;
       return;
     }
@@ -404,7 +396,7 @@ class VPNService extends ChangeNotifier {
 
   Future<void> _attemptConnectionRound() async {
     // Always use full tunnel for WireGuard routing.
-    // When Full Tunnel is OFF, local proxies handle selective routing.
+    // When in proxy mode, local proxies handle selective routing.
     await WireGuardService.connectWithProgress(
       isFullTunnel: true,
       antiDpiPreset: _antiDpiPreset,
@@ -415,27 +407,49 @@ class VPNService extends ChangeNotifier {
       },
     );
 
-    // Verify tunnel actually started successfully
-    await Future.delayed(const Duration(seconds: 2));
+    // Wait for tunnel to fully establish
+    VpnLogger.info(_tag, 'Waiting for tunnel to establish...');
+    await Future.delayed(const Duration(seconds: 3));
 
-    _updateStatus('Checking internet connection...');
-    bool internetOk = false;
+    // Verify tunnel service is actually running
+    final running = await WireGuardService.isConnected();
+    VpnLogger.info(_tag, 'Tunnel service running: $running');
+
+    if (!running) {
+      VpnLogger.error(_tag, 'Tunnel service not running after install');
+      throw const FormatException('Tunnel failed to start. Please try again.');
+    }
+
+    // Verify handshake occurred (tunnel is actually communicating)
+    bool hasHandshake = false;
     try {
-      final client = HttpClient();
-      client.connectionTimeout = const Duration(seconds: 6);
-      final request = await client.getUrl(Uri.parse('https://www.youtube.com/'));
-      final response = await request.close();
-      if (response.statusCode == 200) {
-          internetOk = true;
-      }
-      client.close();
+      final stats = await WireGuardService.getTunnelStats();
+      final handshakeAge = stats['handshake_age'] as int?;
+      final rx = stats['rx_bytes'] as int? ?? 0;
+      final tx = stats['tx_bytes'] as int? ?? 0;
+      VpnLogger.info(_tag, 'Tunnel stats: handshake_age=$handshakeAge, rx=$rx, tx=$tx');
+      hasHandshake = handshakeAge != null || rx > 0 || tx > 0;
     } catch (e) {
-       VpnLogger.warn(_tag, 'youtube connection check failed: $e');
+      VpnLogger.warn(_tag, 'Could not read tunnel stats: $e');
     }
 
-    if (!internetOk) {
-       throw const FormatException('Cannot connect to server. Please try again.'); // Using FormatException as a marker for connection check failure
+    if (!hasHandshake) {
+      VpnLogger.warn(_tag, 'No handshake yet, waiting longer...');
+      await Future.delayed(const Duration(seconds: 5));
+      try {
+        final stats = await WireGuardService.getTunnelStats();
+        final handshakeAge = stats['handshake_age'] as int?;
+        final rx = stats['rx_bytes'] as int? ?? 0;
+        hasHandshake = handshakeAge != null || rx > 0;
+        VpnLogger.info(_tag, 'Retry stats: handshake_age=$handshakeAge, rx=$rx');
+      } catch (e) {
+        VpnLogger.warn(_tag, 'Retry stats failed: $e');
+      }
     }
+
+    // Even without handshake yet, if service is running, consider it connected.
+    // The handshake may take a moment but traffic will start flowing.
+    VpnLogger.info(_tag, 'Connection established (service running=$running, handshake=$hasHandshake)');
   }
 
   Future<void> connect() async {
@@ -495,6 +509,9 @@ class VPNService extends ChangeNotifier {
       AppLogger.connectionState('Connected');
       _startStatsMonitoring();
       _startConnectionMonitoring();
+
+      // Flush DNS so the tunnel's DNS servers take effect immediately
+      VpnCore.flushDns().catchError((_) {});
 
       // Start local proxy servers when in proxy mode
       if (_vpnMode == VpnMode.httpProxy || _vpnMode == VpnMode.socks5Proxy) {

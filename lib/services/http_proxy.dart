@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'vpn_core.dart';
 
-/// Lightweight local HTTP proxy server.
+/// Local HTTP proxy server.
 /// Handles both plain HTTP forwarding and HTTPS CONNECT tunneling.
 class HttpProxy {
   static const String _tag = 'HTTP';
@@ -14,44 +14,47 @@ class HttpProxy {
   bool get isRunning => _server != null;
   int get activeConnections => _activeConnections;
 
-  /// Start the HTTP proxy on the given [port].
   Future<void> start({int port = 1452}) async {
     if (_server != null) return;
     _server = await ServerSocket.bind(InternetAddress.loopbackIPv4, port);
-    VpnLogger.info(_tag, 'Listening on port $port');
-    _server!.listen(_onNewConnection, onError: (e) {
-      VpnLogger.error(_tag, 'Server error: $e');
-    });
+    VpnLogger.info(_tag, 'Listening on 127.0.0.1:$port');
+    _server!.listen(
+      _onNewConnection,
+      onError: (e) => VpnLogger.error(_tag, 'Server error: $e'),
+    );
   }
 
-  /// Stop the proxy and close all connections.
   Future<void> stop() async {
     final s = _server;
     _server = null;
     await s?.close();
+    _activeConnections = 0;
     VpnLogger.info(_tag, 'Stopped');
   }
 
   void _onNewConnection(Socket client) {
     _activeConnections++;
-    _handleClient(client).whenComplete(() {
+    VpnLogger.debug(_tag, 'New connection (active: $_activeConnections)');
+    _handleClient(client).catchError((e) {
+      VpnLogger.debug(_tag, 'Unhandled error: $e');
+    }).whenComplete(() {
       _activeConnections--;
     });
   }
 
   Future<void> _handleClient(Socket client) async {
     try {
-      // Read the initial request line and headers
-      final request = await _readRequest(client);
-      if (request == null) {
-        client.close();
+      client.timeout(const Duration(seconds: 30));
+
+      // Read the initial request line + headers
+      final request = await _readHttpRequest(client);
+      if (request == null || request.isEmpty) {
         return;
       }
 
       final firstLine = request.split('\r\n')[0];
       final parts = firstLine.split(' ');
       if (parts.length < 3) {
-        client.close();
         return;
       }
 
@@ -59,15 +62,18 @@ class HttpProxy {
       final uri = parts[1];
 
       if (method == 'CONNECT') {
-        // HTTPS tunneling: CONNECT host:port HTTP/1.1
+        VpnLogger.debug(_tag, 'CONNECT $uri');
         await _handleConnect(client, uri);
       } else {
-        // Plain HTTP forwarding
+        VpnLogger.debug(_tag, '$method $uri');
         await _handleHttp(client, request, method, uri);
       }
+    } on TimeoutException {
+      VpnLogger.debug(_tag, 'Client timeout');
     } catch (e) {
       VpnLogger.debug(_tag, 'Client error: $e');
-      client.close();
+    } finally {
+      try { client.close(); } catch (_) {}
     }
   }
 
@@ -75,25 +81,22 @@ class HttpProxy {
   Future<void> _handleConnect(Socket client, String hostPort) async {
     final colonIdx = hostPort.lastIndexOf(':');
     final host = colonIdx > 0 ? hostPort.substring(0, colonIdx) : hostPort;
-    final port =
-        colonIdx > 0 ? int.tryParse(hostPort.substring(colonIdx + 1)) ?? 443 : 443;
+    final port = colonIdx > 0
+        ? int.tryParse(hostPort.substring(colonIdx + 1)) ?? 443
+        : 443;
 
     Socket remote;
     try {
       remote = await Socket.connect(host, port,
-          timeout: const Duration(seconds: 10));
-    } catch (_) {
-      client.add(
-          Utf8Encoder().convert('HTTP/1.1 502 Bad Gateway\r\n\r\n'));
-      await client.flush();
-      client.close();
+          timeout: const Duration(seconds: 15));
+    } catch (e) {
+      VpnLogger.debug(_tag, 'CONNECT failed to $host:$port: $e');
+      _sendRaw(client, 'HTTP/1.1 502 Bad Gateway\r\n\r\n');
       return;
     }
 
     // Tell the client the tunnel is established
-    client.add(
-        Utf8Encoder().convert('HTTP/1.1 200 Connection Established\r\n\r\n'));
-    await client.flush();
+    _sendRaw(client, 'HTTP/1.1 200 Connection Established\r\n\r\n');
 
     // Bidirectional pipe
     _pipe(client, remote);
@@ -102,48 +105,41 @@ class HttpProxy {
   /// Handle plain HTTP request forwarding.
   Future<void> _handleHttp(
       Socket client, String fullRequest, String method, String uri) async {
-    // Parse the target from the URI (absolute form: http://host/path)
     Uri targetUri;
     try {
       targetUri = Uri.parse(uri);
     } catch (_) {
-      client.add(
-          Utf8Encoder().convert('HTTP/1.1 400 Bad Request\r\n\r\n'));
-      await client.flush();
-      client.close();
+      _sendRaw(client, 'HTTP/1.1 400 Bad Request\r\n\r\n');
       return;
     }
 
     final host = targetUri.host;
-    final port = targetUri.port > 0 ? targetUri.port : 80;
+    final targetPort = targetUri.port > 0 ? targetUri.port : 80;
 
     Socket remote;
     try {
-      remote = await Socket.connect(host, port,
-          timeout: const Duration(seconds: 10));
-    } catch (_) {
-      client.add(
-          Utf8Encoder().convert('HTTP/1.1 502 Bad Gateway\r\n\r\n'));
-      await client.flush();
-      client.close();
+      remote = await Socket.connect(host, targetPort,
+          timeout: const Duration(seconds: 15));
+    } catch (e) {
+      VpnLogger.debug(_tag, 'HTTP connect failed to $host:$targetPort: $e');
+      _sendRaw(client, 'HTTP/1.1 502 Bad Gateway\r\n\r\n');
       return;
     }
 
-    // Rewrite the request line to use the relative path
+    // Rewrite request: change absolute URL to relative path, fix Host header
     final path = targetUri.path.isEmpty ? '/' : targetUri.path;
     final query = targetUri.hasQuery ? '?${targetUri.query}' : '';
     final newFirstLine = '$method ${path}${query} HTTP/1.1';
 
-    // Rebuild headers: replace Host with target host, remove Proxy-*
     final lines = fullRequest.split('\r\n');
     final headerLines = <String>[newFirstLine];
     bool hostHeaderSet = false;
 
     for (var i = 1; i < lines.length; i++) {
       final line = lines[i];
-      if (line.isEmpty) break; // end of headers
+      if (line.isEmpty) break;
       final lower = line.toLowerCase();
-      if (lower.startsWith('proxy-')) continue; // skip proxy headers
+      if (lower.startsWith('proxy-')) continue;
       if (lower.startsWith('host:')) {
         headerLines.add('Host: $host');
         hostHeaderSet = true;
@@ -152,21 +148,21 @@ class HttpProxy {
       }
     }
 
-    if (!hostHeaderSet) {
-      headerLines.add('Host: $host');
-    }
-
-    // Add Connection: close to avoid keep-alive issues
+    if (!hostHeaderSet) headerLines.add('Host: $host');
     headerLines.add('Connection: close');
-    headerLines.add(''); // empty line separates headers from body
-    headerLines.add(''); // second empty line for safety
+    headerLines.add('');
 
-    final newRequest = headerLines.join('\r\n');
-    remote.add(Utf8Encoder().convert(newRequest));
+    remote.add(Utf8Encoder().convert(headerLines.join('\r\n')));
     await remote.flush();
 
-    // Pipe response back
     _pipe(client, remote);
+  }
+
+  void _sendRaw(Socket sock, String data) {
+    try {
+      sock.add(Utf8Encoder().convert(data));
+      sock.flush();
+    } catch (_) {}
   }
 
   void _pipe(Socket a, Socket b) {
@@ -175,8 +171,8 @@ class HttpProxy {
 
     void checkClose() {
       if (aClosed && bClosed) {
-        a.close();
-        b.close();
+        try { a.close(); } catch (_) {}
+        try { b.close(); } catch (_) {}
       }
     }
 
@@ -186,26 +182,11 @@ class HttpProxy {
           b.add(data);
           b.flush();
         } catch (_) {
-          if (!bClosed) {
-            bClosed = true;
-            checkClose();
-          }
+          if (!bClosed) { bClosed = true; checkClose(); }
         }
       },
-      onDone: () {
-        aClosed = true;
-        try {
-          b.close();
-        } catch (_) {}
-        checkClose();
-      },
-      onError: (_) {
-        aClosed = true;
-        try {
-          b.close();
-        } catch (_) {}
-        checkClose();
-      },
+      onDone: () { aClosed = true; try { b.close(); } catch (_) {} checkClose(); },
+      onError: (_) { aClosed = true; try { b.close(); } catch (_) {} checkClose(); },
     );
 
     b.listen(
@@ -214,35 +195,20 @@ class HttpProxy {
           a.add(data);
           a.flush();
         } catch (_) {
-          if (!aClosed) {
-            aClosed = true;
-            checkClose();
-          }
+          if (!aClosed) { aClosed = true; checkClose(); }
         }
       },
-      onDone: () {
-        bClosed = true;
-        try {
-          a.close();
-        } catch (_) {}
-        checkClose();
-      },
-      onError: (_) {
-        bClosed = true;
-        try {
-          a.close();
-        } catch (_) {}
-        checkClose();
-      },
+      onDone: () { bClosed = true; try { a.close(); } catch (_) {} checkClose(); },
+      onError: (_) { bClosed = true; try { a.close(); } catch (_) {} checkClose(); },
     );
   }
 
-  /// Read a full HTTP request (headers + body if Content-Length is present).
-  Future<String?> _readRequest(Socket client) async {
+  /// Read a full HTTP request (headers + body based on Content-Length or chunked).
+  Future<String?> _readHttpRequest(Socket client) async {
     final completer = Completer<String?>();
     final buffer = BytesBuilder();
     bool headersComplete = false;
-    int contentLength = 0;
+    int contentLength = -1;
     int bodyReceived = 0;
 
     late StreamSubscription<List<int>> sub;
@@ -257,11 +223,10 @@ class HttpProxy {
             headersComplete = true;
             final headersPart = current.substring(0, headerEnd);
 
-            // Extract Content-Length
             for (final line in headersPart.split('\r\n')) {
-              if (line.toLowerCase().startsWith('content-length:')) {
-                contentLength =
-                    int.tryParse(line.split(':')[1].trim()) ?? 0;
+              final lower = line.toLowerCase();
+              if (lower.startsWith('content-length:')) {
+                contentLength = int.tryParse(line.split(':')[1].trim()) ?? -1;
               }
             }
 
@@ -269,10 +234,13 @@ class HttpProxy {
           }
         }
 
-        if (headersComplete && bodyReceived >= contentLength) {
-          sub.cancel();
-          if (!completer.isCompleted) {
-            completer.complete(String.fromCharCodes(buffer.toBytes()));
+        if (headersComplete) {
+          // If content-length known, wait for body; otherwise return headers only
+          if (contentLength <= 0 || bodyReceived >= contentLength) {
+            sub.cancel();
+            if (!completer.isCompleted) {
+              completer.complete(String.fromCharCodes(buffer.toBytes()));
+            }
           }
         }
       },
@@ -281,7 +249,7 @@ class HttpProxy {
       },
       onDone: () {
         if (!completer.isCompleted) {
-          if (headersComplete) {
+          if (buffer.isNotEmpty) {
             completer.complete(String.fromCharCodes(buffer.toBytes()));
           } else {
             completer.complete(null);
@@ -290,11 +258,14 @@ class HttpProxy {
       },
     );
 
-    // Timeout
-    Future.delayed(const Duration(seconds: 10), () {
+    Future.delayed(const Duration(seconds: 15), () {
       if (!completer.isCompleted) {
         sub.cancel();
-        completer.completeError(Exception('Read timeout'));
+        if (headersComplete && buffer.isNotEmpty) {
+          completer.complete(String.fromCharCodes(buffer.toBytes()));
+        } else {
+          completer.completeError(TimeoutException('Read timeout'));
+        }
       }
     });
 
