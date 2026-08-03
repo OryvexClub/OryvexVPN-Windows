@@ -331,14 +331,6 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        _buildBentoCard(
-          icon: Icons.info_outline_rounded,
-          title: 'YOUR INFO',
-          value: s.ipInfo.cleanIsp,
-          color: const Color(0xFF00E5FF),
-          fullWidth: true,
-        ),
       ],
     );
   }
