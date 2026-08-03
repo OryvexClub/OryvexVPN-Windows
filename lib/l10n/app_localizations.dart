@@ -87,18 +87,15 @@ class AppLocalizations {
     'checking_internet': 'Checking internet connection...',
     'youtube_check_failed': 'Cannot connect to server. Please try again.',
     'sys_warning': 'System Warning',
-    'clock_out_of_sync': 'Your system clock is not synchronized.\n',
+    'clock_out_of_sync': 'ساعت سیستم شما تنظیم نیست.
+',
     'conflicting_procs': 'Conflicting programs found: ',
     'exit_app': 'Exit app',
     'kill_all': 'Kill All',
   };
 
   static final Map<String, String> _persianValues = {
-
-    // App
     'app_name': 'OryvexVPN',
-
-    // Connection Status
     'click_to_connect': 'برای اتصال کلیک کنید',
     'connected': 'متصل شد',
     'connecting': 'در حال اتصال...',
@@ -106,8 +103,6 @@ class AppLocalizations {
     'disconnected': 'قطع شد',
     'connection_failed': 'اتصال ناموفق بود',
     'disconnect_failed': 'قطع اتصال ناموفق بود',
-
-    // Progress Messages
     'finding_fastest_server': 'در حال یافتن سریع‌ترین سرور...',
     'registering_with_warp': 'در حال ثبت‌نام با Cloudflare WARP...',
     'starting_secure_tunnel': 'در حال راه‌اندازی تونل امن...',
@@ -117,8 +112,6 @@ class AppLocalizations {
     'dns_configuring': 'در حال تنظیم DNS...',
     'retrying_standard': 'تلاش مجدد با تنظیمات استاندارد...',
     'connection_lost_retrying': 'اتصال قطع شد، در حال تلاش مجدد...',
-
-    // Stats
     'ping': 'پینگ',
     'ip_address': 'آدرس IP',
     'download': 'دانلود',
@@ -127,16 +120,12 @@ class AppLocalizations {
     'total_upload': 'مجموع آپلود',
     'duration': 'مدت اتصال',
     'unknown': 'ناشناخته',
-
-    // Errors
     'wireguard_not_found': 'فایل‌های WireGuard یافت نشد',
     'registration_failed': 'ثبت‌نام ناموفق بود',
     'tunnel_not_active': 'تونل بعد از تنظیمات فعال نیست',
     'service_not_running': 'سرویس تونل در حال اجرا نیست',
     'connection_test_failed': 'تست اتصال ناموفق بود',
     'no_server': 'هیچ سروری در دسترس نیست. لطفا اینترنت را بررسی کنید.',
-
-    // Settings
     'settings': 'تنظیمات',
     'general': 'عمومی',
     'advanced': 'پیشرفته',
@@ -156,8 +145,6 @@ class AppLocalizations {
     'version': 'نسخه',
     'auto_connect_desc': 'وصل شدن خودکار در هنگام باز شدن برنامه',
     'start_minimized_desc': 'اجرای برنامه در System Tray',
-
-    // Config
     'config_name': 'نام تنظیمات',
     'server_info': 'اطلاعات سرور',
     'protocol': 'پروتکل',
@@ -165,22 +152,16 @@ class AppLocalizations {
     'import_config': 'وارد کردن تنظیمات',
     'export_config': 'خروجی گرفتن از تنظیمات',
     'save_config': 'ذخیره تنظیمات',
-
-    // Buttons
     'connect': 'اتصال',
     'disconnect': 'قطع اتصال',
     'cancel': 'لغو',
     'ok': 'تایید',
     'close': 'بستن',
     'minimize': 'کوچک‌سازی',
-
-    // Notifications
     'vpn_connected': 'VPN متصل شد',
     'vpn_disconnected': 'VPN قطع شد',
     'connection_restored': 'اتصال بازیابی شد',
     'connection_lost': 'اتصال قطع شد',
-
-    // Close dialog
     'close_title': 'بستن برنامه',
     'close_message': 'آیا می‌خواهید برنامه به طور کامل بسته شود یا در پس‌زمینه (سینی سیستم) فعال بماند؟',
     'close_background': 'پنهان در پس‌زمینه',
