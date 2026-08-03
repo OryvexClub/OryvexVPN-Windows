@@ -23,7 +23,9 @@ class WarpRegistration {
   });
 
   /// Produces the configuration text with junk packet obfuscation.
-  String buildConf({bool isFullTunnel = true}) {
+  /// [antiDpiPreset] selects the obfuscation profile (e.g. 'standard', 'minimal').
+  String buildConf({bool isFullTunnel = true, String antiDpiPreset = 'standard'}) {
+    final antiDpi = AppConfig.getAntiDpiValues(antiDpiPreset);
     final b = StringBuffer();
     b.writeln('# Generated OryvexVPN Config');
     b.writeln('[Interface]');
@@ -39,15 +41,15 @@ class WarpRegistration {
     b.writeln('DNS = 1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001');
     b.writeln('MTU = ${AppConfig.mtu}');
 
-    b.writeln('Jc = ${AppConfig.junkPacketCount}');
-    b.writeln('Jmin = ${AppConfig.junkPacketMinSize}');
-    b.writeln('Jmax = ${AppConfig.junkPacketMaxSize}');
-    b.writeln('S1 = ${AppConfig.initPacketJunkSize}');
-    b.writeln('S2 = ${AppConfig.responsePacketJunkSize}');
-    b.writeln('H1 = ${AppConfig.initPacketMagicHeader}');
-    b.writeln('H2 = ${AppConfig.responsePacketMagicHeader}');
-    b.writeln('H3 = ${AppConfig.underloadPacketMagicHeader}');
-    b.writeln('H4 = ${AppConfig.transportPacketMagicHeader}');
+    b.writeln('Jc = ${antiDpi['jc']}');
+    b.writeln('Jmin = ${antiDpi['jmin']}');
+    b.writeln('Jmax = ${antiDpi['jmax']}');
+    b.writeln('S1 = ${antiDpi['s1']}');
+    b.writeln('S2 = ${antiDpi['s2']}');
+    b.writeln('H1 = ${antiDpi['h1']}');
+    b.writeln('H2 = ${antiDpi['h2']}');
+    b.writeln('H3 = ${antiDpi['h3']}');
+    b.writeln('H4 = ${antiDpi['h4']}');
 
     b.writeln('');
     b.writeln('[Peer]');
@@ -66,7 +68,7 @@ class WarpRegistration {
   }
 
   /// Produces a standard configuration without obfuscation parameters.
-  String buildStandardConf({bool isFullTunnel = true}) {
+  String buildStandardConf({bool isFullTunnel = true, String antiDpiPreset = 'standard'}) {
     final b = StringBuffer();
     b.writeln('# Standard OryvexVPN Config');
     b.writeln('[Interface]');
@@ -124,7 +126,7 @@ class WarpRegistrationService {
         "fcm_token": "",
         "warp_enabled": true,
         "tos": DateTime.now().toUtc().toIso8601String(),
-        "type": "Windows",
+        "type": AppConfig.deviceType,
         "model": "PC",
         "locale": "en_US",
       }),

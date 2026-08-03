@@ -54,10 +54,21 @@ class VPNService extends ChangeNotifier {
   bool _isFullTunnel = true;
   bool get isFullTunnel => _isFullTunnel;
 
+  String _antiDpiPreset = 'standard';
+  String get antiDpiPreset => _antiDpiPreset;
+
   void toggleFullTunnel() {
     _isFullTunnel = !_isFullTunnel;
     SharedPreferences.getInstance().then((prefs) {
       prefs.setBool('is_full_tunnel', _isFullTunnel);
+    });
+    notifyListeners();
+  }
+
+  void setAntiDpiPreset(String preset) {
+    _antiDpiPreset = preset;
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString('anti_dpi_preset', preset);
     });
     notifyListeners();
   }
@@ -94,6 +105,7 @@ class VPNService extends ChangeNotifier {
   Future<void> _loadFullTunnelSetting() async {
     final prefs = await SharedPreferences.getInstance();
     _isFullTunnel = prefs.getBool('is_full_tunnel') ?? true;
+    _antiDpiPreset = prefs.getString('anti_dpi_preset') ?? 'standard';
     notifyListeners();
   }
 
@@ -282,6 +294,8 @@ class VPNService extends ChangeNotifier {
     try {
       await WireGuardService.disconnect();
       await WireGuardService.connectWithProgress(
+        isFullTunnel: true,
+        antiDpiPreset: _antiDpiPreset,
         onProgress: (msg, stage) {
           _stage = stage;
           _statusMessage = msg;
@@ -373,6 +387,7 @@ class VPNService extends ChangeNotifier {
     // When Full Tunnel is OFF, local proxies handle selective routing.
     await WireGuardService.connectWithProgress(
       isFullTunnel: true,
+      antiDpiPreset: _antiDpiPreset,
       onProgress: (msg, stage) {
         _stage = stage;
         AppLogger.info(msg, 'VPN');

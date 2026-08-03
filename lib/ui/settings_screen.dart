@@ -3,6 +3,7 @@ import 'package:settings_ui/settings_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
 import '../services/vpn_service.dart';
+import '../core/config.dart';
 import '../l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
@@ -16,6 +17,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _autoConnect = false;
   bool _startMinimized = false;
+  String _antiDpiPreset = 'standard';
 
   @override
   void initState() {
@@ -28,12 +30,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _autoConnect = prefs.getBool('auto_connect') ?? false;
       _startMinimized = prefs.getBool('start_minimized') ?? false;
+      _antiDpiPreset = prefs.getString('anti_dpi_preset') ?? 'standard';
     });
   }
 
   Future<void> _saveSetting(String key, bool value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(key, value);
+  }
+
+  Future<void> _saveSettingString(String key, String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(key, value);
   }
 
   @override
@@ -114,6 +122,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       color: vpn.isConnected ? AppTheme.success : Colors.white54,
                     ),
                   ),
+                ),
+              ),
+            ],
+          ),
+          SettingsSection(
+            title: const Text('Anti-DPI'),
+            tiles: <SettingsTile>[
+              SettingsTile(
+                leading: const Icon(Icons.shield, color: Color(0xFF10B981)),
+                title: const Text('Obfuscation Preset'),
+                description: Text(
+                  'AmneziaWG junk packet obfuscation to bypass Deep Packet Inspection',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                value: DropdownButton<String>(
+                  value: _antiDpiPreset,
+                  dropdownColor: const Color(0xFF1A1A1A),
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  underline: const SizedBox(),
+                  isDense: true,
+                  items: AppConfig.antiDpiPresetNames.entries.map((entry) {
+                    return DropdownMenuItem(
+                      value: entry.key,
+                      child: Text(entry.value),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _antiDpiPreset = value);
+                      _saveSettingString('anti_dpi_preset', value);
+                      context.read<VPNService>().setAntiDpiPreset(value);
+                    }
+                  },
                 ),
               ),
             ],
