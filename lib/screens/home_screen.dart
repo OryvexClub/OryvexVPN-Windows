@@ -5,10 +5,7 @@ import 'dart:math' as math;
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import '../services/vpn_service.dart';
-import '../widgets/stats_card.dart';
 import '../l10n/app_localizations.dart';
-import '../l10n/locale_provider.dart';
-import '../services/system_check_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,8 +16,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
-  Timer? _uiCheckTimer;
-  bool _dialogOpen = false;
   late final AnimationController _pulseController;
 
   @override
@@ -28,7 +23,6 @@ class _HomeScreenState extends State<HomeScreen>
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<VPNService>().initStatus();
-      _startUISystemCheck();
     });
     _pulseController = AnimationController(
       vsync: this,
@@ -39,78 +33,15 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void dispose() {
     _pulseController.dispose();
-    _uiCheckTimer?.cancel();
     super.dispose();
   }
 
-
-  void _startUISystemCheck() {
-    _uiCheckTimer = Timer.periodic(const Duration(seconds: 3), (_) {
-      _checkSystem();
-    });
-    _checkSystem();
-  }
-
-  Future<void> _checkSystem() async {
-    if (_dialogOpen) return;
-    bool clockSynced = await SystemCheckService.isClockSynced();
-    List<String> procs = await SystemCheckService.getConflictingProcesses();
-    
-    if (!clockSynced || procs.isNotEmpty) {
-      if (!mounted) return;
-      _dialogOpen = true;
-      final l10n = AppLocalizations.of(context);
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) {
-          return AlertDialog(
-            backgroundColor: const Color(0xFF0A0A0A),
-            title: Text(l10n.translate('sys_warning'), style: const TextStyle(color: Colors.white)),
-            content: Text(
-              (clockSynced ? '' : l10n.translate('clock_out_of_sync')) +
-              (procs.isNotEmpty ? l10n.translate('conflicting_procs') + procs.join(', ') : ''),
-              style: const TextStyle(color: Colors.white70),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  exit(0);
-                },
-                child: Text(l10n.translate('exit_app'), style: const TextStyle(color: Colors.white54)),
-              ),
-              if (procs.isNotEmpty)
-                TextButton(
-                  onPressed: () {
-                    for (var p in procs) {
-                      Process.run('taskkill', ['/F', '/IM', p]);
-                    }
-                    _dialogOpen = false;
-                    Navigator.of(context).pop();
-                  },
-                  child: Text(l10n.translate('kill_all'), style: const TextStyle(color: Color(0xFFFF3366))),
-                ),
-            ],
-          );
-        }
-      ).then((_) {
-         _dialogOpen = false;
-      });
-    }
-  }
-
-
-
   Color getStatusColor(VPNService vpn) {
-    if (vpn.isConnected) return const Color(0xFF00E676);
-    if (vpn.isConnecting) return const Color(0xFFFFB800);
-    if (vpn.stage == VpnStage.error) return const Color(0xFFFF3366);
-    return const Color(0xFF4A4A4A);
+    if (vpn.isConnected) return const Color(0xFF00E5FF); // Neon Cyan
+    if (vpn.isConnecting) return const Color(0xFFFFB800); // Yellow/Orange
+    if (vpn.stage == VpnStage.error) return const Color(0xFFFF3366); // Neon Red
+    return const Color(0xFF888891); // Muted grey
   }
-
-  
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -120,69 +51,81 @@ class _HomeScreenState extends State<HomeScreen>
 
     return Scaffold(
       backgroundColor: const Color(0xFF000000),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment(0, -0.2),
-            radius: 1.4,
-            colors: [
-              Color(0xFF050F05),
-              Color(0xFF000000),
-            ],
-          ),
-        ),
-        child: Column(
-          children: [
-            _buildTitleBar(vpn, color),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
+      body: Column(
+        children: [
+          _buildTitleBar(vpn, color),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  _buildHeader(),
+                  const SizedBox(height: 30),
+                  _buildPowerButton(vpn, color, active),
+                  const SizedBox(height: 30),
+                  _buildStatusText(vpn, color),
+                  if (vpn.lastError != null) ...[
                     const SizedBox(height: 16),
-                    _buildStatusText(vpn, color),
-                    if (vpn.lastError != null) ...[
-                      const SizedBox(height: 12),
-                      _buildErrorBox(vpn),
-                    ],
-                    const SizedBox(height: 28),
-                    _buildPowerButton(vpn, color, active),
-                    const SizedBox(height: 22),
-                    _buildConnectionInfo(vpn, color),
-                    const SizedBox(height: 28),
-                    _buildStatsGrid(vpn),
-                    const SizedBox(height: 30),
+                    _buildErrorBox(vpn),
                   ],
-                ),
+                  const SizedBox(height: 32),
+                  _buildStatsGrid(vpn),
+                  const SizedBox(height: 30),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  // ---- Title bar ---------------------------------------------------------
+  Widget _buildHeader() {
+    return Column(
+      children: [
+        RichText(
+          text: const TextSpan(
+            text: 'WARP',
+            style: TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              letterSpacing: -1.5,
+              fontFamily: 'Inter',
+            ),
+            children: [
+              TextSpan(
+                text: '_GEN',
+                style: TextStyle(
+                  color: Color(0xFF00E5FF),
+                  shadows: [Shadow(color: Color(0x3300E5FF), blurRadius: 20)],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          'Next-Generation WireGuard Configuration',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF888891),
+            letterSpacing: 1.2,
+            textBaseline: TextBaseline.alphabetic,
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _buildTitleBar(VPNService vpn, Color color) {
     return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      color: Colors.black.withOpacity(0.25),
+      height: 40,
+      color: Colors.transparent,
       child: Row(
         children: [
-          const SizedBox(width: 8),
-          Icon(Icons.shield_rounded, color: color, size: 22),
-          const SizedBox(width: 8),
-          const Text(
-            'OryvexVPN',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 1,
-            ),
-          ),
           Expanded(
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
@@ -191,60 +134,54 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.remove, color: Colors.white54, size: 18),
+            icon: const Icon(Icons.remove, color: Colors.white54, size: 16),
             onPressed: () => windowManager.minimize(),
-            tooltip: AppLocalizations.of(context).minimize,
             splashRadius: 18,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 40),
           ),
           IconButton(
-            icon: const Icon(Icons.close, color: Colors.white54, size: 18),
+            icon: const Icon(Icons.close, color: Colors.white54, size: 16),
             onPressed: () => windowManager.close(),
-            tooltip: AppLocalizations.of(context).close,
             splashRadius: 18,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 40),
           ),
         ],
       ),
     );
   }
 
-
-  // ---- Status text -------------------------------------------------------
-
   Widget _buildStatusText(VPNService vpn, Color color) {
-    return Column(
-      children: [
-        Text(
-          vpn.statusMessage,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: color,
-            letterSpacing: 0.3,
-          ),
-        ),
-
-      ],
-    );
-  }
-
-  Widget _buildErrorBox(VPNService vpn) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFF3366).withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFF3366).withOpacity(0.3)),
+        color: const Color(0xFF0C0C0C),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF1A1A1A)),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.error_outline, color: Color(0xFFFF3366), size: 18),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              vpn.lastError!,
-              style: const TextStyle(fontSize: 12.5, color: Color(0xFFFF6B8A)),
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color,
+              boxShadow: [
+                BoxShadow(color: color.withOpacity(0.5), blurRadius: 10),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            vpn.statusMessage.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF888891),
+              letterSpacing: 1,
             ),
           ),
         ],
@@ -252,7 +189,29 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  // ---- Power button ------------------------------------------------------
+  Widget _buildErrorBox(VPNService vpn) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0x1AFFFF33),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFF3366).withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.warning_amber_rounded, color: Color(0xFFFF3366), size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              vpn.lastError!,
+              style: const TextStyle(fontSize: 13, color: Color(0xFFFF6B8A), fontWeight: FontWeight.w500),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildPowerButton(VPNService vpn, Color color, bool active) {
     return GestureDetector(
@@ -264,8 +223,8 @@ class _HomeScreenState extends State<HomeScreen>
         builder: (context, child) {
           final t = _pulseController.value;
           return SizedBox(
-            width: 210,
-            height: 210,
+            width: 180,
+            height: 180,
             child: CustomPaint(
               painter: _RingPainter(
                 color: color,
@@ -277,75 +236,37 @@ class _HomeScreenState extends State<HomeScreen>
           );
         },
         child: Container(
-          width: 160,
-          height: 160,
+          width: 140,
+          height: 140,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF051005),
-                Color(0xFF000000),
-              ],
-            ),
+            color: const Color(0xFF080808),
+            border: Border.all(color: const Color(0xFF1A1A1A)),
             boxShadow: [
-              BoxShadow(
-                color: color.withOpacity(active ? 0.35 : 0.08),
-                blurRadius: 50,
-                spreadRadius: active ? 8 : 0,
-              ),
+              if (active)
+                BoxShadow(
+                  color: color.withOpacity(0.15),
+                  blurRadius: 40,
+                  spreadRadius: 5,
+                ),
             ],
           ),
           child: vpn.isConnecting
-              ? const CircularProgressIndicator(
-                  strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation(Color(0xFFFFB800)),
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(Color(0xFFFFB800)),
+                  ),
                 )
               : Icon(
-                  vpn.isConnected
-                      ? Icons.power_settings_new_rounded
-                      : Icons.power_settings_new_outlined,
-                  size: 62,
-                  color: color,
+                  Icons.power_settings_new_rounded,
+                  size: 56,
+                  color: active ? color : Colors.white24,
                 ),
         ),
       ),
     );
   }
-
-  // ---- Connection info ---------------------------------------------------
-
-  Widget _buildConnectionInfo(VPNService vpn, Color color) {
-    final l10n = AppLocalizations.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0A0A0A),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.15)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.timer_outlined, color: color, size: 20),
-          const SizedBox(width: 8),
-          Text('${l10n.duration}: ',
-              style: const TextStyle(color: Colors.white60, fontSize: 13)),
-          Text(
-            vpn.connectedDuration,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ---- Stats grid --------------------------------------------------------
 
   Widget _buildStatsGrid(VPNService vpn) {
     final s = vpn.stats;
@@ -354,31 +275,92 @@ class _HomeScreenState extends State<HomeScreen>
         Row(
           children: [
             Expanded(
-              child: StatsCard(
+              child: _buildBentoCard(
+                icon: Icons.timer_outlined,
+                title: 'DURATION',
+                value: vpn.connectedDuration,
+                color: const Color(0xFF8B5CF6), // Purple accent
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildBentoCard(
                 icon: Icons.speed_rounded,
-                label: AppLocalizations.of(context).ping,
+                title: 'LATENCY',
                 value: s.ping > 0 ? '${s.ping} ms' : '—',
                 color: const Color(0xFFFFB800),
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: StatsCard(
-                icon: Icons.language_rounded,
-                label: AppLocalizations.of(context).ipAddress,
-                value: s.ipInfo.ip.contains(':') ? s.ipInfo.ip.split(':')[0] : s.ipInfo.ip, // Hide port/endpoint if any
-                color: const Color(0xFF00E676),
-                valueSize: 13,
-              ),
-            ),
           ],
+        ),
+        const SizedBox(height: 16),
+        _buildBentoCard(
+          icon: Icons.language_rounded,
+          title: 'ENDPOINT ROUTE',
+          value: s.ipInfo.ip.contains(':') ? s.ipInfo.ip.split(':')[0] : s.ipInfo.ip,
+          color: const Color(0xFF00E5FF),
+          fullWidth: true,
         ),
       ],
     );
   }
+
+  Widget _buildBentoCard({
+    required IconData icon,
+    required String title,
+    required String value,
+    required Color color,
+    bool fullWidth = false,
+  }) {
+    return Container(
+      width: fullWidth ? double.infinity : null,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF080808),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF1A1A1A)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(icon, size: 16, color: color),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF888891),
+                  letterSpacing: 1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontFamily: 'Inter', // Fallback to Inter
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-/// Animated ring around the power button.
 class _RingPainter extends CustomPainter {
   final Color color;
   final bool active;
@@ -394,27 +376,25 @@ class _RingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
     final radius = size.shortestSide / 2 - 2;
-    const strokeWidth = 5.0;
+    const strokeWidth = 2.0;
 
-    // Track.
     final trackPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
-      ..color = Colors.white.withOpacity(0.06);
+      ..color = const Color(0xFF1A1A1A);
     canvas.drawCircle(center, radius, trackPaint);
 
-    // Progress arc.
+    if (!active && progress == 0) return;
+
     final arcPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
+      ..strokeWidth = strokeWidth * 1.5
       ..strokeCap = StrokeCap.round
-      ..shader = SweepGradient(
-        colors: [
-          color.withOpacity(0.3),
-          color,
-          color.withOpacity(0.3),
-        ],
-      ).createShader(Rect.fromCircle(center: center, radius: radius));
+      ..color = color;
+
+    // Apply blur to maskFilter to add a glow.
+    // In Flutter, MaskFilter.blur can only be used on Canvas but it makes the element slightly translucent.
+    // We'll leave it as a solid stroke for crisp UI as per modern dark theme specs.
 
     final start = -math.pi / 2;
     final sweep = 2 * math.pi * progress.clamp(0.0, 1.0);

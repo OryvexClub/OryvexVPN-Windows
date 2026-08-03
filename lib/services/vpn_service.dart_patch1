@@ -1,0 +1,31 @@
+--- lib/services/vpn_service.dart
++++ lib/services/vpn_service.dart
+@@ -104,18 +104,58 @@
+   }
+ 
+ 
++  bool _isModalShowing = false;
++
+   void _startSystemMonitoring() {
+     _systemCheckTimer?.cancel();
+     _systemCheckTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
+       bool clockSynced = await SystemCheckService.isClockSynced();
+       List<String> procs = await SystemCheckService.getConflictingProcesses();
+-      if (!clockSynced || procs.isNotEmpty) {
+-        if (isConnected || isConnecting) {
+-          _stage = VpnStage.error;
+-          _lastError = 'Disconnected: clock out of sync or conflicting programs';
+-          _statusMessage = 'Disconnected';
+-          _stopStatsMonitoring();
+-          _stopConnectionMonitoring();
+-          await WireGuardService.disconnect();
+-          notifyListeners();
+-        }
++      
++      if (!clockSynced && !_isModalShowing) {
++        _showClockModal();
++      } else if (procs.isNotEmpty && !_isModalShowing) {
++        _showConflictModal(procs);
+       }
+     });
+   }

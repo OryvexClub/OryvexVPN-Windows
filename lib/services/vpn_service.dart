@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+import '../main.dart';
 import 'system_check_service.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -104,11 +106,14 @@ class VPNService extends ChangeNotifier {
   }
 
 
+  bool _isModalShowing = false;
+
   void _startSystemMonitoring() {
     _systemCheckTimer?.cancel();
     _systemCheckTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
       bool clockSynced = await SystemCheckService.isClockSynced();
       List<String> procs = await SystemCheckService.getConflictingProcesses();
+
       if (!clockSynced || procs.isNotEmpty) {
         if (isConnected || isConnecting) {
           _stage = VpnStage.error;
@@ -118,6 +123,58 @@ class VPNService extends ChangeNotifier {
           _stopConnectionMonitoring();
           await WireGuardService.disconnect();
           notifyListeners();
+        }
+
+        if (!_isModalShowing && navigatorKey.currentContext != null) {
+          _isModalShowing = true;
+
+          showDialog(
+            context: navigatorKey.currentContext!,
+            barrierDismissible: false,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: const Color(0xFF111111),
+              title: Row(
+                children: [
+                  Icon(Icons.warning_amber_rounded, color: Colors.orange[400]),
+                  const SizedBox(width: 10),
+                  Text(
+                    !clockSynced ? 'System Clock Error' : 'Conflicting Programs',
+                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                ],
+              ),
+              content: Text(
+                !clockSynced
+                    ? 'Your system clock is out of sync. This will prevent the VPN from connecting properly.\n\nPlease sync your Windows clock to continue.'
+                    : 'The following programs might conflict with the VPN:\n\n${procs.join(', ')}\n\nPlease close them to prevent connection issues.',
+                style: const TextStyle(color: Colors.white70),
+              ),
+              actions: [
+                if (procs.isNotEmpty && clockSynced)
+                  TextButton(
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      _isModalShowing = false;
+                      for (final p in procs) {
+                        try {
+                          await Process.run('taskkill', ['/F', '/IM', p], runInShell: true);
+                        } catch (_) {}
+                      }
+                    },
+                    child: const Text('Kill All', style: TextStyle(color: Colors.redAccent)),
+                  ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _isModalShowing = false;
+                  },
+                  child: const Text('Dismiss', style: TextStyle(color: Colors.white54)),
+                ),
+              ],
+            ),
+          ).then((_) {
+            _isModalShowing = false;
+          });
         }
       }
     });

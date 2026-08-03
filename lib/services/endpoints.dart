@@ -220,26 +220,35 @@ const List<VpnEndpoint> kProbeEndpoints = [
   VpnEndpoint('2606:4700:d0::a29f:c000', 2408),
 ];
 
-/// Measures actual latency to an endpoint by timing a socket connection.
+/// Measures actual latency to an endpoint by pinging the IP address.
 Future<int?> _measureLatency(String ip, int port, Duration timeout) async {
   try {
-    final stopwatch = Stopwatch()..start();
-
-    // WireGuard uses UDP, so a TCP connect might fail even if the UDP endpoint is active.
-    // However, some firewalls block UDP probes or they silently drop packets.
-    // We will do a quick TCP probe to check general routing/reachability, and if it fails,
-    // we'll still consider endpoints but prioritize those that respond to TCP.
-
-    final tcpSocket = await Socket.connect(ip, port, timeout: timeout);
-    stopwatch.stop();
-    tcpSocket.destroy();
-    return stopwatch.elapsedMilliseconds;
-  } catch (_) {
-    // If TCP fails, we don't necessarily want to drop the endpoint completely,
-    // but for picking the *fastest*, we need some metric. Let's return null here
-    // but the fallback logic will still pick a random endpoint if all probes fail.
-    return null;
-  }
+    if (Platform.isWindows) {
+      final result = await Process.run(
+        'ping',
+        ['-n', '1', '-w', timeout.inMilliseconds.toString(), ip],
+      );
+      final output = result.stdout.toString();
+      final regex = RegExp(r'time[=<](\d+)\s*ms', caseSensitive: false);
+      final match = regex.firstMatch(output);
+      if (match != null && match.groupCount >= 1) {
+        return int.tryParse(match.group(1)!);
+      }
+    } else {
+      final pingCmd = ip.contains(':') ? 'ping6' : 'ping';
+      final result = await Process.run(
+        pingCmd,
+        ['-c', '1', '-W', (timeout.inMilliseconds / 1000).ceil().toString(), ip],
+      );
+      final output = result.stdout.toString();
+      final regex = RegExp(r'time=([\d.]+)\s*ms', caseSensitive: false);
+      final match = regex.firstMatch(output);
+      if (match != null && match.groupCount >= 1) {
+        return double.tryParse(match.group(1)!)?.toInt();
+      }
+    }
+  } catch (_) {}
+  return null;
 }
 
 /// Finds the reachable endpoint with the lowest latency.
