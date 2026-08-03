@@ -9,6 +9,7 @@ import 'wireguard_service.dart';
 import 'vpn_core.dart';
 import 'ipinfo_service.dart';
 import '../utils/error_handler.dart';
+import 'system_proxy.dart';
 
 enum VpnStage {
   idle,
@@ -429,6 +430,13 @@ class VPNService extends ChangeNotifier {
     AppLogger.connectionState('Connecting');
     _lastError = null;
     _reconnectAttempts = 0;
+
+    // Save the current system proxy and disable it so the tunneled traffic
+    // isn't forced through a stale local proxy (which causes
+    // ERR_PROXY_CONNECTION_FAILED in browsers).
+    await SystemProxyService.saveState();
+    await SystemProxyService.disable();
+
     _stage = VpnStage.fetchingConfig;
     _statusMessage = 'Finding fastest server...';
     notifyListeners();
@@ -455,6 +463,7 @@ class VPNService extends ChangeNotifier {
           _updateStatus('Connection failed');
           _stopStatsMonitoring();
           _stopConnectionMonitoring();
+          await SystemProxyService.restore();
           notifyListeners();
           return;
         }
@@ -504,6 +513,8 @@ class VPNService extends ChangeNotifier {
       _updateStatus('Disconnected');
       _lastError = null;
       AppLogger.connectionState('Disconnected');
+      // Restore the system proxy that was disabled during connection.
+      await SystemProxyService.restore();
       VpnLogger.info(_tag, '=== DISCONNECT SUCCESS ===');
     } catch (e, stackTrace) {
       VpnLogger.error(_tag, '=== DISCONNECT FAILED: $e ===');
