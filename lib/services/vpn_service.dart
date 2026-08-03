@@ -1,3 +1,4 @@
+import 'system_check_service.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'dart:async';
@@ -22,6 +23,7 @@ class VPNService extends ChangeNotifier {
   ConnectionStats _stats = ConnectionStats.initial();
   Timer? _statsTimer;
   Timer? _connectionCheckTimer;
+  Timer? _systemCheckTimer;
 
   DateTime? _connectedAt;
   int _totalDownload = 0;
@@ -61,6 +63,10 @@ class VPNService extends ChangeNotifier {
     return '$m:${s.toString().padLeft(2, '0')}';
   }
 
+  VPNService() {
+    _startSystemMonitoring();
+  }
+
   void _updateStatus(String msg) {
     _statusMessage = msg;
     VpnLogger.info(_tag, 'Status: $msg');
@@ -97,6 +103,26 @@ class VPNService extends ChangeNotifier {
     _statsTimer = null;
   }
 
+
+  void _startSystemMonitoring() {
+    _systemCheckTimer?.cancel();
+    _systemCheckTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
+      bool clockSynced = await SystemCheckService.isClockSynced();
+      List<String> procs = await SystemCheckService.getConflictingProcesses();
+      if (!clockSynced || procs.isNotEmpty) {
+        if (isConnected || isConnecting) {
+          _stage = VpnStage.error;
+          _lastError = 'ارتباط قطع شد: تنظیم نبودن ساعت یا برنامه‌های متداخل';
+          _statusMessage = 'قطع شد';
+          _stopStatsMonitoring();
+          _stopConnectionMonitoring();
+          await WireGuardService.disconnect();
+          notifyListeners();
+        }
+      }
+    });
+  }
+
   void _startConnectionMonitoring() {
     _connectionCheckTimer?.cancel();
     _connectionCheckTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
@@ -111,6 +137,8 @@ class VPNService extends ChangeNotifier {
 
   Future<void> _checkConnectionStatus() async {
     if (_stage != VpnStage.connected) return;
+
+
 
     final alive = await WireGuardService.isConnected();
 
@@ -370,6 +398,7 @@ class VPNService extends ChangeNotifier {
 
   @override
   void dispose() {
+    _systemCheckTimer?.cancel();
     _stopStatsMonitoring();
     _stopConnectionMonitoring();
     super.dispose();

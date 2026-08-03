@@ -6,6 +6,7 @@ import 'package:window_manager/window_manager.dart';
 import '../services/vpn_service.dart';
 import '../widgets/stats_card.dart';
 import '../l10n/app_localizations.dart';
+import '../l10n/locale_provider.dart';
 import '../services/system_check_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -15,8 +16,11 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+import 'dart:async';
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
+  Timer? _uiCheckTimer;
+  bool _dialogOpen = false;
   late final AnimationController _pulseController;
 
   @override
@@ -24,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen>
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<VPNService>().initStatus();
-      _checkSystem();
+      _startUISystemCheck();
     });
     _pulseController = AnimationController(
       vsync: this,
@@ -35,25 +39,37 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void dispose() {
     _pulseController.dispose();
+    _uiCheckTimer?.cancel();
     super.dispose();
   }
 
+
+  void _startUISystemCheck() {
+    _uiCheckTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      _checkSystem();
+    });
+    _checkSystem();
+  }
+
   Future<void> _checkSystem() async {
+    if (_dialogOpen) return;
     bool clockSynced = await SystemCheckService.isClockSynced();
     List<String> procs = await SystemCheckService.getConflictingProcesses();
     
     if (!clockSynced || procs.isNotEmpty) {
       if (!mounted) return;
+      _dialogOpen = true;
+      final l10n = AppLocalizations.of(context);
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) {
           return AlertDialog(
             backgroundColor: const Color(0xFF0A0A0A),
-            title: const Text('هشدار سیستم', style: TextStyle(color: Colors.white)),
+            title: Text(l10n.translate('sys_warning'), style: const TextStyle(color: Colors.white)),
             content: Text(
-              (clockSynced ? '' : 'ساعت سیستم شما تنظیم نیست.\n') +
-              (procs.isNotEmpty ? 'برنامه‌های متداخل یافت شد: ${procs.join(', ')}' : ''),
+              (clockSynced ? '' : l10n.translate('clock_out_of_sync')) +
+              (procs.isNotEmpty ? l10n.translate('conflicting_procs') + procs.join(', ') : ''),
               style: const TextStyle(color: Colors.white70),
             ),
             actions: [
@@ -61,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen>
                 onPressed: () {
                   exit(0);
                 },
-                child: const Text('خروج از برنامه', style: TextStyle(color: Colors.white54)),
+                child: Text(l10n.translate('exit_app'), style: const TextStyle(color: Colors.white54)),
               ),
               if (procs.isNotEmpty)
                 TextButton(
@@ -69,16 +85,21 @@ class _HomeScreenState extends State<HomeScreen>
                     for (var p in procs) {
                       Process.run('taskkill', ['/F', '/IM', p]);
                     }
+                    _dialogOpen = false;
                     Navigator.of(context).pop();
                   },
-                  child: const Text('بستن برنامه‌های مزاحم', style: TextStyle(color: Color(0xFFFF3366))),
+                  child: Text(l10n.translate('kill_all'), style: const TextStyle(color: Color(0xFFFF3366))),
                 ),
             ],
           );
         }
-      );
+      ).then((_) {
+         _dialogOpen = false;
+      });
     }
   }
+
+
 
   Color getStatusColor(VPNService vpn) {
     if (vpn.isConnected) return const Color(0xFF00E676);
@@ -170,21 +191,30 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
           IconButton(
+            icon: const Icon(Icons.language, color: Colors.white54, size: 18),
+            onPressed: () {
+              context.read<LocaleProvider>().toggleLocale();
+            },
+            tooltip: AppLocalizations.of(context).language,
+            splashRadius: 18,
+          ),
+          IconButton(
             icon: const Icon(Icons.remove, color: Colors.white54, size: 18),
             onPressed: () => windowManager.minimize(),
-            tooltip: 'کوچک‌سازی',
+            tooltip: AppLocalizations.of(context).minimize,
             splashRadius: 18,
           ),
           IconButton(
             icon: const Icon(Icons.close, color: Colors.white54, size: 18),
             onPressed: () => windowManager.close(),
-            tooltip: 'بستن',
+            tooltip: AppLocalizations.of(context).close,
             splashRadius: 18,
           ),
         ],
       ),
     );
   }
+
 
   // ---- Status text -------------------------------------------------------
 
@@ -201,11 +231,7 @@ class _HomeScreenState extends State<HomeScreen>
             letterSpacing: 0.3,
           ),
         ),
-        const SizedBox(height: 6),
-        Text(
-          vpn.currentEndpoint,
-          style: const TextStyle(color: Colors.white38, fontSize: 13),
-        ),
+
       ],
     );
   }
@@ -338,7 +364,7 @@ class _HomeScreenState extends State<HomeScreen>
             Expanded(
               child: StatsCard(
                 icon: Icons.speed_rounded,
-                label: 'پینگ',
+                label: AppLocalizations.of(context).ping,
                 value: s.ping > 0 ? '${s.ping} ms' : '—',
                 color: const Color(0xFFFFB800),
               ),
@@ -347,8 +373,8 @@ class _HomeScreenState extends State<HomeScreen>
             Expanded(
               child: StatsCard(
                 icon: Icons.language_rounded,
-                label: 'آی‌پی',
-                value: s.ipInfo.ip,
+                label: AppLocalizations.of(context).ipAddress,
+                value: s.ipInfo.ip.contains(':') ? s.ipInfo.ip.split(':')[0] : s.ipInfo.ip, // Hide port/endpoint if any
                 color: const Color(0xFF00E676),
                 valueSize: 13,
               ),

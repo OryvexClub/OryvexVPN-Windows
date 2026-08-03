@@ -60,12 +60,34 @@ class IPInfoService {
         final data = jsonDecode(response.body);
         return IPInfoModel.fromJson(data);
       } else {
+        // Fallback to ipify if ipinfo fails or blocks
+        var fallbackResponse = await http.get(Uri.parse('https://api.ipify.org')).timeout(const Duration(seconds: 5));
+        if (fallbackResponse.statusCode != 200) fallbackResponse = await http.get(Uri.parse('https://icanhazip.com')).timeout(const Duration(seconds: 5));
+        if (fallbackResponse.statusCode != 200) fallbackResponse = await http.get(Uri.parse('https://ifconfig.me/ip')).timeout(const Duration(seconds: 5));
+        if (fallbackResponse.statusCode == 200) {
+           return IPInfoModel(
+             ip: fallbackResponse.body.trim(),
+             city: 'Unknown', region: 'Unknown', country: 'Unknown', loc: '0,0', org: 'Unknown', timezone: 'Unknown'
+           );
+        }
         return IPInfoModel.unknown();
       }
     } catch (e) {
+      try {
+        var fallbackResponse = await http.get(Uri.parse('https://api.ipify.org')).timeout(const Duration(seconds: 5));
+        if (fallbackResponse.statusCode != 200) fallbackResponse = await http.get(Uri.parse('https://icanhazip.com')).timeout(const Duration(seconds: 5));
+        if (fallbackResponse.statusCode != 200) fallbackResponse = await http.get(Uri.parse('https://ifconfig.me/ip')).timeout(const Duration(seconds: 5));
+        if (fallbackResponse.statusCode == 200) {
+           return IPInfoModel(
+             ip: fallbackResponse.body.trim(),
+             city: 'Unknown', region: 'Unknown', country: 'Unknown', loc: '0,0', org: 'Unknown', timezone: 'Unknown'
+           );
+        }
+      } catch (_) {}
       return IPInfoModel.unknown();
     }
   }
+
 
   /// Measure ping using raw TCP socket connect (faster and more reliable than HTTP).
   static Future<int> measurePing(String host, {int port = 443}) async {

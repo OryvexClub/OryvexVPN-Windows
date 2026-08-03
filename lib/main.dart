@@ -1,3 +1,4 @@
+import 'l10n/locale_provider.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -26,6 +27,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => VPNService()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
       ],
       child: const OryvexVPNApp(),
     ),
@@ -178,12 +180,16 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
 
   @override
   Widget build(BuildContext context) {
+    final localeProvider = context.watch<LocaleProvider>();
+    final isFa = localeProvider.locale.languageCode == 'fa';
+    
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
-      locale: const Locale('fa', 'IR'),
+      locale: localeProvider.locale,
       supportedLocales: const [
+        Locale('en', 'US'),
         Locale('fa', 'IR'),
       ],
       localizationsDelegates: const [
@@ -194,24 +200,24 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       ],
       builder: (context, child) {
         return Directionality(
-          textDirection: TextDirection.rtl,
+          textDirection: isFa ? TextDirection.rtl : TextDirection.ltr,
           child: child!,
         );
       },
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF000000),
-        fontFamily: 'Vazirmatn',
+        fontFamily: isFa ? 'Vazirmatn' : 'Inter',
         useMaterial3: true,
         colorScheme: ColorScheme.dark(
           primary: const Color(0xFF00E676),
           secondary: const Color(0xFF69F0AE),
           error: const Color(0xFFFF3366),
-          background: const Color(0xFF000000),
           surface: const Color(0xFF0A0A0A),
         ),
       ),
       home: const HomeScreen(),
     );
   }
+
 }
