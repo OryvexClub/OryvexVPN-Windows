@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
@@ -16,7 +17,6 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-import 'dart:async';
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   Timer? _uiCheckTimer;
