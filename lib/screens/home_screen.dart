@@ -107,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen>
         ),
         const SizedBox(height: 6),
         const Text(
-          'Next-Generation WireGuard Configuration',
+          'Next-Generation OryvexVPN Configuration',
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,

@@ -77,6 +77,6 @@ configs/*.conf
 # Temporary analysis files
 folder_structure.txt
 ee.py
-
+fixer.py
 # Installer output
 installer/Output/

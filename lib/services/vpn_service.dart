@@ -340,12 +340,43 @@ class VPNService extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _attemptConnectionRound() async {
+    await WireGuardService.connectWithProgress(
+      onProgress: (msg, stage) {
+        _stage = stage;
+        AppLogger.info(msg, 'VPN');
+        _updateStatus(msg);
+      },
+    );
+
+    // Verify tunnel actually started successfully
+    await Future.delayed(const Duration(seconds: 2));
+
+    _updateStatus('Checking internet connection...');
+    bool internetOk = false;
+    try {
+      final client = HttpClient();
+      client.connectionTimeout = const Duration(seconds: 6);
+      final request = await client.getUrl(Uri.parse('https://www.youtube.com/'));
+      final response = await request.close();
+      if (response.statusCode == 200) {
+          internetOk = true;
+      }
+      client.close();
+    } catch (e) {
+       VpnLogger.warn(_tag, 'youtube connection check failed: $e');
+    }
+
+    if (!internetOk) {
+       throw const FormatException('Cannot connect to server. Please try again.'); // Using FormatException as a marker for connection check failure
+    }
+  }
+
   Future<void> connect() async {
     if (isConnecting) return;
 
     VpnLogger.info(_tag, '=== CONNECT START ===');
 
-    // First ensure we are completely disconnected and cleaned up before starting
     try {
       if (isConnected || _stage == VpnStage.error) {
          VpnLogger.info(_tag, 'Cleaning up previous connection state...');
@@ -353,7 +384,7 @@ class VPNService extends ChangeNotifier {
          await VpnCore.fullCleanup();
       }
     } catch (e) {
-      VpnLogger.warn(_tag, 'Pre-connect cleanup error (can usually be ignored): $e');
+      VpnLogger.warn(_tag, 'Pre-connect cleanup error: $e');
     }
 
     AppLogger.connectionState('Connecting');
@@ -363,39 +394,35 @@ class VPNService extends ChangeNotifier {
     _statusMessage = 'Finding fastest server...';
     notifyListeners();
 
-    try {
-      await WireGuardService.connectWithProgress(
-        onProgress: (msg, stage) {
-          _stage = stage;
-          AppLogger.info(msg, 'VPN');
-          _updateStatus(msg);
-        },
-      );
+    int attempts = 0;
+    bool connected = false;
 
-      // Verify tunnel actually started successfully
-      await Future.delayed(const Duration(seconds: 2));
-
-      _updateStatus('Checking internet connection...');
-      bool internetOk = false;
+    while (attempts < 3 && !connected) {
+      attempts++;
       try {
-        final client = HttpClient();
-        client.connectionTimeout = const Duration(seconds: 5);
-        final request = await client.getUrl(Uri.parse('https://www.google.com/'));
-        final response = await request.close();
-        if (response.statusCode == 200) {
-            internetOk = true;
+        await _attemptConnectionRound();
+        connected = true;
+      } catch (e, stackTrace) {
+        if (e is FormatException && attempts < 3) {
+           VpnLogger.warn(_tag, 'Connection round $attempts failed verification, retrying...');
+           _updateStatus('Retrying connection ($attempts/3)...');
+           await WireGuardService.disconnect();
+           await VpnCore.fullCleanup();
+        } else {
+          VpnLogger.error(_tag, '=== CONNECT FAILED: $e ===');
+          AppLogger.error('Connection failed', e, stackTrace, 'VPN');
+          _stage = VpnStage.error;
+          _lastError = ErrorHandler.getUserFriendlyMessage(e);
+          _updateStatus('Connection failed');
+          _stopStatsMonitoring();
+          _stopConnectionMonitoring();
+          notifyListeners();
+          return;
         }
-        client.close();
-      } catch (e) {
-         VpnLogger.warn(_tag, 'google connection check failed: $e');
       }
+    }
 
-      if (!internetOk) {
-         throw Exception('Cannot connect to server. Please try again.');
-      }
-
-      // Tunnel installed successfully — mark as connected
-
+    if (connected) {
       _stage = VpnStage.connected;
       _connectedAt = DateTime.now();
       _updateStatus('Connected');
@@ -403,16 +430,8 @@ class VPNService extends ChangeNotifier {
       _startStatsMonitoring();
       _startConnectionMonitoring();
       VpnLogger.info(_tag, '=== CONNECT SUCCESS ===');
-    } catch (e, stackTrace) {
-      VpnLogger.error(_tag, '=== CONNECT FAILED: $e ===');
-      AppLogger.error('Connection failed', e, stackTrace, 'VPN');
-      _stage = VpnStage.error;
-      _lastError = ErrorHandler.getUserFriendlyMessage(e);
-      _updateStatus('Connection failed');
-      _stopStatsMonitoring();
-      _stopConnectionMonitoring();
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   Future<void> disconnect() async {

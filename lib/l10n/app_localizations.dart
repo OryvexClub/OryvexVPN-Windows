@@ -38,7 +38,7 @@ class AppLocalizations {
     'total_upload': 'Total Upload',
     'duration': 'Duration',
     'unknown': 'Unknown',
-    'wireguard_not_found': 'WireGuard files not found',
+    'wireguard_not_found': 'OryvexVPN core files not found',
     'registration_failed': 'Registration failed',
     'tunnel_not_active': 'Tunnel is not active',
     'service_not_running': 'Tunnel service is not running',

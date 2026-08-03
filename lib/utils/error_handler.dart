@@ -69,10 +69,10 @@ class ErrorHandler {
       return 'Connection timed out. Please try again.';
     }
 
-    // WireGuard specific errors
-    if (errorStr.contains('WireGuard')) {
+    // OryvexVPN specific errors
+    if (errorStr.contains('WireGuard') || errorStr.contains('OryvexVPN core')) {
       if (errorStr.contains('not found')) {
-        return 'WireGuard files not found. Please reinstall the app.';
+        return 'OryvexVPN core files not found. Please reinstall the app.';
       }
       if (errorStr.contains('service')) {
         return 'Failed to start VPN service. Please run as administrator.';

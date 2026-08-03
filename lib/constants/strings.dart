@@ -1,6 +1,6 @@
 class Strings {
   static const String appTitle = 'OryvexVPN';
-  static const String appSubtitle = 'WireGuard Config Generator';
+  static const String appSubtitle = 'Next-Gen VPN Configuration';
   static const String statusReady = 'Ready';
   static const String statusGenerating = 'Generating config...';
   static const String statusGeneratingKey = 'Generating key...';

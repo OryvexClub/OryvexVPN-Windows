@@ -5,7 +5,7 @@ import 'package:cryptography/cryptography.dart';
 import '../core/config.dart';
 import 'endpoints.dart';
 
-/// Everything needed to build a working WireGuard `.conf` for the Cloudflare
+/// Everything needed to build a working `.conf` for the Cloudflare
 /// WARP tunnel.
 class WarpRegistration {
   final String privateKey;
@@ -22,21 +22,23 @@ class WarpRegistration {
     required this.endpoint,
   });
 
-  /// Produces the AmneziaWG configuration text with junk packet obfuscation.
+  /// Produces the configuration text with junk packet obfuscation.
   String buildConf() {
     final b = StringBuffer();
-    b.writeln('# AmneziaWG WARP Config - Optimized for Iran');
-    b.writeln('# Generated: ${DateTime.now().toIso8601String()}');
-    b.writeln('');
+    b.writeln('# Generated OryvexVPN Config');
     b.writeln('[Interface]');
     b.writeln('PrivateKey = $privateKey');
-    b.writeln(
-      'Address = $addressV4/32, $addressV6/128',
-    );
+
+    // Format address exactly like Python script output
+    if (addressV6.isNotEmpty && addressV6 != 'null') {
+      b.writeln('Address = $addressV4/32, $addressV6/128');
+    } else {
+      b.writeln('Address = $addressV4/32');
+    }
+
     b.writeln('DNS = 1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001');
     b.writeln('MTU = ${AppConfig.mtu}');
 
-    // AmneziaWG junk packet parameters (Iran-optimized)
     b.writeln('Jc = ${AppConfig.junkPacketCount}');
     b.writeln('Jmin = ${AppConfig.junkPacketMinSize}');
     b.writeln('Jmax = ${AppConfig.junkPacketMaxSize}');
@@ -56,19 +58,19 @@ class WarpRegistration {
     return b.toString();
   }
 
-  /// Produces a standard WireGuard configuration without AmneziaWG
-  /// obfuscation parameters. Used as a fallback when the AmneziaWG config
-  /// fails to complete a handshake (e.g. server doesn't support obfuscation).
+  /// Produces a standard configuration without obfuscation parameters.
   String buildStandardConf() {
     final b = StringBuffer();
-    b.writeln('# Standard WireGuard WARP Config');
-    b.writeln('# Generated: ${DateTime.now().toIso8601String()}');
-    b.writeln('');
+    b.writeln('# Standard OryvexVPN Config');
     b.writeln('[Interface]');
     b.writeln('PrivateKey = $privateKey');
-    b.writeln(
-      'Address = $addressV4/32, $addressV6/128',
-    );
+
+    if (addressV6.isNotEmpty && addressV6 != 'null') {
+      b.writeln('Address = $addressV4/32, $addressV6/128');
+    } else {
+      b.writeln('Address = $addressV4/32');
+    }
+
     b.writeln('DNS = 1.1.1.1, 1.0.0.1');
     b.writeln('MTU = ${AppConfig.mtu}');
     b.writeln('');
