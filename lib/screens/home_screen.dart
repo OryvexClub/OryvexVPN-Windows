@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen>
                 onPressed: () {
                   exit(0);
                 },
-                child: const Text('Exit app', style: TextStyle(color: Colors.white54)),
+                child: const Text('خروج از برنامه', style: TextStyle(color: Colors.white54)),
               ),
               if (procs.isNotEmpty)
                 TextButton(
@@ -71,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen>
                     }
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Kill All', style: TextStyle(color: Color(0xFFFF3366))),
+                  child: const Text('بستن برنامه‌های مزاحم', style: TextStyle(color: Color(0xFFFF3366))),
                 ),
             ],
           );
