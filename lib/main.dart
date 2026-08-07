@@ -14,6 +14,7 @@ import 'services/window_manager_service.dart';
 import 'services/vpn_core.dart';
 import 'services/vpn_service.dart';
 import 'services/wireguard_service.dart';
+import 'services/xray_service.dart';
 import 'l10n/app_localizations.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -84,6 +85,18 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       }
     } catch (e) {
       VpnLogger.error('Main', 'Error during VPN service disconnect: $e');
+    }
+
+    try {
+      VpnLogger.info('Main', 'Stopping Xray service...');
+      await XrayService.stop().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          VpnLogger.warn('Main', 'Xray stop timeout');
+        },
+      );
+    } catch (e) {
+      VpnLogger.error('Main', 'Xray stop error: $e');
     }
 
     try {

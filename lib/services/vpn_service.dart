@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'wireguard_service.dart';
 import 'oryvex_service.dart';
+import 'xray_service.dart';
 import 'vpn_core.dart';
 import 'ipinfo_service.dart';
 import '../utils/error_handler.dart';
@@ -288,6 +289,9 @@ class VPNService extends ChangeNotifier {
     _stopStatsMonitoring();
     _stopConnectionMonitoring();
     try {
+      // Stop Xray first (it depends on oryvex SOCKS5)
+      await XrayService.stop();
+
       // Disconnect oryvex if it's running
       await OryvexService.disconnect();
       await WireGuardService.disconnect();
@@ -302,6 +306,12 @@ class VPNService extends ChangeNotifier {
             notifyListeners();
           },
         );
+
+        // Start Xray core as front-facing proxy
+        if (await XrayService.isAvailable()) {
+          VpnLogger.info(_tag, 'Starting Xray core after reconnect...');
+          await XrayService.start();
+        }
       } else {
         // WireGuard mode or oryvex unavailable: use AmneziaWG
         await WireGuardService.connectWithProgress(
@@ -417,6 +427,15 @@ class VPNService extends ChangeNotifier {
 
       if (!running) {
         throw const FormatException('Tunnel failed to start. Please try again.');
+      }
+
+      // Start Xray core as front-facing proxy
+      if (await XrayService.isAvailable()) {
+        VpnLogger.info(_tag, 'Starting Xray core as front-facing proxy...');
+        _updateStatus('Starting Xray proxy...');
+        await XrayService.start();
+      } else {
+        VpnLogger.info(_tag, 'Xray binary not available, using oryvex SOCKS5 directly');
       }
 
       VpnLogger.info(_tag, 'Connection established via oryvex protocol fallback');
@@ -566,6 +585,9 @@ class VPNService extends ChangeNotifier {
     _stopConnectionMonitoring();
 
     try {
+      // Stop Xray first (it depends on oryvex SOCKS5)
+      await XrayService.stop();
+
       // Disconnect oryvex if it's running
       await OryvexService.disconnect();
 

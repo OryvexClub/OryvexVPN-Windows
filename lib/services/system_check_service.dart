@@ -20,13 +20,13 @@ class SystemCheckService {
 
   static Future<List<String>> getConflictingProcesses() async {
     final procs = [
-      'v2ray.exe', 'xray.exe', 'v2rayn.exe', 'nekoray.exe', 'nekobox.exe',
+      'v2ray.exe', 'v2rayn.exe', 'nekoray.exe', 'nekobox.exe',
       'clash.exe', 'clash-verge.exe', 'clash for windows.exe', 'clash-meta.exe',
       'hiddify.exe', 'hiddify-next.exe', 'outline.exe', 'shadowsocks.exe',
       'psiphon3.exe', 'qv2ray.exe', 'v2raya.exe', 'sing-box.exe',
       'openvpn.exe', 'openvpn-gui.exe', 'cfon.exe', 'lantern.exe',
       'geph-client.exe', 'gephgui.exe', 'freegate.exe', 'v2ray-core.exe',
-      'xray-core.exe', 'tun2socks.exe'
+      'tun2socks.exe'
     ];
     final found = <String>[];
     if (Platform.isWindows) {

@@ -53,6 +53,44 @@ jobs:
         }
       shell: powershell
 
+    - name: Download Xray core binary
+      run: |
+        $ErrorActionPreference = "Stop"
+        Write-Host "Downloading Xray core from GitHub releases..."
+
+        $xrayVersion = "1.8.24"
+        $xrayUrl = "https://github.com/XTLS/Xray-core/releases/download/v$xrayVersion/Xray-windows-64.zip"
+        $zip = "$env:TEMP\xray.zip"
+        $out = "$env:TEMP\xray-extract"
+
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        $webClient = New-Object System.Net.WebClient
+        $webClient.DownloadFile($xrayUrl, $zip)
+
+        Expand-Archive -Path $zip -DestinationPath $out -Force
+        $xrayExe = Get-ChildItem -Path $out -Recurse -Filter "xray.exe" | Select-Object -First 1
+
+        if ($xrayExe) {
+          Copy-Item $xrayExe.FullName -Destination "data\xray.exe" -Force
+          Write-Host "xray.exe bundled: $((Get-Item 'data\xray.exe').Length) bytes"
+        } else {
+          Write-Host "ERROR: xray.exe not found in Xray release archive"
+          exit 1
+        }
+      shell: powershell
+      continue-on-error: false
+
+    - name: Verify Xray binary
+      run: |
+        if (Test-Path "data\xray.exe") {
+          $size = (Get-Item "data\xray.exe").Length
+          Write-Host "xray.exe: $size bytes"
+        } else {
+          Write-Host "ERROR: xray.exe not found"
+          exit 1
+        }
+      shell: powershell
+
     - name: Download AmneziaWG
       run: |
         $ErrorActionPreference = "Stop"

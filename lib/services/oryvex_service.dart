@@ -45,6 +45,16 @@ class OryvexService {
   static Process? _oryvexProcess;
   static bool _isRunning = false;
 
+  /// Log broadcasting — subscribers get every stdout/stderr line.
+  static final StreamController<String> _logController =
+      StreamController<String>.broadcast();
+  static Stream<String> get logStream => _logController.stream;
+
+  /// Recent log lines (last 500) for showing history when dialog opens.
+  static final List<String> _recentLogs = [];
+  static List<String> get recentLogs => List.unmodifiable(_recentLogs);
+  static const int _maxRecentLogs = 500;
+
   /// Protocol priority order for fallback.
   static const List<OryvexProtocol> _protocolPriority = [
     OryvexProtocol.masque,
@@ -87,6 +97,29 @@ class OryvexService {
     final exists = await File(_oryvexExe).exists();
     VpnLogger.info(_tag, 'oryvex binary available: $exists at $_oryvexExe');
     return exists;
+  }
+
+  /// Add a line to the log buffer and broadcast it.
+  static void _addLog(String line) {
+    final now = DateTime.now();
+    final ts = '${now.hour.toString().padLeft(2, '0')}:'
+        '${now.minute.toString().padLeft(2, '0')}:'
+        '${now.second.toString().padLeft(2, '0')}';
+    final formatted = '[$ts] ORYVEX: $line';
+
+    _recentLogs.add(formatted);
+    if (_recentLogs.length > _maxRecentLogs) {
+      _recentLogs.removeAt(0);
+    }
+
+    if (!_logController.isClosed) {
+      _logController.add(formatted);
+    }
+  }
+
+  /// Clear the log buffer.
+  static void clearLogs() {
+    _recentLogs.clear();
   }
 
   /// Kill any running oryvex process.
@@ -164,6 +197,7 @@ class OryvexService {
           .transform(const LineSplitter())
           .listen((line) {
         VpnLogger.info(_tag, 'ORYVEX STDOUT: $line');
+        _addLog(line);
 
         // The oryvex binary logs "[+] socks5 server listening on <addr>"
         // when the tunnel is fully established and the proxy is ready.
@@ -206,6 +240,7 @@ class OryvexService {
           .transform(const LineSplitter())
           .listen((line) {
         VpnLogger.warn(_tag, 'ORYVEX STDERR: $line');
+        _addLog('WARN: $line');
       });
 
       // Wait for connection attempt with timeout.

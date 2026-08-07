@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import '../services/vpn_service.dart';
+import '../widgets/logs_dialog.dart';
 import '../l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -143,6 +144,19 @@ class _HomeScreenState extends State<HomeScreen>
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40),
             tooltip: 'AI Service Compatibility',
+          ),
+          IconButton(
+            icon: const Icon(Icons.terminal, color: Colors.white54, size: 16),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => const LogsDialog(),
+              );
+            },
+            splashRadius: 18,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 40),
+            tooltip: 'Core Logs',
           ),
           IconButton(
             icon: const Icon(Icons.remove, color: Colors.white54, size: 16),
