@@ -292,8 +292,8 @@ class VPNService extends ChangeNotifier {
       await OryvexService.disconnect();
       await WireGuardService.disconnect();
 
-      // Try oryvex with protocol fallback first
-      if (await OryvexService.isAvailable()) {
+      // Reconnect using the selected mode
+      if (isOryvexMode && await OryvexService.isAvailable()) {
         VpnLogger.info(_tag, 'Reconnecting via oryvex protocol fallback');
         await OryvexService.connectWithFallback(
           onProgress: (msg, stage) {
@@ -303,7 +303,7 @@ class VPNService extends ChangeNotifier {
           },
         );
       } else {
-        // Fallback to AmneziaWG WireGuard
+        // WireGuard mode or oryvex unavailable: use AmneziaWG
         await WireGuardService.connectWithProgress(
           isFullTunnel: true,
           antiDpiPreset: _antiDpiPreset,
