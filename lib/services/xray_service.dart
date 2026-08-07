@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'vpn_core.dart';
+import 'system_proxy.dart';
 
 /// Service that wraps the Xray core binary for front-facing proxy.
 ///
@@ -234,6 +235,11 @@ class XrayService {
       if (_isRunning && await _isPortActive(10809)) {
         VpnLogger.info(_tag, 'Xray HTTP proxy ready on 127.0.0.1:10809');
         _addLog('HTTP proxy ready on 127.0.0.1:10809');
+
+        // Set system proxy to route traffic through Xray
+        _addLog('Setting system proxy to Xray...');
+        await SystemProxyService.setToXray();
+        _addLog('System proxy configured for Xray');
       } else if (_isRunning) {
         VpnLogger.warn(_tag, 'Xray started but port 10809 not yet active');
         _addLog('Xray started, waiting for port 10809...');

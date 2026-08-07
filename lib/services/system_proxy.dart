@@ -65,6 +65,32 @@ class SystemProxyService {
     }
   }
 
+  /// Sets the system proxy to point to Xray's HTTP proxy (127.0.0.1:10809).
+  /// This routes browser/system traffic through Xray -> oryvex tunnel.
+  static Future<void> setToXray() async {
+    if (!Platform.isWindows) return;
+    VpnLogger.info(_tag, 'Setting system proxy to Xray (127.0.0.1:10809)...');
+    try {
+      // Enable proxy
+      await Process.run('reg', [
+        'add', _key, '/v', 'ProxyEnable', '/t', 'REG_DWORD', '/d', '1', '/f',
+      ]);
+      // Set HTTP proxy
+      await Process.run('reg', [
+        'add', _key, '/v', 'ProxyServer', '/t', 'REG_SZ',
+        '/d', 'http=127.0.0.1:10809;https=127.0.0.1:10809;socks=127.0.0.1:10808', '/f',
+      ]);
+      // Bypass local addresses
+      await Process.run('reg', [
+        'add', _key, '/v', 'ProxyOverride', '/t', 'REG_SZ',
+        '/d', 'localhost;127.*;10.*;172.16.*;172.17.*;172.18.*;172.19.*;172.20.*;172.21.*;172.22.*;172.23.*;172.24.*;172.25.*;172.26.*;172.27.*;172.28.*;172.29.*;172.30.*;172.31.*;192.168.*;<local>', '/f',
+      ]);
+      VpnLogger.info(_tag, 'System proxy set to Xray (127.0.0.1:10809)');
+    } catch (e) {
+      VpnLogger.warn(_tag, 'Failed to set system proxy to Xray: $e');
+    }
+  }
+
   /// Restores the proxy state captured by [saveState] (a no-op if the proxy
   /// was never enabled).
   static Future<void> restore() async {
