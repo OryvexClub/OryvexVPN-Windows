@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'wireguard_service.dart';
+import 'oryvex_service.dart';
 import 'vpn_core.dart';
 import 'ipinfo_service.dart';
 import '../utils/error_handler.dart';
@@ -264,17 +265,34 @@ class VPNService extends ChangeNotifier {
     _stopStatsMonitoring();
     _stopConnectionMonitoring();
     try {
+      // Disconnect oryvex if it's running
+      await OryvexService.disconnect();
       await WireGuardService.disconnect();
-      await WireGuardService.connectWithProgress(
-        isFullTunnel: true,
-        antiDpiPreset: _antiDpiPreset,
-        onProgress: (msg, stage) {
-          _stage = stage;
-          _statusMessage = msg;
-          notifyListeners();
-        },
-      );
-      final ok = await WireGuardService.isConnected();
+
+      // Try oryvex with protocol fallback first
+      if (await OryvexService.isAvailable()) {
+        VpnLogger.info(_tag, 'Reconnecting via oryvex protocol fallback');
+        await OryvexService.connectWithFallback(
+          onProgress: (msg, stage) {
+            _stage = stage;
+            _statusMessage = msg;
+            notifyListeners();
+          },
+        );
+      } else {
+        // Fallback to AmneziaWG WireGuard
+        await WireGuardService.connectWithProgress(
+          isFullTunnel: true,
+          antiDpiPreset: _antiDpiPreset,
+          onProgress: (msg, stage) {
+            _stage = stage;
+            _statusMessage = msg;
+            notifyListeners();
+          },
+        );
+      }
+
+      final ok = await WireGuardService.isConnected() || await OryvexService.isPort1819Active();
       if (ok) {
         VpnLogger.info(_tag, 'Auto-reconnect SUCCESS');
         _stage = VpnStage.connected;
@@ -355,6 +373,36 @@ class VPNService extends ChangeNotifier {
   }
 
   Future<void> _attemptConnectionRound() async {
+    // Try oryvex binary with protocol fallback first (MASQUE -> WireGuard -> WARP-in-WARP)
+    if (await OryvexService.isAvailable()) {
+      VpnLogger.info(_tag, 'Using oryvex binary with protocol fallback');
+      await OryvexService.connectWithFallback(
+        onProgress: (msg, stage) {
+          _stage = stage;
+          AppLogger.info(msg, 'VPN');
+          _updateStatus(msg);
+        },
+      );
+
+      // Wait for tunnel to fully establish
+      VpnLogger.info(_tag, 'Waiting for tunnel to establish...');
+      await Future.delayed(const Duration(seconds: 3));
+
+      // Verify connection
+      final running = await WireGuardService.isConnected() || await OryvexService.isPort1819Active();
+      VpnLogger.info(_tag, 'Tunnel service running (oryvex): $running');
+
+      if (!running) {
+        throw const FormatException('Tunnel failed to start. Please try again.');
+      }
+
+      VpnLogger.info(_tag, 'Connection established via oryvex protocol fallback');
+      return;
+    }
+
+    // Fallback to AmneziaWG WireGuard if oryvex is not available
+    VpnLogger.info(_tag, 'oryvex not available, falling back to AmneziaWG WireGuard');
+
     // Always use full tunnel for WireGuard routing.
     // When in proxy mode, local proxies handle selective routing.
     await WireGuardService.connectWithProgress(
@@ -495,6 +543,9 @@ class VPNService extends ChangeNotifier {
     _stopConnectionMonitoring();
 
     try {
+      // Disconnect oryvex if it's running
+      await OryvexService.disconnect();
+
       await WireGuardService.disconnect();
 
       final stillConnected = await WireGuardService.isConnected();

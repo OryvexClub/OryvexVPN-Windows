@@ -3,17 +3,17 @@
 <img src="https://img.shields.io/badge/Platform-Windows%2010%2F11-0078D6?style=for-the-badge&logo=windows&logoColor=white" />
 <img src="https://img.shields.io/badge/Status-Stable-success?style=for-the-badge" />
 <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" />
-<img src="https://img.shields.io/badge/UI-%D9%81%D8%A7%D8%B1%D8%B3%DB%8C%20%7C%20RTL-informational?style=for-the-badge" />
+<img src="https://img.shields.io/badge/ENGLISH-informational?style=for-the-badge" />
 
 # 🛡️ OryvexVPN
 
-### آزادی دیجیتال شما، در یک کلیک — The Free VPN for Windows
+### Your Digital Freedom, One Click Away — The Free VPN for Windows
 
 **Private • Secure • Fast • 100% Free**
 
-A modern, privacy-first VPN client for Windows, engineered for speed and simplicity — with a complete Persian (RTL) interface.
+A modern, privacy-first VPN client for Windows, engineered for speed and simplicity — with a beautiful, intuitive interface.
 
-[📥 Download Now](https://github.com/OryvexClub/oryvex_vpn_demo/releases) · [📖 Features](#-features) · [🌐 What is a VPN](#-what-is-a-vpn) · [💬 Support](#-support)
+[📥 Download Now](https://github.com/OryvexClub/OryvexVPN-Android/releases) · [📖 Features](#-features) · [🌐 What is a VPN](#-what-is-a-vpn) 
 
 </div>
 
@@ -57,9 +57,9 @@ Your real IP address and location are masked. You browse, stream, and communicat
 - **Low-ping routing optimized for your region**
 - **High uptime** — protection when you need it
 
-### 🎨 Beautiful, Persian-First UX
+### 🎨 Beautiful, Modern UX
 - **Clean, modern dark interface**
-- **Full RTL support** with the Vazirmatn font
+- **Intuitive navigation** — easy to use for everyone
 - **One-click connect** — no technical knowledge required
 
 ### 📊 Real-Time Statistics
@@ -83,9 +83,6 @@ No hidden fees, no premium tiers, no credit card, no surprise paywalls. Every fe
 
 ### 🚫 No Registration, No Tracking
 Download, install, and connect. No email, no account, no personal information collected. Your privacy begins the moment the app opens.
-
-### 🇮🇷 Made for Persian Speakers
-A complete, thoughtful Persian interface with proper right-to-left layout and beautiful Vazirmatn typography — not a machine-translated afterthought.
 
 ### 🔓 Open & Transparent
 Built on open-source technology. Anyone can inspect the code, which means no backdoors and no hidden telemetry.
@@ -144,7 +141,10 @@ Runs comfortably on modest hardware with a minimal footprint and zero noticeable
 
 ### Installation
 
-Download the latest installer from the [Releases](https://github.com/OryvexClub/oryvex_vpn_demo/releases) page, run it, and follow the short setup wizard (administrator privileges are requested once). That's it — no account, no configuration. Open the app and press **Connect**.
+1. **Download the installer** from the [Releases](https://github.com/OryvexClub/OryvexVPN-Android/releases) page.
+2. **Run the installer as Administrator** and follow the setup wizard.
+3. **Launch OryvexVPN** from your desktop or Start menu.
+4. **Click Connect** — you're protected!
 
 ---
 
@@ -152,12 +152,12 @@ Download the latest installer from the [Releases](https://github.com/OryvexClub/
 
 ```
 ╔══════════════════════════════════════════╗
-║               OryvexVPN v1.0.0           ║
+║             OryvexVPN v1.0.0            ║
 ╠══════════════════════════════════════════╣
 ║                                          ║
 ║             [   CONNECT   ]              ║
 ║                                          ║
-║   Status  : قطع شده (Disconnected)      ║
+║   Status  : Disconnected                ║
 ║   Server  : Auto Select                 ║
 ║   IP      : ---                         ║
 ║                                          ║
@@ -229,7 +229,6 @@ Download the latest installer from the [Releases](https://github.com/OryvexClub/
 | Ads | None | Heavy advertising |
 | Registration | Not required | Email required |
 | Logging | No logs | Often logs data |
-| Persian UI | Complete | Rarely available |
 | Open source | Yes | Usually closed |
 
 ---
@@ -241,7 +240,6 @@ Download the latest installer from the [Releases](https://github.com/OryvexClub/
 - **Provider** — smooth, reactive state management
 - **Material Design 3** — contemporary design language
 - **Cloudflare WARP infrastructure** — enhanced reliability
-- **Vazirmatn font** — polished Persian typography
 - **Inno Setup** — professional Windows installer
 
 ---
@@ -252,7 +250,7 @@ Download the latest installer from the [Releases](https://github.com/OryvexClub/
 - Windows 10 / 11 support
 - Automatic server selection
 - Real-time statistics
-- Persian UI with RTL
+- Modern dark UI
 - System tray & background operation
 
 **Coming next** 🚧
@@ -265,14 +263,6 @@ Download the latest installer from the [Releases](https://github.com/OryvexClub/
 - Android, macOS, and Linux builds
 - Browser extensions
 - Custom themes
-
----
-
-## 💬 Support
-
-- 📧 **Email** — sh4es89h4es98_43678@vexomail.xyz
-- 🐛 **Report a bug** — [GitHub Issues](https://github.com/OryvexClub/oryvex_vpn_demo/issues)
-- 💡 **Request a feature** — [GitHub Issues](https://github.com/OryvexClub/oryvex_vpn_demo/issues)
 
 ---
 
@@ -296,9 +286,9 @@ If OryvexVPN helps you, a star is the simplest way to help others find it — an
 
 ---
 
-**ساخته شده با ❤️ توسط تیم OryvexVPN**
+**Built with ❤️ by the OryvexVPN Team**
 
-**حریم خصوصی شما، آزادی شما، VPN شما.**
+**Your Privacy. Your Freedom. Your VPN.**
 
 *© 2026 OryvexVPN. All rights reserved.*
 

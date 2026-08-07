@@ -32,6 +32,27 @@ jobs:
         echo "Data directory created"
       shell: powershell
 
+    - name: Download oryvex core binary
+      uses: dawidd6/action-download-artifact@v6
+      with:
+        repo: OryvexClub/OryvexCore
+        workflow: build.yml
+        branch: main
+        name: oryvex-windows-x64
+        path: data
+        search_artifacts: true
+      continue-on-error: true
+
+    - name: Verify oryvex binary
+      run: |
+        if (Test-Path "data\oryvex.exe") {
+          $size = (Get-Item "data\oryvex.exe").Length
+          Write-Host "oryvex.exe downloaded: $size bytes"
+        } else {
+          Write-Host "WARNING: oryvex.exe not found - app will use AmneziaWG fallback only"
+        }
+      shell: powershell
+
     - name: Download AmneziaWG
       run: |
         $ErrorActionPreference = "Stop"
