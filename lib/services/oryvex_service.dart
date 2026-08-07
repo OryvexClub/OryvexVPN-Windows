@@ -32,9 +32,9 @@ class OryvexConnectionResult {
 /// The oryvex binary is invoked in fully non-interactive mode via CLI flags:
 ///   --masque / --wg / --gool   protocol selection (auto-fills protocol prompt)
 ///   --h2                        use HTTP/2 TCP transport for MASQUE (auto-fills transport prompt)
-///   --no-reconnect              skip "reconnect to last gateway?" prompt entirely
+///   --no-quick-reconnect        always scan fresh, skip reconnect prompt
 ///   --turbo                     fast scan mode (auto-fills scan mode prompt)
-///   --ipv4                      IPv4 only (auto-fills IP version prompt)
+///   -4                          IPv4 only (auto-fills IP version prompt)
 ///   --noize firewall            obfuscation profile
 ///   --bind 127.0.0.1:1819       SOCKS5 listen address
 ///
@@ -158,17 +158,17 @@ class OryvexService {
       // All interactive prompts are auto-filled via CLI flags:
       //   --masque/--wg/--gool  — protocol selection (skips protocol prompt)
       //   --h2                  — use HTTP/2 TCP transport for MASQUE (skips transport prompt)
-      //   --no-reconnect        — skip "reconnect to last gateway?" prompt entirely
+      //   --no-quick-reconnect  — always scan fresh, ignore saved last-connection gateway
       //   --turbo               — fast scan mode (skips scan mode prompt)
-      //   --ipv4                — IPv4 only (skips IP version prompt)
+      //   -4                    — IPv4 only (skips IP version prompt)
       //   --noize firewall      — obfuscation profile for MASQUE
       //   --bind 127.0.0.1:1819 — explicit SOCKS5 listen address
       final args = <String>[
         flag,
         '--h2',               // MASQUE over HTTP/2 TCP (looks like HTTPS, better for DPI bypass)
-        '--no-reconnect',     // Skip reconnect prompt completely
+        '--no-quick-reconnect', // Always scan fresh, skip reconnect prompt
         '--turbo',            // Fast scan mode (skip scan mode selection)
-        '--ipv4',             // IPv4 only (skip IP version selection)
+        '-4',                 // IPv4 only (skip IP version selection)
         '--noize', 'firewall', // Obfuscation profile
         '--bind', '127.0.0.1:1819', // SOCKS5 listen address
       ];
