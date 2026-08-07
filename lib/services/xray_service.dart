@@ -64,6 +64,8 @@ class XrayService {
   }
 
   /// Generate the Xray config JSON that routes traffic through oryvex SOCKS5.
+  /// Uses explicit private IP CIDR ranges instead of geoip:private to avoid
+  /// needing the geoip.dat file.
   static String _generateConfig() {
     final config = {
       'log': {'loglevel': 'warning'},
@@ -104,12 +106,21 @@ class XrayService {
           {
             'type': 'field',
             'outboundTag': 'direct',
-            'ip': ['geoip:private'],
+            'ip': [
+              '127.0.0.0/8',
+              '10.0.0.0/8',
+              '172.16.0.0/12',
+              '192.168.0.0/16',
+              '169.254.0.0/16',
+              '::1/128',
+              'fc00::/7',
+              'fe80::/10',
+            ],
           },
           {
             'type': 'field',
             'outboundTag': 'direct',
-            'domain': ['localhost', '127.0.0.1'],
+            'domain': ['localhost'],
           },
         ],
       },

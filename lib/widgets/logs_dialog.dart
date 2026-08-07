@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/oryvex_service.dart';
 import '../services/xray_service.dart';
 
@@ -138,6 +139,29 @@ class _LogsDialogState extends State<LogsDialog> {
                     },
                     child: const Text(
                       'CLEAR',
+                      style: TextStyle(
+                        color: Color(0xFF888891),
+                        fontSize: 11,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Copy button
+                  TextButton(
+                    onPressed: () {
+                      final text = _logs.join('\n');
+                      Clipboard.setData(ClipboardData(text: text));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Logs copied to clipboard'),
+                          duration: Duration(seconds: 2),
+                          backgroundColor: Color(0xFF1A1A1A),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      'COPY',
                       style: TextStyle(
                         color: Color(0xFF888891),
                         fontSize: 11,

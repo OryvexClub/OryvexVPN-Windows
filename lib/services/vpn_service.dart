@@ -240,25 +240,24 @@ class VPNService extends ChangeNotifier {
   Future<void> _checkConnectionStatus() async {
     if (_stage != VpnStage.connected) return;
 
-    final alive = await WireGuardService.isConnected();
-
-    if (!alive) {
-      // Service is dead — only then consider it dropped
-      VpnLogger.warn(_tag, 'Tunnel service is not running');
+    // Check liveness based on the current VPN mode
+    bool alive = false;
+    if (isOryvexMode) {
+      // In oryvex mode, check if SOCKS5 on port 1819 is active
+      alive = await OryvexService.isPort1819Active();
     } else {
-      // Service is running. Check handshake health but don't kill connection
-      // just because handshake is slow. Only log warnings.
-      try {
-        final stats = await WireGuardService.getTunnelStats();
-        final handshakeAge = stats['handshake_age'] as int?;
-        final rx = stats['rx_bytes'] as int? ?? 0;
-        VpnLogger.debug(_tag, 'Health check: handshake_age=$handshakeAge, rx=$rx');
-      } catch (e) {
-        VpnLogger.debug(_tag, 'Health check stats read failed: $e');
-      }
+      // In WireGuard mode, check the tunnel service
+      alive = await WireGuardService.isConnected();
+    }
+
+    if (alive) {
+      // Tunnel is alive — reset reconnect counter
       _reconnectAttempts = 0;
       return;
     }
+
+    // Service is dead — only then consider it dropped
+    VpnLogger.warn(_tag, 'Tunnel service is not running');
 
     // Tunnel dropped unexpectedly. Try to auto-recover a few times.
     // Ensure we are waiting at least 25 seconds since connected before testing dropping connection
