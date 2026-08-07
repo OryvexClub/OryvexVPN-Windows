@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'core/config.dart';
+import 'theme/app_theme.dart';
 import 'screens/home_screen.dart';
 import 'services/network_manager.dart';
 import 'services/tray_service.dart';
@@ -156,7 +157,7 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          backgroundColor: const Color(0xFF0A0A0A),
+          backgroundColor: AppTheme.surfaceOverlay,
           title: Text(l10n.closeTitle, style: const TextStyle(color: Colors.white)),
           content: Text(
             l10n.closeMessage,
@@ -168,20 +169,20 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
                 Navigator.of(ctx).pop();
                 windowManager.hide();
               },
-              child: Text(l10n.closeBackground, style: const TextStyle(color: Color(0xFF00E676))),
+              child: Text(l10n.closeBackground, style: TextStyle(color: AppTheme.primary)),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(ctx).pop();
                 _performQuit();
               },
-              child: Text(l10n.closeExit, style: const TextStyle(color: Color(0xFFFF3366))),
+              child: Text(l10n.closeExit, style: TextStyle(color: AppTheme.error)),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(ctx).pop();
               },
-              child: Text(l10n.cancel, style: const TextStyle(color: Colors.white54)),
+              child: Text(l10n.cancel, style: TextStyle(color: AppTheme.textMuted)),
             ),
           ],
         ),
@@ -215,18 +216,7 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
           child: child!,
         );
       },
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF000000),
-        fontFamily: 'Inter',
-        useMaterial3: true,
-        colorScheme: ColorScheme.dark(
-          primary: const Color(0xFF00E676),
-          secondary: const Color(0xFF69F0AE),
-          error: const Color(0xFFFF3366),
-          surface: const Color(0xFF0A0A0A),
-        ),
-      ),
+      theme: AppTheme.darkTheme,
       home: const HomeScreen(),
     );
   }

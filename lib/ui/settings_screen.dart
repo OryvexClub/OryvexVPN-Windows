@@ -130,7 +130,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: const Text('Anti-DPI'),
             tiles: <SettingsTile>[
               SettingsTile(
-                leading: const Icon(Icons.shield, color: Color(0xFF10B981)),
+                leading: Icon(Icons.shield, color: AppTheme.primary),
                 title: const Text('Obfuscation Preset'),
                 description: Text(
                   'AmneziaWG junk packet obfuscation to bypass Deep Packet Inspection',
@@ -138,7 +138,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 value: DropdownButton<String>(
                   value: _antiDpiPreset,
-                  dropdownColor: const Color(0xFF1A1A1A),
+                  dropdownColor: AppTheme.surfaceOverlay,
                   style: const TextStyle(color: Colors.white, fontSize: 13),
                   underline: const SizedBox(),
                   isDense: true,

@@ -12,6 +12,7 @@ import 'vpn_core.dart';
 import 'ipinfo_service.dart';
 import '../utils/error_handler.dart';
 import 'system_proxy.dart';
+import '../theme/app_theme.dart';
 
 enum VpnStage {
   idle,
@@ -195,10 +196,10 @@ class VPNService extends ChangeNotifier {
             context: navigatorKey.currentContext!,
             barrierDismissible: false,
             builder: (ctx) => AlertDialog(
-              backgroundColor: const Color(0xFF111111),
+              backgroundColor: AppTheme.surfaceOverlay,
               title: Row(
                 children: [
-                  Icon(Icons.warning_amber_rounded, color: Colors.orange[400]),
+                  Icon(Icons.warning_amber_rounded, color: AppTheme.warning),
                   const SizedBox(width: 10),
                   Text(
                     !clockSynced ? 'System Clock Error' : 'Conflicting Programs',
@@ -210,7 +211,7 @@ class VPNService extends ChangeNotifier {
                 !clockSynced
                     ? 'Your system clock is out of sync. This will prevent the VPN from connecting properly.\n\nPlease sync your Windows clock to continue.'
                     : 'The following programs might conflict with the VPN:\n\n${procs.join(', ')}\n\nPlease close them to prevent connection issues.',
-                style: const TextStyle(color: Colors.white70),
+                style: const TextStyle(color: AppTheme.textDim),
               ),
               actions: [
                 if (procs.isNotEmpty && clockSynced)
@@ -224,14 +225,14 @@ class VPNService extends ChangeNotifier {
                         } catch (_) {}
                       }
                     },
-                    child: const Text('Kill All', style: TextStyle(color: Colors.redAccent)),
+                    child: const Text('Kill All', style: TextStyle(color: AppTheme.error)),
                   ),
                 TextButton(
                   onPressed: () {
                     Navigator.pop(ctx);
                     _isModalShowing = false;
                   },
-                  child: const Text('Dismiss', style: TextStyle(color: Colors.white54)),
+                  child: const Text('Dismiss', style: TextStyle(color: AppTheme.textMuted)),
                 ),
               ],
             ),

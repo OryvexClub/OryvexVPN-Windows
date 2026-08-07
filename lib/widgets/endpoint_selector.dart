@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../constants/strings.dart';
+import '../theme/app_theme.dart';
 
 class EndpointSelector extends StatefulWidget {
   final void Function(String ip, String port) onEndpointSelected;
@@ -64,7 +65,7 @@ class _EndpointSelectorState extends State<EndpointSelector> {
           children: [
             Row(
               children: [
-                const Icon(Icons.route, color: Color(0xFF10B981)),
+                const Icon(Icons.route, color: AppTheme.success),
                 const SizedBox(width: 8),
                 Text(
                   Strings.endpoint,
@@ -76,7 +77,7 @@ class _EndpointSelectorState extends State<EndpointSelector> {
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.shuffle, color: Color(0xFF10B981)),
+                  icon: const Icon(Icons.shuffle, color: AppTheme.success),
                   tooltip: Strings.randomIP,
                   onPressed: () {
                     final endpoint = _pickRandomEndpoint();
@@ -92,7 +93,7 @@ class _EndpointSelectorState extends State<EndpointSelector> {
                   child: DropdownButtonFormField<bool>(
                     value: _useCustom,
                     style: const TextStyle(color: Colors.white),
-                    dropdownColor: const Color(0xFF1A1A1A),
+                    dropdownColor: AppTheme.surfaceOverlay,
                     items: const [
                       DropdownMenuItem(value: false, child: Text(Strings.auto)),
                       DropdownMenuItem(value: true, child: Text(Strings.custom)),

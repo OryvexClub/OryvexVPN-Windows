@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class StatsCard extends StatelessWidget {
   final IconData icon;
@@ -20,21 +21,7 @@ class StatsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0A0A0A),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withOpacity(0.15),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.04),
-            blurRadius: 10,
-            spreadRadius: 0,
-          ),
-        ],
-      ),
+      decoration: AppTheme.glassDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -55,11 +42,7 @@ class StatsCard extends StatelessWidget {
               const SizedBox(width: 10),
               Text(
                 label,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.6),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTheme.labelStyle,
               ),
             ],
           ),
@@ -67,7 +50,7 @@ class StatsCard extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-              color: Colors.white,
+              color: AppTheme.textPrimary,
               fontSize: valueSize ?? 18,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,

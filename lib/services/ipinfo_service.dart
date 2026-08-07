@@ -97,8 +97,40 @@ class IPInfoService {
   }
 
 
-  /// Measure ping using raw TCP socket connect (faster and more reliable than HTTP).
+  /// Measure ping using HTTP-based request to Google's generate_204 endpoint,
+  /// falling back to TCP socket connect if HTTP fails.
   static Future<int> measurePing(String host, {int port = 443}) async {
+    // Primary: HTTP-based ping via Google generate_204 (measures real HTTP latency)
+    try {
+      final stopwatch = Stopwatch()..start();
+      final response = await http.get(
+        Uri.parse('https://www.google.com/generate_204'),
+      ).timeout(const Duration(seconds: 3));
+      stopwatch.stop();
+      if (response.statusCode == 204 || response.statusCode == 200) {
+        final ms = stopwatch.elapsedMilliseconds;
+        if (ms > 0) return ms;
+      }
+    } catch (_) {
+      // Fall through to TCP fallback
+    }
+
+    // Secondary: HTTP via connectivity check (Android/Chrome standard)
+    try {
+      final stopwatch = Stopwatch()..start();
+      final response = await http.get(
+        Uri.parse('https://connectivitycheck.gstatic.com/generate_204'),
+      ).timeout(const Duration(seconds: 3));
+      stopwatch.stop();
+      if (response.statusCode == 204 || response.statusCode == 200) {
+        final ms = stopwatch.elapsedMilliseconds;
+        if (ms > 0) return ms;
+      }
+    } catch (_) {
+      // Fall through to TCP fallback
+    }
+
+    // Fallback: TCP socket connect (original method)
     final hosts = [host, '1.1.1.1', '8.8.8.8', 'cloudflare.com'];
     for (final h in hosts) {
       try {

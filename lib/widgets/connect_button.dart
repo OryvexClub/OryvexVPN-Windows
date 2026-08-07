@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import '../constants/strings.dart';
+import '../theme/app_theme.dart';
+
 class ConnectButton extends StatelessWidget {
-  final VoidCallback? onPressed; final bool isConnected, isConnecting;
+  final VoidCallback? onPressed;
+  final bool isConnected, isConnecting;
   const ConnectButton({super.key, this.onPressed, required this.isConnected, required this.isConnecting});
   @override
   Widget build(BuildContext context) => SizedBox(width: double.infinity, child: ElevatedButton(
     onPressed: onPressed,
     style: ElevatedButton.styleFrom(
-      backgroundColor: isConnected ? Colors.red : const Color(0xFF10B981),
+      backgroundColor: isConnected ? AppTheme.error : AppTheme.success,
       foregroundColor: Colors.white,
       padding: const EdgeInsets.symmetric(vertical: 20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
