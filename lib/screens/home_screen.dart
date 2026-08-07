@@ -70,6 +70,8 @@ class _HomeScreenState extends State<HomeScreen>
                     _buildErrorBox(vpn),
                   ],
                   const SizedBox(height: 24),
+                  _buildModeSelector(vpn, active),
+                  const SizedBox(height: 24),
                   _buildStatsGrid(vpn),
                   const SizedBox(height: 30),
                 ],
@@ -302,6 +304,131 @@ class _HomeScreenState extends State<HomeScreen>
             child: const Text('Close', style: TextStyle(color: Colors.white54)),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildModeSelector(VPNService vpn, bool active) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0C0C0C),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF1A1A1A)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                active ? Icons.lock : Icons.lock_open,
+                size: 14,
+                color: active ? const Color(0xFF00E5FF) : const Color(0xFF888891),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'CONNECTION MODE',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: active ? const Color(0xFF00E5FF) : const Color(0xFF888891),
+                  letterSpacing: 1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _buildModeChip(
+                label: 'WG',
+                icon: Icons.shield,
+                isSelected: vpn.isWireGuardMode,
+                active: active,
+                onTap: () => vpn.setVpnMode(VpnMode.wireGuard),
+              ),
+              const SizedBox(width: 8),
+              _buildModeChip(
+                label: 'Oryvex Core',
+                icon: Icons.bolt,
+                isSelected: vpn.isOryvexMode,
+                active: active,
+                recommended: true,
+                onTap: () => vpn.setVpnMode(VpnMode.oryvexCore),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModeChip({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required bool active,
+    required VoidCallback onTap,
+    bool recommended = false,
+  }) {
+    final color = isSelected ? const Color(0xFF00E5FF) : const Color(0xFF2A2A2E);
+    final textColor = isSelected ? Colors.black : const Color(0xFF888891);
+    final iconColor = isSelected ? Colors.black : const Color(0xFF888891);
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: active ? null : onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: isSelected ? const Color(0xFF00E5FF) : const Color(0xFF1A1A1A),
+              width: isSelected ? 1.5 : 1,
+            ),
+            boxShadow: isSelected
+                ? [BoxShadow(color: const Color(0xFF00E5FF).withOpacity(0.2), blurRadius: 8)]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 14, color: active && !isSelected ? Colors.white24 : iconColor),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: active && !isSelected ? Colors.white24 : textColor,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              if (recommended && !isSelected) ...[
+                const SizedBox(width: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFB800).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: const Text(
+                    'REC',
+                    style: TextStyle(
+                      fontSize: 7,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFFFFB800),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

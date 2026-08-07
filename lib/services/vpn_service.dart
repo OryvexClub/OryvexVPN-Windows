@@ -21,6 +21,12 @@ enum VpnStage {
   disconnecting,
 }
 
+/// Connection mode: AmneziaWG (full tunnel) or Oryvex Core (recommended).
+enum VpnMode {
+  wireGuard,   // AmneziaWG full tunnel
+  oryvexCore,  // Oryvex binary with protocol fallback (recommended)
+}
+
 class VPNService extends ChangeNotifier {
   VpnStage _stage = VpnStage.idle;
   String _statusMessage = 'Click to connect';
@@ -44,6 +50,11 @@ class VPNService extends ChangeNotifier {
   static const int _maxReconnectAttempts = 3;
   static const String _tag = 'VPNService';
 
+  VpnMode _vpnMode = VpnMode.wireGuard;
+  VpnMode get vpnMode => _vpnMode;
+  bool get isOryvexMode => _vpnMode == VpnMode.oryvexCore;
+  bool get isWireGuardMode => _vpnMode == VpnMode.wireGuard;
+
   String _antiDpiPreset = 'standard';
   String get antiDpiPreset => _antiDpiPreset;
 
@@ -52,6 +63,16 @@ class VPNService extends ChangeNotifier {
     SharedPreferences.getInstance().then((prefs) {
       prefs.setString('anti_dpi_preset', preset);
     });
+    notifyListeners();
+  }
+
+  void setVpnMode(VpnMode mode) {
+    if (isConnecting || isConnected) return; // Can't switch while active
+    _vpnMode = mode;
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString('vpn_mode', mode == VpnMode.wireGuard ? 'wireGuard' : 'oryvexCore');
+    });
+    VpnLogger.info(_tag, 'VPN mode set to: ${mode == VpnMode.wireGuard ? "WireGuard" : "Oryvex Core"}');
     notifyListeners();
   }
 
@@ -80,13 +101,15 @@ class VPNService extends ChangeNotifier {
   }
 
   VPNService() {
-    _loadFullTunnelSetting();
+    _loadSettings();
     _startSystemMonitoring();
   }
 
-  Future<void> _loadFullTunnelSetting() async {
+  Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     _antiDpiPreset = prefs.getString('anti_dpi_preset') ?? 'standard';
+    final modeStr = prefs.getString('vpn_mode') ?? 'wireGuard';
+    _vpnMode = modeStr == 'oryvexCore' ? VpnMode.oryvexCore : VpnMode.wireGuard;
     notifyListeners();
   }
 
@@ -373,8 +396,8 @@ class VPNService extends ChangeNotifier {
   }
 
   Future<void> _attemptConnectionRound() async {
-    // Try oryvex binary with protocol fallback first (MASQUE -> WireGuard -> WARP-in-WARP)
-    if (await OryvexService.isAvailable()) {
+    // Oryvex Core mode: use oryvex binary with protocol fallback
+    if (isOryvexMode && await OryvexService.isAvailable()) {
       VpnLogger.info(_tag, 'Using oryvex binary with protocol fallback');
       await OryvexService.connectWithFallback(
         onProgress: (msg, stage) {
@@ -400,8 +423,8 @@ class VPNService extends ChangeNotifier {
       return;
     }
 
-    // Fallback to AmneziaWG WireGuard if oryvex is not available
-    VpnLogger.info(_tag, 'oryvex not available, falling back to AmneziaWG WireGuard');
+    // Fallback to AmneziaWG WireGuard if oryvex mode is not selected or not available
+    VpnLogger.info(_tag, 'Using AmneziaWG WireGuard mode');
 
     // Always use full tunnel for WireGuard routing.
     // When in proxy mode, local proxies handle selective routing.
