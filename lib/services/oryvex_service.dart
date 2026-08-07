@@ -29,12 +29,14 @@ class OryvexConnectionResult {
 
 /// Service that wraps the oryvex CLI binary for protocol fallback connections.
 ///
-/// The oryvex binary supports non-interactive mode via CLI flags:
-///   --masque / --wg / --gool   protocol selection
-///   --quick-reconnect          skip reconnect prompt
-///   --turbo                    fast scan mode
-///   --noize firewall           obfuscation profile
-///   --bind 127.0.0.1:1819      SOCKS5 listen address
+/// The oryvex binary is invoked in fully non-interactive mode via CLI flags:
+///   --masque / --wg / --gool   protocol selection (auto-fills protocol prompt)
+///   --h2                        use HTTP/2 TCP transport for MASQUE (auto-fills transport prompt)
+///   --no-reconnect              skip "reconnect to last gateway?" prompt entirely
+///   --turbo                     fast scan mode (auto-fills scan mode prompt)
+///   --ipv4                      IPv4 only (auto-fills IP version prompt)
+///   --noize firewall            obfuscation profile
+///   --bind 127.0.0.1:1819       SOCKS5 listen address
 ///
 /// Automatic fallback: MASQUE -> WireGuard -> WARP-in-WARP.
 /// If a protocol fails and doesn't show port 1819, it tries the next method.
@@ -120,18 +122,22 @@ class OryvexService {
       await killRunning();
 
       // Build non-interactive CLI arguments.
-      // Key flags:
-      //   --masque/--wg/--gool  — protocol selection (no interactive prompt)
-      //   --quick-reconnect     — skip "reconnect to last gateway?" prompt
-      //   --turbo               — fast scan mode
+      // All interactive prompts are auto-filled via CLI flags:
+      //   --masque/--wg/--gool  — protocol selection (skips protocol prompt)
+      //   --h2                  — use HTTP/2 TCP transport for MASQUE (skips transport prompt)
+      //   --no-reconnect        — skip "reconnect to last gateway?" prompt entirely
+      //   --turbo               — fast scan mode (skips scan mode prompt)
+      //   --ipv4                — IPv4 only (skips IP version prompt)
       //   --noize firewall      — obfuscation profile for MASQUE
       //   --bind 127.0.0.1:1819 — explicit SOCKS5 listen address
       final args = <String>[
         flag,
-        '--quick-reconnect',
-        '--turbo',
-        '--noize', 'firewall',
-        '--bind', '127.0.0.1:1819',
+        '--h2',               // MASQUE over HTTP/2 TCP (looks like HTTPS, better for DPI bypass)
+        '--no-reconnect',     // Skip reconnect prompt completely
+        '--turbo',            // Fast scan mode (skip scan mode selection)
+        '--ipv4',             // IPv4 only (skip IP version selection)
+        '--noize', 'firewall', // Obfuscation profile
+        '--bind', '127.0.0.1:1819', // SOCKS5 listen address
       ];
 
       final exeDir = File(Platform.resolvedExecutable).parent.path;
