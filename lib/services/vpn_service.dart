@@ -56,6 +56,19 @@ class VPNService extends ChangeNotifier {
   bool get isOryvexMode => _vpnMode == VpnMode.oryvexCore;
   bool get isWireGuardMode => _vpnMode == VpnMode.wireGuard;
 
+  OryvexProtocol _oryvexProtocol = OryvexProtocol.auto;
+  OryvexProtocol get oryvexProtocol => _oryvexProtocol;
+
+  void setOryvexProtocol(OryvexProtocol protocol) {
+    if (isConnecting || isConnected) return;
+    _oryvexProtocol = protocol;
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString('oryvex_protocol', protocol.name);
+    });
+    VpnLogger.info(_tag, 'Oryvex protocol set to: ${protocol.name}');
+    notifyListeners();
+  }
+
   String _antiDpiPreset = 'standard';
   String get antiDpiPreset => _antiDpiPreset;
 
@@ -111,6 +124,11 @@ class VPNService extends ChangeNotifier {
     _antiDpiPreset = prefs.getString('anti_dpi_preset') ?? 'standard';
     final modeStr = prefs.getString('vpn_mode') ?? 'wireGuard';
     _vpnMode = modeStr == 'oryvexCore' ? VpnMode.oryvexCore : VpnMode.wireGuard;
+    final protocolStr = prefs.getString('oryvex_protocol') ?? 'auto';
+    _oryvexProtocol = OryvexProtocol.values.firstWhere(
+      (p) => p.name == protocolStr,
+      orElse: () => OryvexProtocol.auto,
+    );
     notifyListeners();
   }
 
@@ -390,12 +408,12 @@ class VPNService extends ChangeNotifier {
     // Ping always updates
     final ping = await ErrorHandler.tryCatch(
       () => IPInfoService.measurePing('1.1.1.1'),
-      fallback: _stats.ping,
+      fallback: 0,
       context: 'Measure Ping',
     );
 
     _stats = ConnectionStats(
-      ping: (ping ?? 0) > 0 ? ping! : 0,
+      ping: (ping != null && ping > 0) ? ping : 0,
       downloadSpeed: downloadSpeed > 0 ? downloadSpeed : 0.0,
       uploadSpeed: uploadSpeed > 0 ? uploadSpeed : 0.0,
       ipInfo: ipInfo,
@@ -407,13 +425,14 @@ class VPNService extends ChangeNotifier {
   Future<void> _attemptConnectionRound() async {
     // Oryvex Core mode: use oryvex binary with protocol fallback
     if (isOryvexMode && await OryvexService.isAvailable()) {
-      VpnLogger.info(_tag, 'Using oryvex binary with protocol fallback');
+      VpnLogger.info(_tag, 'Using oryvex binary with protocol: ${_oryvexProtocol.name}');
       await OryvexService.connectWithFallback(
         onProgress: (msg, stage) {
           _stage = stage;
           AppLogger.info(msg, 'VPN');
           _updateStatus(msg);
         },
+        protocol: _oryvexProtocol,
       );
 
       // Wait for tunnel to fully establish

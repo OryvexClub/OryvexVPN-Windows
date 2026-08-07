@@ -7,6 +7,7 @@ import 'vpn_service.dart';
 
 /// Protocol types supported by the oryvex core binary.
 enum OryvexProtocol {
+  auto,        // Try all protocols in order (MASQUE -> WireGuard -> WARP-in-WARP)
   masque,      // Protocol 1 - Modern, QUIC/H3
   wireguard,   // Protocol 2 - Classic, faster
   warpinwarp,  // Protocol 3 - WARP-in-WARP / gool
@@ -65,6 +66,8 @@ class OryvexService {
   /// Human-readable protocol names.
   static String _protocolName(OryvexProtocol p) {
     switch (p) {
+      case OryvexProtocol.auto:
+        return 'Auto';
       case OryvexProtocol.masque:
         return 'MASQUE';
       case OryvexProtocol.wireguard:
@@ -75,8 +78,10 @@ class OryvexService {
   }
 
   /// CLI flag for each protocol.
-  static String _protocolFlag(OryvexProtocol p) {
+  static String? _protocolFlag(OryvexProtocol p) {
     switch (p) {
+      case OryvexProtocol.auto:
+        return null; // No flag = default protocol (MASQUE)
       case OryvexProtocol.masque:
         return '--masque';
       case OryvexProtocol.wireguard:
@@ -325,13 +330,15 @@ class OryvexService {
     return false;
   }
 
-  /// Connect with automatic protocol fallback.
-  /// Tries MASQUE first, then WireGuard, then WARP-in-WARP.
+  /// Connect with protocol selection.
+  /// If protocol is AUTO, tries MASQUE -> WireGuard -> WARP-in-WARP.
+  /// If a specific protocol is selected, only tries that one.
   /// Returns the first successful protocol, or throws if all fail.
   static Future<OryvexConnectionResult> connectWithFallback({
     required void Function(String msg, VpnStage stage) onProgress,
+    OryvexProtocol protocol = OryvexProtocol.auto,
   }) async {
-    VpnLogger.info(_tag, '=== Starting protocol fallback sequence ===');
+    VpnLogger.info(_tag, '=== Starting connection with protocol: ${_protocolName(protocol)} ===');
 
     // Check if oryvex binary is available
     if (!await isAvailable()) {
@@ -340,15 +347,28 @@ class OryvexService {
       );
     }
 
-    // Try each protocol in priority order
-    for (int i = 0; i < _protocolPriority.length; i++) {
-      final protocol = _protocolPriority[i];
+    // If a specific protocol is selected, only try that one
+    if (protocol != OryvexProtocol.auto) {
       final name = _protocolName(protocol);
+      onProgress('Connecting via $name...', VpnStage.fetchingConfig);
+      final result = await _tryProtocol(protocol, onProgress);
+      if (result.success) {
+        VpnLogger.info(_tag, '=== Connection SUCCESS: ${result.protocolName} ===');
+        return result;
+      }
+      VpnLogger.error(_tag, '=== $name failed: ${result.errorMessage} ===');
+      throw Exception('$name connection failed: ${result.errorMessage}');
+    }
+
+    // Auto mode: try each protocol in priority order
+    for (int i = 0; i < _protocolPriority.length; i++) {
+      final p = _protocolPriority[i];
+      final name = _protocolName(p);
 
       onProgress('Trying $name (method ${i + 1}/${_protocolPriority.length})...',
           VpnStage.fetchingConfig);
 
-      final result = await _tryProtocol(protocol, onProgress);
+      final result = await _tryProtocol(p, onProgress);
 
       if (result.success) {
         VpnLogger.info(_tag, '=== Fallback SUCCESS: ${result.protocolName} ===');

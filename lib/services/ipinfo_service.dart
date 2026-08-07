@@ -99,16 +99,21 @@ class IPInfoService {
 
   /// Measure ping using raw TCP socket connect (faster and more reliable than HTTP).
   static Future<int> measurePing(String host, {int port = 443}) async {
-    try {
-      final stopwatch = Stopwatch()..start();
-      final socket = await Socket.connect(host, port,
-          timeout: const Duration(seconds: 3));
-      stopwatch.stop();
-      socket.destroy();
-      return stopwatch.elapsedMilliseconds;
-    } catch (e) {
-      return -1;
+    final hosts = [host, '1.1.1.1', '8.8.8.8', 'cloudflare.com'];
+    for (final h in hosts) {
+      try {
+        final stopwatch = Stopwatch()..start();
+        final socket = await Socket.connect(h, port,
+            timeout: const Duration(seconds: 2));
+        stopwatch.stop();
+        socket.destroy();
+        final ms = stopwatch.elapsedMilliseconds;
+        if (ms > 0) return ms;
+      } catch (_) {
+        // Try next host
+      }
     }
+    return -1;
   }
 }
 

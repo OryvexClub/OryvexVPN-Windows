@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import '../services/vpn_service.dart';
+import '../services/oryvex_service.dart';
 import '../widgets/logs_dialog.dart';
 import '../l10n/app_localizations.dart';
 
@@ -356,7 +357,7 @@ class _HomeScreenState extends State<HomeScreen>
           Row(
             children: [
               _buildModeChip(
-                label: 'WG',
+                label: 'WireGuard',
                 icon: Icons.shield,
                 isSelected: vpn.isWireGuardMode,
                 active: active,
@@ -369,9 +370,201 @@ class _HomeScreenState extends State<HomeScreen>
                 isSelected: vpn.isOryvexMode,
                 active: active,
                 recommended: true,
-                onTap: () => vpn.setVpnMode(VpnMode.oryvexCore),
+                onTap: () {
+                  if (!active) {
+                    _showProtocolSelector(context, vpn);
+                  }
+                },
               ),
             ],
+          ),
+          // Show selected protocol when in oryvex mode
+          if (vpn.isOryvexMode) ...[
+            const SizedBox(height: 8),
+            _buildProtocolInfo(vpn),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _showProtocolSelector(BuildContext context, VPNService vpn) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0A0A0A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color(0xFF222222)),
+        ),
+        title: const Text(
+          'Select Protocol',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildProtocolOption(
+              context: ctx,
+              vpn: vpn,
+              protocol: OryvexProtocol.auto,
+              title: 'Auto',
+              subtitle: 'Try all protocols (MASQUE → WireGuard → WARP)',
+              icon: Icons.auto_awesome,
+              color: const Color(0xFF8B5CF6),
+            ),
+            const SizedBox(height: 8),
+            _buildProtocolOption(
+              context: ctx,
+              vpn: vpn,
+              protocol: OryvexProtocol.masque,
+              title: 'MASQUE',
+              subtitle: 'Modern, QUIC/H3, best for DPI bypass',
+              icon: Icons.speed,
+              color: const Color(0xFF00E5FF),
+            ),
+            const SizedBox(height: 8),
+            _buildProtocolOption(
+              context: ctx,
+              vpn: vpn,
+              protocol: OryvexProtocol.wireguard,
+              title: 'WireGuard',
+              subtitle: 'Classic, faster connection',
+              icon: Icons.shield,
+              color: const Color(0xFF00E676),
+            ),
+            const SizedBox(height: 8),
+            _buildProtocolOption(
+              context: ctx,
+              vpn: vpn,
+              protocol: OryvexProtocol.warpinwarp,
+              title: 'WARP-in-WARP',
+              subtitle: 'Double tunnel, extra obfuscation',
+              icon: Icons.tunnel,
+              color: const Color(0xFFFFB800),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProtocolOption({
+    required BuildContext context,
+    required VPNService vpn,
+    required OryvexProtocol protocol,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+  }) {
+    final isSelected = vpn.oryvexProtocol == protocol;
+    return GestureDetector(
+      onTap: () {
+        vpn.setOryvexProtocol(protocol);
+        vpn.setVpnMode(VpnMode.oryvexCore);
+        Navigator.pop(context);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withOpacity(0.15) : const Color(0xFF111111),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? color : const Color(0xFF222222),
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Icon(icon, size: 16, color: color),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : const Color(0xFF888891),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: Color(0xFF555555),
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              Icon(Icons.check_circle, color: color, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProtocolInfo(VPNService vpn) {
+    String protocolName;
+    IconData protocolIcon;
+    Color protocolColor;
+
+    switch (vpn.oryvexProtocol) {
+      case OryvexProtocol.masque:
+        protocolName = 'MASQUE';
+        protocolIcon = Icons.speed;
+        protocolColor = const Color(0xFF00E5FF);
+        break;
+      case OryvexProtocol.wireguard:
+        protocolName = 'WireGuard';
+        protocolIcon = Icons.shield;
+        protocolColor = const Color(0xFF00E676);
+        break;
+      case OryvexProtocol.warpinwarp:
+        protocolName = 'WARP-in-WARP';
+        protocolIcon = Icons.tunnel;
+        protocolColor = const Color(0xFFFFB800);
+        break;
+      case OryvexProtocol.auto:
+      default:
+        protocolName = 'Auto';
+        protocolIcon = Icons.auto_awesome;
+        protocolColor = const Color(0xFF8B5CF6);
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF111111),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: const Color(0xFF222222)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(protocolIcon, size: 12, color: protocolColor),
+          const SizedBox(width: 6),
+          Text(
+            protocolName,
+            style: TextStyle(
+              color: protocolColor,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
