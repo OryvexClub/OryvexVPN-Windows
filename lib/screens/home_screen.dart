@@ -440,7 +440,7 @@ class _HomeScreenState extends State<HomeScreen>
               protocol: OryvexProtocol.warpinwarp,
               title: 'WARP-in-WARP',
               subtitle: 'Double tunnel, extra obfuscation',
-              icon: Icons.tunnel,
+              icon: Icons.hub,
               color: const Color(0xFFFFB800),
             ),
           ],
@@ -535,11 +535,10 @@ class _HomeScreenState extends State<HomeScreen>
         break;
       case OryvexProtocol.warpinwarp:
         protocolName = 'WARP-in-WARP';
-        protocolIcon = Icons.tunnel;
+        protocolIcon = Icons.hub;
         protocolColor = const Color(0xFFFFB800);
         break;
       case OryvexProtocol.auto:
-      default:
         protocolName = 'Auto';
         protocolIcon = Icons.auto_awesome;
         protocolColor = const Color(0xFF8B5CF6);

@@ -169,7 +169,7 @@ class OryvexService {
       //   --noize firewall      — obfuscation profile for MASQUE
       //   --bind 127.0.0.1:1819 — explicit SOCKS5 listen address
       final args = <String>[
-        flag,
+        if (flag != null) flag,
         '--h2',               // MASQUE over HTTP/2 TCP (looks like HTTPS, better for DPI bypass)
         '--no-quick-reconnect', // Always scan fresh, skip reconnect prompt
         '--turbo',            // Fast scan mode (skip scan mode selection)
