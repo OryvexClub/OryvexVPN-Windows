@@ -1,8 +1,4 @@
-import 'package:flutter/material.dart';
-import '../main.dart';
-import 'system_check_service.dart';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'wireguard_service.dart';
@@ -12,7 +8,7 @@ import 'vpn_core.dart';
 import 'ipinfo_service.dart';
 import '../utils/error_handler.dart';
 import 'system_proxy.dart';
-import '../theme/app_theme.dart';
+import 'system_check_service.dart';
 
 enum VpnStage {
   idle,
@@ -27,6 +23,23 @@ enum VpnStage {
 enum VpnMode {
   wireGuard,   // AmneziaWG full tunnel
   oryvexCore,  // Oryvex binary with protocol fallback (recommended)
+}
+
+/// Immutable result of a real detection pass. "Connected" is only ever true
+/// when OryvexVPN's own tunnel (WireGuard service or oryvex.exe on :1819) is
+/// genuinely up — never because a foreign VPN/proxy app is running.
+class VpnStateSnapshot {
+  final bool isOryvexConnected;
+  final bool isWireGuardConnected;
+  final bool externalVpnActive;
+
+  const VpnStateSnapshot({
+    required this.isOryvexConnected,
+    required this.isWireGuardConnected,
+    required this.externalVpnActive,
+  });
+
+  bool get isGenuinelyConnected => isOryvexConnected || isWireGuardConnected;
 }
 
 class VPNService extends ChangeNotifier {
@@ -103,6 +116,25 @@ class VPNService extends ChangeNotifier {
   int get totalUpload => _totalUpload;
   String get currentEndpoint => WireGuardService.currentEndpoint?.hostPort ?? '—';
 
+  VpnStateSnapshot _snapshot = const VpnStateSnapshot(
+    isOryvexConnected: false,
+    isWireGuardConnected: false,
+    externalVpnActive: false,
+  );
+  VpnStateSnapshot get snapshot => _snapshot;
+
+  /// True when OUR oryvex process owns port 1819 (never a foreign app).
+  bool get isOryvexConnected => _snapshot.isOryvexConnected;
+
+  /// True when the AmneziaWG/oryvexvpn Windows tunnel service is RUNNING.
+  bool get isWireGuardConnected => _snapshot.isWireGuardConnected;
+
+  /// True when an external VPN/proxy app (v2ray, Clash, ...) is running.
+  bool get externalVpnActive => _snapshot.externalVpnActive;
+
+  /// True when OryvexVPN's own tunnel is genuinely up.
+  bool get isGenuinelyConnected => _snapshot.isGenuinelyConnected;
+
   /// Human-readable connection duration, or '—' when not connected.
   String get connectedDuration {
     final at = _connectedAt;
@@ -139,19 +171,46 @@ class VPNService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Runs a real detection pass and caches the result in [_snapshot].
+  /// "Connected" is only true when our own tunnel (WireGuard service or
+  /// oryvex.exe port 1819) is genuinely up.
+  Future<VpnStateSnapshot> detectState() async {
+    final results = await Future.wait<Object>([
+      OryvexService.isPort1819OwnedByOryvex(),
+      WireGuardService.isConnected(),
+      SystemCheckService.isExternalVpnRunning(),
+    ]);
+    final snap = VpnStateSnapshot(
+      isOryvexConnected: results[0] as bool,
+      isWireGuardConnected: results[1] as bool,
+      externalVpnActive: results[2] as bool,
+    );
+    _snapshot = snap;
+    VpnLogger.debug(_tag,
+        'detectState: oryvex=${snap.isOryvexConnected} wg=${snap.isWireGuardConnected} external=${snap.externalVpnActive}');
+    return snap;
+  }
+
   Future<void> initStatus() async {
     VpnLogger.info(_tag, 'initStatus: checking current state...');
-    final actuallyConnected = await WireGuardService.isConnected();
-    VpnLogger.info(_tag, 'initStatus: actuallyConnected=$actuallyConnected');
-    if (actuallyConnected) {
+    final snap = await detectState();
+    if (snap.isGenuinelyConnected) {
       _stage = VpnStage.connected;
       _connectedAt = DateTime.now();
       _statusMessage = 'Connected';
       _startStatsMonitoring();
       _startConnectionMonitoring();
+      VpnLogger.info(_tag,
+          'initStatus: CONNECTED (wg=${snap.isWireGuardConnected} oryvex=${snap.isOryvexConnected})');
     } else {
       _stage = VpnStage.idle;
       _statusMessage = 'Click to connect';
+      // A leftover adapter with no running tunnel (e.g. after a crash) must be
+      // cleaned up instead of being mistaken for an active connection.
+      if (await VpnCore.interfaceExists()) {
+        VpnLogger.warn(_tag, 'Leftover ${VpnCore.tunnelName} adapter without running tunnel; removing...');
+        await VpnCore.comprehensiveCleanup().catchError((_) {});
+      }
     }
     notifyListeners();
   }
@@ -169,77 +228,31 @@ class VPNService extends ChangeNotifier {
     _statsTimer = null;
   }
 
-
-  bool _isModalShowing = false;
-
   void _startSystemMonitoring() {
     _systemCheckTimer?.cancel();
     _systemCheckTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
-      bool clockSynced = await SystemCheckService.isClockSynced();
-      List<String> procs = await SystemCheckService.getConflictingProcesses();
+      // 1) Refresh the live detection snapshot. External VPN/proxy apps are a
+      //    non-blocking amber banner (see home_screen), never a hard disconnect.
+      final snap = await detectState();
+      final clockSynced = await SystemCheckService.isClockSynced();
 
-      if (!clockSynced || procs.isNotEmpty) {
-        if (isConnected || isConnecting) {
-          _stage = VpnStage.error;
-          _lastError = 'Disconnected: clock out of sync or conflicting programs';
-          _statusMessage = 'Disconnected';
-          _stopStatsMonitoring();
-          _stopConnectionMonitoring();
-          await WireGuardService.disconnect();
-          notifyListeners();
-        }
+      final stateChanged = snap.externalVpnActive != _snapshot.externalVpnActive ||
+          snap.isGenuinelyConnected != _snapshot.isGenuinelyConnected;
+      _snapshot = snap;
+      if (stateChanged) {
+        notifyListeners();
+      }
 
-        if (!_isModalShowing && navigatorKey.currentContext != null) {
-          _isModalShowing = true;
-
-          showDialog(
-            context: navigatorKey.currentContext!,
-            barrierDismissible: false,
-            builder: (ctx) => AlertDialog(
-              backgroundColor: AppTheme.surfaceOverlay,
-              title: Row(
-                children: [
-                  Icon(Icons.warning_amber_rounded, color: AppTheme.warning),
-                  const SizedBox(width: 10),
-                  Text(
-                    !clockSynced ? 'System Clock Error' : 'Conflicting Programs',
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                ],
-              ),
-              content: Text(
-                !clockSynced
-                    ? 'Your system clock is out of sync. This will prevent the VPN from connecting properly.\n\nPlease sync your Windows clock to continue.'
-                    : 'The following programs might conflict with the VPN:\n\n${procs.join(', ')}\n\nPlease close them to prevent connection issues.',
-                style: const TextStyle(color: AppTheme.textDim),
-              ),
-              actions: [
-                if (procs.isNotEmpty && clockSynced)
-                  TextButton(
-                    onPressed: () async {
-                      Navigator.pop(ctx);
-                      _isModalShowing = false;
-                      for (final p in procs) {
-                        try {
-                          await Process.run('taskkill', ['/F', '/IM', p], runInShell: true);
-                        } catch (_) {}
-                      }
-                    },
-                    child: const Text('Kill All', style: TextStyle(color: AppTheme.error)),
-                  ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    _isModalShowing = false;
-                  },
-                  child: const Text('Dismiss', style: TextStyle(color: AppTheme.textMuted)),
-                ),
-              ],
-            ),
-          ).then((_) {
-            _isModalShowing = false;
-          });
-        }
+      // 2) Clock skew is the one case that still warrants a hard error: a
+      //    wrong clock silently breaks TLS/WARP handshakes.
+      if (!clockSynced && (isConnected || isConnecting)) {
+        _stage = VpnStage.error;
+        _lastError = 'Disconnected: system clock out of sync';
+        _statusMessage = 'Disconnected';
+        _stopStatsMonitoring();
+        _stopConnectionMonitoring();
+        await WireGuardService.disconnect();
+        notifyListeners();
       }
     });
   }
@@ -259,13 +272,12 @@ class VPNService extends ChangeNotifier {
   Future<void> _checkConnectionStatus() async {
     if (_stage != VpnStage.connected) return;
 
-    // Check liveness based on the current VPN mode
+    // Check liveness based on the current VPN mode — using strict ownership
+    // checks so a foreign proxy app can never masquerade as our tunnel.
     bool alive = false;
     if (isOryvexMode) {
-      // In oryvex mode, check if SOCKS5 on port 1819 is active
-      alive = await OryvexService.isPort1819Active();
+      alive = await OryvexService.isPort1819OwnedByOryvex();
     } else {
-      // In WireGuard mode, check the tunnel service
       alive = await WireGuardService.isConnected();
     }
 
@@ -343,7 +355,7 @@ class VPNService extends ChangeNotifier {
         );
       }
 
-      final ok = await WireGuardService.isConnected() || await OryvexService.isPort1819Active();
+      final ok = await WireGuardService.isConnected() || await OryvexService.isPort1819OwnedByOryvex();
       if (ok) {
         VpnLogger.info(_tag, 'Auto-reconnect SUCCESS');
         _stage = VpnStage.connected;
@@ -440,8 +452,8 @@ class VPNService extends ChangeNotifier {
       VpnLogger.info(_tag, 'Waiting for tunnel to establish...');
       await Future.delayed(const Duration(seconds: 3));
 
-      // Verify connection
-      final running = await WireGuardService.isConnected() || await OryvexService.isPort1819Active();
+      // Verify connection — strict: our own tunnel must be genuinely up.
+      final running = await WireGuardService.isConnected() || await OryvexService.isPort1819OwnedByOryvex();
       VpnLogger.info(_tag, 'Tunnel service running (oryvex): $running');
 
       if (!running) {

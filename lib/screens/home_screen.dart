@@ -20,6 +20,7 @@ class _HomeScreenState extends State<HomeScreen>
   late final AnimationController _glowController;
   late final AnimationController _entryController;
   late final AnimationController _brandShimmerController;
+  late final AnimationController _auroraController;
 
   @override
   void initState() {
@@ -51,6 +52,12 @@ class _HomeScreenState extends State<HomeScreen>
       vsync: this,
       duration: const Duration(milliseconds: 3000),
     )..repeat();
+
+    // Slow aurora background drift
+    _auroraController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 12),
+    )..repeat();
   }
 
   @override
@@ -59,6 +66,7 @@ class _HomeScreenState extends State<HomeScreen>
     _glowController.dispose();
     _entryController.dispose();
     _brandShimmerController.dispose();
+    _auroraController.dispose();
     super.dispose();
   }
 
@@ -79,33 +87,47 @@ class _HomeScreenState extends State<HomeScreen>
       backgroundColor: Colors.transparent,
       body: Container(
         decoration: const BoxDecoration(gradient: AppTheme.backgroundGradient),
-        child: Column(
+        child: Stack(
           children: [
-            _buildTitleBar(vpn, color),
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    _buildHeader(),
-                    const SizedBox(height: 30),
-                    _buildPowerButton(vpn, color, active),
-                    const SizedBox(height: 30),
-                    _buildStatusText(vpn, color),
-                    if (vpn.lastError != null) ...[
-                      const SizedBox(height: 16),
-                      _buildErrorBox(vpn),
-                    ],
-                    const SizedBox(height: 24),
-                    _buildModeSelector(vpn, active),
-                    const SizedBox(height: 24),
-                    _buildStatsGrid(vpn),
-                    const SizedBox(height: 30),
-                  ],
-                ),
+            // Drifting aurora glow behind everything
+            Positioned.fill(
+              child: IgnorePointer(
+                child: _AuroraBackground(animation: _auroraController),
               ),
+            ),
+            Column(
+              children: [
+                _buildTitleBar(vpn, color),
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        _buildHeader(),
+                        const SizedBox(height: 30),
+                        _buildPowerButton(vpn, color, active),
+                        const SizedBox(height: 30),
+                        _buildStatusText(vpn, color),
+                        if (vpn.externalVpnActive) ...[
+                          const SizedBox(height: 12),
+                          _buildExternalVpnBanner(),
+                        ],
+                        if (vpn.lastError != null) ...[
+                          const SizedBox(height: 16),
+                          _buildErrorBox(vpn),
+                        ],
+                        const SizedBox(height: 24),
+                        _buildModeSelector(vpn, active),
+                        const SizedBox(height: 24),
+                        _buildStatsGrid(vpn),
+                        const SizedBox(height: 30),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -304,6 +326,36 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  // ── External VPN/proxy banner ─────────────────────────────────────
+  Widget _buildExternalVpnBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.warning.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.warning.withOpacity(0.35)),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.warning_amber_rounded, color: AppTheme.warning, size: 20),
+          SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'An external VPN/proxy is running.\nOryvexVPN is separate from it.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white70,
+                fontWeight: FontWeight.w500,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ── Power button with glow ring ───────────────────────────────────
   Widget _buildPowerButton(VPNService vpn, Color color, bool active) {
     return GestureDetector(
@@ -329,13 +381,18 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           );
         },
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutCubic,
           width: 140,
           height: 140,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: AppTheme.surfaceElevated,
-            border: Border.all(color: AppTheme.border),
+            border: Border.all(
+              color: active ? color.withOpacity(0.6) : AppTheme.border,
+              width: active ? 2 : 1,
+            ),
             boxShadow: [
               if (active)
                 BoxShadow(
@@ -345,18 +402,31 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
             ],
           ),
-          child: vpn.isConnecting
-              ? const Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation(AppTheme.warning),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 400),
+            switchInCurve: Curves.easeOutBack,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: (child, anim) => ScaleTransition(
+              scale: anim,
+              child: FadeTransition(opacity: anim, child: child),
+            ),
+            child: vpn.isConnecting
+                ? const SizedBox(
+                    key: ValueKey('connecting'),
+                    width: 34,
+                    height: 34,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(AppTheme.warning),
+                    ),
+                  )
+                : Icon(
+                    vpn.isConnected ? Icons.bolt : Icons.power_settings_new_rounded,
+                    key: ValueKey(vpn.isConnected ? 'connected' : 'idle'),
+                    size: vpn.isConnected ? 52 : 56,
+                    color: active ? color : Colors.white24,
                   ),
-                )
-              : Icon(
-                  Icons.power_settings_new_rounded,
-                  size: 56,
-                  color: active ? color : Colors.white24,
-                ),
+          ),
         ),
       ),
     );
@@ -769,9 +839,47 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildBentoCard(
+                  icon: Icons.arrow_downward,
+                  title: 'DOWNLOAD',
+                  value: _formatSpeed(s.downloadSpeed),
+                  color: AppTheme.primary,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildBentoCard(
+                  icon: Icons.arrow_upward,
+                  title: 'UPLOAD',
+                  value: _formatSpeed(s.uploadSpeed),
+                  color: AppTheme.accent,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildBentoCard(
+            icon: Icons.public,
+            title: 'IP ADDRESS',
+            value: s.ipInfo.ip,
+            color: AppTheme.purple,
+            fullWidth: true,
+          ),
         ],
       ),
     );
+  }
+
+  String _formatSpeed(double kbPerSec) {
+    if (kbPerSec <= 0) return '—';
+    if (kbPerSec < 1024) {
+      return '${kbPerSec.toStringAsFixed(0)} KB/s';
+    }
+    return '${(kbPerSec / 1024).toStringAsFixed(1)} MB/s';
   }
 
   Widget _buildBentoCard({
@@ -889,4 +997,58 @@ class _RingPainter extends CustomPainter {
       oldDelegate.active != active ||
       oldDelegate.progress != progress ||
       oldDelegate.glowIntensity != glowIntensity;
+}
+
+// ── Drifting aurora glow background ────────────────────────────────
+// Cheap radial-gradient blobs (no BackdropFilter — perf on Windows) that
+// slowly drift to give the background a living, neon aurora feel.
+class _AuroraBackground extends StatelessWidget {
+  final Animation<double> animation;
+  const _AuroraBackground({required this.animation});
+
+  double _wave(double t, int phase) =>
+      (math.sin(t * 2 * math.pi + phase * 1.7) + 1) / 2;
+
+  Widget _blob(Color color, Alignment align, double size) => Align(
+    alignment: align,
+    child: Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [color.withOpacity(0.12), color.withOpacity(0.0)],
+        ),
+      ),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, _) {
+        final t = animation.value;
+        return Stack(
+          children: [
+            _blob(
+              AppTheme.accent,
+              Alignment(-1.2 + 0.7 * _wave(t, 0), -1.2 + 0.5 * _wave(t, 1)),
+              190,
+            ),
+            _blob(
+              AppTheme.primary,
+              Alignment(1.2 - 0.7 * _wave(t, 1), 1.2 - 0.6 * _wave(t, 0)),
+              210,
+            ),
+            _blob(
+              AppTheme.purple,
+              Alignment(0.2 + 0.8 * _wave(t, 2), 0.6 - 0.8 * _wave(t, 3)),
+              150,
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

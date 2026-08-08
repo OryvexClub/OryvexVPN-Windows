@@ -87,19 +87,28 @@ class VpnCore {
         }
       }
 
-      // AmneziaWG sometimes doesn't report correctly in sc query or has a different service name internally,
-      // but if the network interface exists, it means the tunnel is up.
-      if (!running) {
-        final interfaceResult = await Process.run('netsh', ['interface', 'show', 'interface', 'name=$tunnelName']);
-        if (interfaceResult.exitCode == 0 && interfaceResult.stdout.toString().contains('Connected')) {
-           VpnLogger.debug(_tag, 'serviceRunning: sc says false but netsh interface is Connected. Reporting TRUE.');
-           return true;
-        }
-      }
-
       return running;
     } catch (e) {
       VpnLogger.error(_tag, 'serviceRunning exception: $e');
+      return false;
+    }
+  }
+
+  /// True when the network interface (adapter) with [tunnelName] exists,
+  /// e.g. a leftover interface left behind by a crash. The interface alone is
+  /// NOT proof the tunnel is up — that is [serviceRunning]'s job.
+  static Future<bool> interfaceExists() async {
+    if (!Platform.isWindows) return false;
+    try {
+      final r = await Process.run(
+        'netsh',
+        ['interface', 'show', 'interface', 'name=$tunnelName'],
+      );
+      final exists = r.exitCode == 0;
+      VpnLogger.debug(_tag, 'interfaceExists($tunnelName): $exists');
+      return exists;
+    } catch (e) {
+      VpnLogger.debug(_tag, 'interfaceExists error: $e');
       return false;
     }
   }
@@ -157,9 +166,9 @@ class VpnCore {
     VpnLogger.info(_tag, '=== installTunnel END ===');
   }
 
-  static Future<void> uninstallTunnel() async {
-    VpnLogger.info(_tag, '=== uninstallTunnel START ===');
-    if (!await serviceExists()) {
+  static Future<void> uninstallTunnel({bool force = false}) async {
+    VpnLogger.info(_tag, '=== uninstallTunnel START (force=$force) ===');
+    if (!force && !await serviceExists()) {
       VpnLogger.info(_tag, 'Service does not exist, skipping uninstall');
       return;
     }
@@ -221,6 +230,44 @@ class VpnCore {
     await _killProcesses();
     await flushDns();
     VpnLogger.info(_tag, '=== fullCleanup END ===');
+  }
+
+  /// Deletes the [tunnelName] network adapter if it lingers after the tunnel
+  /// service is gone (e.g. after a crash). Must run AFTER the service is
+  /// removed, otherwise the auto-driven service would recreate the adapter.
+  static Future<void> _removeAdapterIfPresent() async {
+    if (!await interfaceExists()) {
+      VpnLogger.info(_tag, 'No $tunnelName interface present; adapter delete skipped');
+      return;
+    }
+    VpnLogger.info(_tag, 'Deleting leftover $tunnelName network adapter...');
+    try {
+      // If the interface is still "Connected" the delete can fail — disable first.
+      await Process.run('netsh', [
+        'interface', 'set', 'interface', 'name=$tunnelName', 'admin=disable',
+      ]).timeout(const Duration(seconds: 3));
+      final r = await Process.run('netsh', [
+        'interface', 'delete', 'interface', 'name=$tunnelName',
+      ]).timeout(const Duration(seconds: 5));
+      VpnLogger.info(_tag, 'Adapter delete: exit=${r.exitCode} ${r.stderr}');
+    } catch (e) {
+      VpnLogger.warn(_tag, 'Failed to delete adapter: $e');
+    }
+  }
+
+  /// Comprehensive cleanup that ALWAYS runs, even when not currently
+  /// connected (catches leftovers from a crashed session):
+  ///   1. stop + uninstall the tunnel service (forced)
+  ///   2. delete any leftover adapter
+  ///   3. kill our processes
+  ///   4. flush DNS
+  static Future<void> comprehensiveCleanup() async {
+    VpnLogger.info(_tag, '=== comprehensiveCleanup START ===');
+    await uninstallTunnel(force: true);
+    await _removeAdapterIfPresent();
+    await _killProcesses();
+    await flushDns();
+    VpnLogger.info(_tag, '=== comprehensiveCleanup END ===');
   }
 
   /// Best-effort DNS flush after the tunnel is up so the new resolvers take

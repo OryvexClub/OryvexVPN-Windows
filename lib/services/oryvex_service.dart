@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'vpn_core.dart';
 import 'vpn_service.dart';
+import 'system_check_service.dart';
 
 /// Protocol types supported by the oryvex core binary.
 enum OryvexProtocol {
@@ -102,6 +103,30 @@ class OryvexService {
     final exists = await File(_oryvexExe).exists();
     VpnLogger.info(_tag, 'oryvex binary available: $exists at $_oryvexExe');
     return exists;
+  }
+
+  /// PID of the oryvex process we started, if any.
+  static int? get currentPid => _oryvexProcess?.pid;
+
+  /// True only when port 1819 is bound by *our* oryvex.exe process — never by
+  /// a foreign VPN/proxy app. This is the strict ownership check used for
+  /// connect state decisions.
+  static Future<bool> isPort1819OwnedByOryvex() async {
+    final pids = await SystemCheckService.pidsOnPort(1819);
+    if (pids.isEmpty) return false;
+    final ourPid = _oryvexProcess?.pid;
+    if (ourPid != null && pids.contains(ourPid)) {
+      VpnLogger.debug(_tag, 'isPort1819OwnedByOryvex: true (tracked PID $ourPid)');
+      return true;
+    }
+    for (final pid in pids) {
+      if (await SystemCheckService.processNameForPid(pid) == 'oryvex.exe') {
+        VpnLogger.debug(_tag, 'isPort1819OwnedByOryvex: true (PID $pid is oryvex.exe)');
+        return true;
+      }
+    }
+    VpnLogger.debug(_tag, 'isPort1819OwnedByOryvex: false (no oryvex.exe on :1819)');
+    return false;
   }
 
   /// Add a line to the log buffer and broadcast it.
@@ -283,7 +308,7 @@ class OryvexService {
       await stderrSubscription.cancel();
 
       if (connected) {
-        VpnLogger.info(_tag, 'Protocol $name: CONNECTED (port ${detectedPort ?? 1819})');
+        VpnLogger.info(_tag, 'Protocol $name: CONNECTED (port ${detectedPort == 0 ? 1819 : detectedPort})');
         return OryvexConnectionResult(
           success: true,
           protocolName: name,

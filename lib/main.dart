@@ -10,11 +10,12 @@ import 'core/config.dart';
 import 'theme/app_theme.dart';
 import 'screens/home_screen.dart';
 import 'services/network_manager.dart';
+import 'services/oryvex_service.dart';
+import 'services/system_proxy.dart';
 import 'services/tray_service.dart';
 import 'services/window_manager_service.dart';
 import 'services/vpn_core.dart';
 import 'services/vpn_service.dart';
-import 'services/wireguard_service.dart';
 import 'services/xray_service.dart';
 import 'l10n/app_localizations.dart';
 
@@ -67,14 +68,14 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
 
   Future<void> _performQuit() async {
     VpnLogger.info('Main', '=== QUIT START ===');
-    bool isDisconnecting = false;
-    final context = navigatorKey.currentContext;
 
+    // 1) Cleanly disconnect if we're mid-session (this also restores the
+    //    proxy state captured by saveState, if any).
     try {
+      final context = navigatorKey.currentContext;
       if (context != null) {
         final vpnService = context.read<VPNService>();
         if (vpnService.isConnected || vpnService.isConnecting) {
-          isDisconnecting = true;
           VpnLogger.info('Main', 'Disconnecting VPN before closing...');
           await vpnService.disconnect().timeout(
             const Duration(seconds: 8),
@@ -88,6 +89,7 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       VpnLogger.error('Main', 'Error during VPN service disconnect: $e');
     }
 
+    // 2) Stop our core processes.
     try {
       VpnLogger.info('Main', 'Stopping Xray service...');
       await XrayService.stop().timeout(
@@ -101,9 +103,24 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
     }
 
     try {
-      VpnLogger.info('Main', 'Running full VpnCore cleanup...');
-      await VpnCore.fullCleanup().timeout(
-        const Duration(seconds: 8),
+      VpnLogger.info('Main', 'Stopping oryvex core...');
+      await OryvexService.killRunning().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          VpnLogger.warn('Main', 'Oryvex stop timeout');
+        },
+      );
+    } catch (e) {
+      VpnLogger.error('Main', 'Oryvex stop error: $e');
+    }
+
+    // 3) Comprehensive cleanup — ALWAYS runs, even when we weren't connected,
+    //    so leftovers (tunnel service, adapter, processes) from a crashed or
+    //    previous session are fully removed.
+    try {
+      VpnLogger.info('Main', 'Running comprehensive VpnCore cleanup...');
+      await VpnCore.comprehensiveCleanup().timeout(
+        const Duration(seconds: 12),
         onTimeout: () {
           VpnLogger.warn('Main', 'VpnCore cleanup timeout');
         },
@@ -112,19 +129,23 @@ class _OryvexVPNAppState extends State<OryvexVPNApp> with WindowListener {
       VpnLogger.error('Main', 'VpnCore cleanup error: $e');
     }
 
+    // 4) Unconditionally reset the system proxy to default. This covers the
+    //    "app started with a stale Xray proxy left by a previous run" case
+    //    that a plain restore() would miss.
     try {
-      if (!isDisconnecting) {
-        await WireGuardService.disconnect().timeout(
-          const Duration(seconds: 5),
-          onTimeout: () {},
-        );
-      }
+      VpnLogger.info('Main', 'Resetting system proxy to default...');
+      await SystemProxyService.resetToDefault().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          VpnLogger.warn('Main', 'Proxy reset timeout');
+        },
+      );
     } catch (e) {
-      VpnLogger.error('Main', 'WireGuardService disconnect error: $e');
+      VpnLogger.error('Main', 'Proxy reset error: $e');
     }
 
     VpnLogger.info('Main', 'Force killing remaining processes...');
-    final procs = ['amneziawg.exe', 'awg.exe', 'wireservice.exe'];
+    final procs = ['amneziawg.exe', 'awg.exe', 'wireservice.exe', 'oryvex.exe', 'xray.exe'];
     for (final proc in procs) {
       try {
         final r = Process.runSync('taskkill', ['/F', '/IM', proc], runInShell: true);

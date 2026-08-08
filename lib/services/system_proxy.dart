@@ -91,6 +91,33 @@ class SystemProxyService {
     }
   }
 
+  /// Unconditionally resets the system proxy back to default: disabled, with
+/// blank server and bypass-list values. Unlike [restore] it works even when
+/// [saveState] never ran this session (e.g. a stale proxy left over from a
+/// crashed run), which is exactly what we want on a full app close.
+  static Future<void> resetToDefault() async {
+    if (!Platform.isWindows) return;
+    VpnLogger.info(_tag, 'Hard-resetting system proxy to default (disabled)...');
+    try {
+      await Process.run('reg', [
+        'add', _key, '/v', 'ProxyEnable', '/t', 'REG_DWORD', '/d', '0', '/f',
+      ]);
+      await Process.run('reg', [
+        'add', _key, '/v', 'ProxyServer', '/t', 'REG_SZ', '/d', '', '/f',
+      ]);
+      await Process.run('reg', [
+        'add', _key, '/v', 'ProxyOverride', '/t', 'REG_SZ', '/d', '', '/f',
+      ]);
+      VpnLogger.info(_tag, 'System proxy reset to default');
+    } catch (e) {
+      VpnLogger.warn(_tag, 'Failed to reset system proxy: $e');
+    }
+    // Clear the saved state so a later [restore] is a no-op.
+    _savedEnabled = null;
+    _savedServer = null;
+    _savedOverride = null;
+  }
+
   /// Restores the proxy state captured by [saveState] (a no-op if the proxy
   /// was never enabled).
   static Future<void> restore() async {
